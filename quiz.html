@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>測驗專區 — 華美光學人資系統</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --sidebar-bg: #2e3141;
+      --accent: #f56a6a;
+      --bg: #f5f4f0;
+      --card-bg: #ffffff;
+      --text-dark: #333;
+      --text-mid: #666;
+      --text-light: #999;
+      --border: #e4e2de;
+      --sidebar-width: 260px;
+      --quiz-color: #7c3aed;
+      --quiz-light: #f3eeff;
+    }
+    body { font-family: 'Segoe UI','Microsoft JhengHei',sans-serif; background: var(--bg); color: var(--text-dark); display: flex; min-height: 100vh; }
+
+    #sidebar { width:var(--sidebar-width); background:var(--sidebar-bg); display:flex; flex-direction:column; position:fixed; top:0; left:0; bottom:0; z-index:100; transition:transform .3s; }
+    .sidebar-header { padding:28px 24px 20px; border-bottom:1px solid rgba(255,255,255,.08); display:flex; align-items:center; }
+    .logo-icon { width:40px; height:40px; background:var(--accent); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+    .logo-text { color:#fff; font-size:15px; font-weight:700; line-height:1.3; margin-left:12px; }
+    .logo-sub { color:rgba(255,255,255,.45); font-size:11px; display:block; margin-top:2px; }
+    #sidebar-close { display:none; background:none; border:none; color:rgba(255,255,255,.5); font-size:22px; cursor:pointer; margin-left:auto; }
+    nav { flex:1; overflow-y:auto; padding:16px 0; }
+    .nav-section-label { color:rgba(255,255,255,.3); font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; padding:16px 24px 6px; }
+    .nav-item { display:flex; align-items:center; gap:12px; padding:11px 24px; color:rgba(255,255,255,.65); border-left:3px solid transparent; transition:all .18s; font-size:14px; text-decoration:none; }
+    .nav-item:hover { background:rgba(255,255,255,.06); color:#fff; }
+    .nav-item.active { background:rgba(245,106,106,.12); border-left-color:var(--accent); color:#fff; }
+    .nav-item .icon { font-size:17px; width:22px; text-align:center; flex-shrink:0; }
+    .nav-badge { margin-left:auto; background:var(--accent); color:#fff; font-size:10px; font-weight:700; padding:2px 7px; border-radius:20px; }
+    .sidebar-footer { padding:16px 24px; border-top:1px solid rgba(255,255,255,.08); color:rgba(255,255,255,.3); font-size:11px; }
+
+    #main { margin-left:var(--sidebar-width); flex:1; display:flex; flex-direction:column; min-height:100vh; }
+    .topbar { background:var(--card-bg); border-bottom:1px solid var(--border); padding:0 32px; height:60px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
+    .topbar-left { display:flex; align-items:center; gap:12px; }
+    .topbar-title { font-size:16px; font-weight:700; }
+    .breadcrumb { font-size:12px; color:var(--text-light); }
+    .breadcrumb a { color:var(--text-light); text-decoration:none; }
+    .topbar-avatar { width:34px; height:34px; background:var(--accent); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:13px; font-weight:700; }
+    .menu-toggle { display:none; background:none; border:none; font-size:22px; cursor:pointer; color:var(--text-dark); }
+    .content { padding:32px; flex:1; }
+
+    /* Hero */
+    .quiz-hero {
+      background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 50%, #a855f7 100%);
+      border-radius: 20px;
+      padding: 36px 40px;
+      margin-bottom: 28px;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .quiz-hero::before { content:''; position:absolute; right:-60px; top:-60px; width:240px; height:240px; border-radius:50%; background:rgba(255,255,255,.06); }
+    .quiz-hero::after { content:''; position:absolute; right:60px; bottom:-80px; width:180px; height:180px; border-radius:50%; background:rgba(255,255,255,.04); }
+    .hero-text h1 { font-size:26px; font-weight:900; margin-bottom:6px; }
+    .hero-text p { font-size:14px; opacity:.8; line-height:1.7; }
+    .hero-icon { font-size:72px; opacity:.25; position:absolute; right:40px; }
+
+    /* Stats */
+    .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:28px; }
+    .stat-card { background:var(--card-bg); border-radius:12px; border:1px solid var(--border); padding:18px 20px; display:flex; align-items:center; gap:14px; }
+    .stat-icon { width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+    .stat-num { font-size:22px; font-weight:800; line-height:1; }
+    .stat-label { font-size:12px; color:var(--text-light); margin-top:4px; }
+
+    /* Filter */
+    .list-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:12px; }
+    .list-header h2 { font-size:16px; font-weight:700; }
+    .filter-tabs { display:flex; gap:8px; flex-wrap:wrap; }
+    .tab { padding:6px 16px; border-radius:30px; font-size:13px; font-weight:600; cursor:pointer; border:1.5px solid var(--border); background:var(--card-bg); color:var(--text-mid); transition:all .18s; }
+    .tab:hover { border-color:var(--quiz-color); color:var(--quiz-color); }
+    .tab.active { background:var(--quiz-color); border-color:var(--quiz-color); color:#fff; }
+
+    /* Quiz cards */
+    .quiz-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:18px; }
+
+    .quiz-card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      padding: 24px;
+      transition: all .2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .quiz-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--quiz-color);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform .2s;
+    }
+    .quiz-card:hover { box-shadow:0 6px 24px rgba(0,0,0,.09); transform:translateY(-2px); }
+    .quiz-card:hover::before { transform:scaleX(1); }
+
+    .quiz-card-top { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:14px; }
+    .quiz-icon { width:48px; height:48px; background:var(--quiz-light); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+    .quiz-status { padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; }
+    .quiz-status.open { background:#e8faf0; color:#27ae60; }
+    .quiz-status.soon { background:#fff7e0; color:#f0a500; }
+    .quiz-status.closed { background:#f0f1f5; color:#999; }
+
+    .quiz-card h3 { font-size:16px; font-weight:800; margin-bottom:6px; line-height:1.3; }
+    .quiz-card .quiz-target { font-size:12px; color:var(--text-light); margin-bottom:14px; }
+
+    .quiz-meta { display:flex; gap:16px; margin-bottom:18px; }
+    .quiz-meta-item { display:flex; align-items:center; gap:6px; font-size:13px; color:var(--text-mid); }
+    .quiz-meta-item .mi { font-size:14px; }
+
+    .quiz-deadline { font-size:12px; color:var(--text-light); margin-bottom:18px; }
+    .quiz-deadline strong { color:var(--accent); }
+
+    .quiz-card-footer { display:flex; align-items:center; gap:10px; }
+    .btn-quiz { display:inline-flex; align-items:center; gap:8px; background:var(--quiz-color); color:#fff; font-size:14px; font-weight:700; padding:10px 22px; border-radius:30px; text-decoration:none; transition:all .18s; border:none; cursor:pointer; }
+    .btn-quiz:hover { background:#6d28d9; transform:translateY(-1px); }
+    .btn-quiz.disabled { background:var(--border); color:var(--text-light); pointer-events:none; cursor:default; }
+    .btn-quiz.closed-btn { background:#888; pointer-events:none; }
+
+    /* Empty & Loading */
+    .loading { text-align:center; padding:60px; color:var(--text-light); }
+    .spinner { width:36px; height:36px; border:3px solid var(--border); border-top-color:var(--quiz-color); border-radius:50%; animation:spin .8s linear infinite; margin:0 auto 16px; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .empty-state { text-align:center; padding:48px; color:var(--text-light); grid-column:1/-1; }
+    .empty-state .ei { font-size:48px; display:block; margin-bottom:12px; }
+
+    #sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:99; }
+
+    @media (max-width:900px) { #sidebar{transform:translateX(-100%)} #sidebar.open{transform:translateX(0)} #sidebar-close{display:block} #main{margin-left:0} .menu-toggle{display:block} .quiz-grid{grid-template-columns:1fr} .stats-row{grid-template-columns:repeat(3,1fr)} }
+    @media (max-width:560px) { .content{padding:20px 16px} .stats-row{grid-template-columns:1fr 1fr} .quiz-hero{padding:24px} .hero-icon{display:none} }
+  </style>
+</head>
+<body>
+
+<div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+<aside id="sidebar">
+  <div class="sidebar-header">
+    <div class="logo-icon">🏢</div>
+    <div class="logo-text">華美光學<span class="logo-sub">人資入口網站</span></div>
+    <button onclick="toggleSidebar()" id="sidebar-close">✕</button>
+  </div>
+  <nav>
+    <div class="nav-section-label">主選單</div>
+    <a class="nav-item" href="home.html"><span class="icon">🏠</span> 首頁總覽</a>
+    <div class="nav-section-label">學習與測驗</div>
+    <a class="nav-item active" href="quiz.html"><span class="icon">📝</span> 測驗專區</a>
+    <a class="nav-item" href="#"><span class="icon">🎓</span> 教育訓練</a>
+    <div class="nav-section-label">資料與公告</div>
+    <a class="nav-item" href="docs.html"><span class="icon">📁</span> 文件宣導</a>
+    <a class="nav-item" href="events-list.html"><span class="icon">🎉</span> 活動報名</a>
+    <a class="nav-item" href="#"><span class="icon">📢</span> 最新公告</a>
+    <div class="nav-section-label">系統整合</div>
+    <a class="nav-item" href="#"><span class="icon">🔗</span> 相關系統連結</a>
+  </nav>
+  <div class="sidebar-footer">© 2025 華美光學　人資部</div>
+</aside>
+
+<div id="main">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+      <div>
+        <div class="topbar-title">測驗專區</div>
+        <div class="breadcrumb"><a href="home.html">首頁</a> › 測驗專區</div>
+      </div>
+    </div>
+    <div class="topbar-avatar">HR</div>
+  </header>
+
+  <main class="content">
+
+    <!-- Hero -->
+    <div class="quiz-hero">
+      <div class="hero-text">
+        <h1>📝 測驗專區</h1>
+        <p>完成各項線上測驗，提升專業知識與工作技能。<br>請依規定期限完成指定測驗。</p>
+      </div>
+      <div class="hero-icon">🎯</div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row" id="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#f3eeff;">📝</div>
+        <div><div class="stat-num" id="stat-total">-</div><div class="stat-label">測驗總數</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#e8faf0;">✅</div>
+        <div><div class="stat-num" id="stat-open">-</div><div class="stat-label">開放中</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#fff7e0;">⏰</div>
+        <div><div class="stat-num" id="stat-soon">-</div><div class="stat-label">即將截止</div></div>
+      </div>
+    </div>
+
+    <!-- List -->
+    <div class="list-header">
+      <h2>所有測驗</h2>
+      <div class="filter-tabs">
+        <div class="tab active" onclick="filterQuiz('all',this)">全部</div>
+        <div class="tab" onclick="filterQuiz('開放中',this)">開放中</div>
+        <div class="tab" onclick="filterQuiz('即將開始',this)">即將開始</div>
+        <div class="tab" onclick="filterQuiz('已截止',this)">已截止</div>
+      </div>
+    </div>
+
+    <div id="quiz-loading" class="loading">
+      <div class="spinner"></div>
+      <p>載入測驗資料中…</p>
+    </div>
+
+    <div class="quiz-grid" id="quiz-grid"></div>
+
+  </main>
+</div>
+
+<script src="sheets-config.js"></script>
+<script>
+  function toggleSidebar() {
+    const s = document.getElementById('sidebar');
+    const o = document.getElementById('sidebar-overlay');
+    const c = document.getElementById('sidebar-close');
+    const open = s.classList.toggle('open');
+    o.style.display = open ? 'block' : 'none';
+    c.style.display = open ? 'block' : 'none';
+  }
+
+  let allQuiz = [];
+
+  async function loadQuiz() {
+    const rows = await fetchSheet(HRCONFIG.SHEETS.QUIZ);
+    allQuiz = rows.filter(r => r['測驗名稱']);
+
+    // Stats
+    document.getElementById('stat-total').textContent = allQuiz.length;
+    document.getElementById('stat-open').textContent = allQuiz.filter(q => q['狀態'] === '開放中').length;
+    document.getElementById('stat-soon').textContent = allQuiz.filter(q => q['截止日期']).length;
+
+    // Update nav badge
+    const openCount = allQuiz.filter(q => q['狀態'] === '開放中').length;
+    document.querySelectorAll('.nav-badge').forEach(b => b.textContent = openCount);
+
+    document.getElementById('quiz-loading').style.display = 'none';
+    renderQuiz('all');
+  }
+
+  function renderQuiz(filter) {
+    const grid = document.getElementById('quiz-grid');
+    grid.innerHTML = '';
+
+    const filtered = filter === 'all' ? allQuiz : allQuiz.filter(q => q['狀態'] === filter);
+
+    if (filtered.length === 0) {
+      grid.innerHTML = `<div class="empty-state"><span class="ei">📝</span><p>目前沒有符合條件的測驗</p></div>`;
+      return;
+    }
+
+    filtered.forEach(q => grid.appendChild(buildQuizCard(q)));
+  }
+
+  function buildQuizCard(q) {
+    const isOpen   = q['狀態'] === '開放中';
+    const isSoon   = q['狀態'] === '即將開始';
+    const isClosed = q['狀態'] === '已截止';
+    const hasLink  = q['表單連結'] && q['表單連結'].trim();
+
+    const statusCls   = isOpen ? 'open' : isSoon ? 'soon' : 'closed';
+    const statusLabel = q['狀態'] || '開放中';
+
+    const card = document.createElement('div');
+    card.className = 'quiz-card';
+    card.dataset.status = q['狀態'];
+
+    card.innerHTML = `
+      <div class="quiz-card-top">
+        <div class="quiz-icon">📝</div>
+        <span class="quiz-status ${statusCls}">${statusLabel}</span>
+      </div>
+      <h3>${q['測驗名稱']}</h3>
+      <div class="quiz-target">👥 適用對象：${q['適用對象'] || '全體員工'}</div>
+      <div class="quiz-meta">
+        ${q['題數'] ? `<div class="quiz-meta-item"><span class="mi">📋</span>${q['題數']} 題</div>` : ''}
+        ${q['預估時間'] ? `<div class="quiz-meta-item"><span class="mi">⏱️</span>約 ${q['預估時間']} 分鐘</div>` : ''}
+      </div>
+      ${q['截止日期'] ? `<div class="quiz-deadline">截止日期：<strong>${q['截止日期']}</strong></div>` : ''}
+      ${q['備註'] ? `<div class="quiz-deadline" style="color:var(--text-mid)">${q['備註']}</div>` : ''}
+      <div class="quiz-card-footer">
+        ${hasLink && !isClosed
+          ? `<a href="${q['表單連結']}" target="_blank" class="btn-quiz">開始測驗 →</a>`
+          : isClosed
+            ? `<span class="btn-quiz closed-btn">已截止</span>`
+            : `<span class="btn-quiz disabled">即將開放</span>`
+        }
+      </div>`;
+    return card;
+  }
+
+  function filterQuiz(filter, el) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    renderQuiz(filter);
+  }
+
+  loadQuiz();
+</script>
+</body>
+</html>
