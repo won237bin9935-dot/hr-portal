@@ -39,19 +39,29 @@ const HRCONFIG = {
 // ============================================
 
 async function fetchSheet(sheetName) {
-  const url = `https://docs.google.com/spreadsheets/d/${HRCONFIG.SHEETS_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
+  const url = `https://docs.google.com/spreadsheets/d/${HRCONFIG.SHEETS_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}&headers=1`;
   try {
     const res = await fetch(url);
     const text = await res.text();
-    const json = JSON.parse(text.substring(47).slice(0, -2));
-    const cols = json.table.cols.map(c => c.label);
-    const rows = json.table.rows.map(row => {
-      const obj = {};
-      row.c.forEach((cell, i) => {
-        obj[cols[i]] = cell ? (cell.v !== null ? cell.v : '') : '';
+    // gviz 回應格式：/*O_o*/\ngoogle.visualization.Query.setResponse({...});
+    const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
+    if (!match) throw new Error('無法解析 gviz 回應');
+    const json = JSON.parse(match[1]);
+    const table = json.table;
+    // 取欄位名稱（第一列）
+    const cols = table.cols.map(c => c.label || c.id);
+    // 過濾掉空白列
+    const rows = (table.rows || [])
+      .filter(row => row.c && row.c.some(cell => cell && cell.v !== null && cell.v !== ''))
+      .map(row => {
+        const obj = {};
+        row.c.forEach((cell, i) => {
+          if (cols[i]) {
+            obj[cols[i]] = cell ? (cell.v !== null && cell.v !== undefined ? String(cell.v) : '') : '';
+          }
+        });
+        return obj;
       });
-      return obj;
-    });
     return rows;
   } catch (e) {
     console.error('Sheets 讀取失敗：', e);
