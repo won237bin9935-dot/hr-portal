@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Sheets 連線測試</title>
+  <style>
+    body { font-family: 'Microsoft JhengHei', sans-serif; padding: 32px; background: #f5f4f0; }
+    h2 { margin-bottom: 16px; }
+    #result { background: #fff; border-radius: 12px; padding: 24px; border: 1px solid #ddd; white-space: pre-wrap; font-size: 13px; line-height: 1.8; min-height: 100px; }
+    .ok { color: #27ae60; font-weight: 700; }
+    .err { color: #e74c3c; font-weight: 700; }
+    button { background: #f56a6a; color: #fff; border: none; padding: 12px 28px; border-radius: 8px; font-size: 15px; cursor: pointer; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <h2>🔧 Google Sheets 連線測試</h2>
+  <button onclick="testSheets()">開始測試</button>
+  <div id="result">點擊按鈕開始測試...</div>
+
+<script>
+const SHEETS_ID = '1b4xq2XxSCbuIF6SZU-x0Jz4Du_n-YRAJCSQrkm2ze3U';
+
+async function testSheets() {
+  const el = document.getElementById('result');
+  el.innerHTML = '測試中，請稍候...\n';
+
+  const url = `https://docs.google.com/spreadsheets/d/${SHEETS_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent('活動列表')}&headers=1`;
+  el.innerHTML += `測試網址：${url}\n\n`;
+
+  try {
+    const res = await fetch(url);
+    el.innerHTML += `HTTP 狀態：${res.status}\n`;
+
+    const text = await res.text();
+    el.innerHTML += `回應長度：${text.length} 字元\n`;
+    el.innerHTML += `回應前100字：${text.substring(0, 100)}\n\n`;
+
+    const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
+    if (!match) {
+      el.innerHTML += `<span class="err">❌ 無法解析回應格式！</span>\n`;
+      el.innerHTML += `完整回應：\n${text.substring(0, 500)}`;
+      return;
+    }
+
+    const json = JSON.parse(match[1]);
+    const cols = json.table.cols.map(c => c.label || c.id);
+    el.innerHTML += `<span class="ok">✅ 連線成功！</span>\n`;
+    el.innerHTML += `欄位數量：${cols.length}\n`;
+    el.innerHTML += `欄位名稱：${cols.join('、')}\n`;
+    el.innerHTML += `資料列數：${json.table.rows ? json.table.rows.length : 0}\n`;
+
+    if (json.table.rows && json.table.rows.length > 0) {
+      el.innerHTML += `\n第一筆資料：\n`;
+      json.table.rows[0].c.forEach((cell, i) => {
+        if (cols[i] && cell && cell.v !== null) {
+          el.innerHTML += `  ${cols[i]}：${cell.v}\n`;
+        }
+      });
+    }
+
+  } catch(e) {
+    el.innerHTML += `<span class="err">❌ 錯誤：${e.message}</span>\n`;
+  }
+}
+</script>
+</body>
+</html>
