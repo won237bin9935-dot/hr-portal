@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>華美光學 人資系統</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --dark: #1a1e2e;
+      --darker: #12151f;
+      --accent: #f56a6a;
+      --accent2: #4a90d9;
+      --text: #e8eaf0;
+      --text-dim: rgba(232,234,240,.5);
+      --glass: rgba(255,255,255,.05);
+      --glass-border: rgba(255,255,255,.1);
+    }
+    html, body { height: 100%; font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; background: var(--darker); color: var(--text); overflow: hidden; }
+    .bg { position: fixed; inset: 0; background: radial-gradient(ellipse 80% 60% at 70% 40%, rgba(74,144,217,.13) 0%, transparent 60%), radial-gradient(ellipse 60% 50% at 20% 70%, rgba(245,106,106,.10) 0%, transparent 55%), linear-gradient(160deg, #1a1e2e 0%, #12151f 100%); z-index: 0; }
+    .grid-overlay { position: fixed; inset: 0; z-index: 1; background-image: linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px); background-size: 48px 48px; mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%); }
+    .lens-wrap { position: fixed; right: -80px; top: 50%; transform: translateY(-50%); width: 560px; height: 560px; z-index: 1; opacity: .18; }
+    .ring { position: absolute; border-radius: 50%; border: 1px solid rgba(255,255,255,.6); top: 50%; left: 50%; transform: translate(-50%, -50%); }
+    .ring:nth-child(3) { width: 100%; height: 100%; }
+    .ring:nth-child(4) { width: 78%; height: 78%; border-color: rgba(74,144,217,.8); }
+    .ring:nth-child(5) { width: 56%; height: 56%; }
+    .ring:nth-child(6) { width: 34%; height: 34%; border-color: rgba(245,106,106,.8); }
+    .ring:nth-child(7) { width: 14%; height: 14%; background: rgba(255,255,255,.15); border: none; }
+    .ring-h, .ring-v { position: absolute; background: rgba(255,255,255,.25); top: 50%; left: 50%; }
+    .ring-h { width: 100%; height: 1px; transform: translate(-50%, -50%); }
+    .ring-v { width: 1px; height: 100%; transform: translate(-50%, -50%); }
+    .page { position: relative; z-index: 10; height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 0 8vw; max-width: 680px; }
+    .tag { display: inline-flex; align-items: center; gap: 8px; background: var(--glass); border: 1px solid var(--glass-border); border-radius: 30px; padding: 6px 16px; font-size: 12px; color: var(--text-dim); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 28px; width: fit-content; }
+    .tag-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .5; transform: scale(.7); } }
+    .company { font-size: clamp(36px, 6vw, 58px); font-weight: 900; line-height: 1.1; letter-spacing: -.01em; margin-bottom: 8px; }
+    .company em { font-style: normal; background: linear-gradient(120deg, #ffffff 0%, rgba(255,255,255,.6) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .company .highlight { background: linear-gradient(120deg, var(--accent) 0%, #ff9a9a 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .subtitle { font-size: clamp(16px, 2.5vw, 22px); color: var(--text-dim); font-weight: 300; letter-spacing: .15em; margin-bottom: 40px; }
+    .divider { width: 48px; height: 2px; background: linear-gradient(90deg, var(--accent), transparent); margin-bottom: 32px; }
+    .desc { font-size: 14px; color: var(--text-dim); line-height: 1.9; margin-bottom: 48px; max-width: 420px; }
+    .cta-wrap { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+    .btn-enter { display: inline-flex; align-items: center; gap: 12px; background: var(--accent); color: #fff; font-size: 15px; font-weight: 700; padding: 14px 32px; border-radius: 50px; text-decoration: none; letter-spacing: .04em; transition: all .25s; box-shadow: 0 8px 32px rgba(245,106,106,.35); border: none; cursor: pointer; }
+    .btn-enter:hover { background: #ff7f7f; transform: translateY(-2px); box-shadow: 0 12px 40px rgba(245,106,106,.5); }
+    .btn-enter .arrow { font-size: 18px; transition: transform .2s; }
+    .btn-enter:hover .arrow { transform: translateX(4px); }
+    .btn-secondary { font-size: 13px; color: var(--text-dim); text-decoration: none; display: flex; align-items: center; gap: 6px; transition: color .2s; background: none; border: none; cursor: pointer; }
+    .btn-secondary:hover { color: var(--text); }
+    .chips { display: flex; gap: 12px; margin-top: 52px; flex-wrap: wrap; }
+    .chip { display: flex; align-items: center; gap: 7px; background: var(--glass); border: 1px solid var(--glass-border); border-radius: 8px; padding: 8px 14px; font-size: 12px; color: var(--text-dim); }
+    .chip .icon { font-size: 14px; }
+    .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 20; padding: 16px 8vw; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--glass-border); background: rgba(18,21,31,.6); backdrop-filter: blur(12px); font-size: 12px; color: var(--text-dim); }
+    .particles { position: fixed; inset: 0; z-index: 2; pointer-events: none; overflow: hidden; }
+    .particle { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: rgba(255,255,255,.4); animation: float linear infinite; }
+    @keyframes float { 0% { transform: translateY(100vh); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { transform: translateY(-10vh) translateX(30px); opacity: 0; } }
+    @media (max-width: 640px) { .lens-wrap { opacity: .08; right: -120px; } .page { padding: 0 6vw; } .bottom-bar { padding: 12px 6vw; } }
+  </style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="grid-overlay"></div>
+<div class="lens-wrap">
+  <div class="ring-h"></div>
+  <div class="ring-v"></div>
+  <div class="ring"></div>
+  <div class="ring"></div>
+  <div class="ring"></div>
+  <div class="ring"></div>
+  <div class="ring"></div>
+</div>
+<div class="particles" id="particles"></div>
+<div class="page">
+  <div class="tag"><span class="tag-dot"></span>Human Resources System</div>
+  <h1 class="company"><em>華美光學</em><br><span class="highlight">人資系統</span></h1>
+  <p class="subtitle">Employee Portal</p>
+  <div class="divider"></div>
+  <p class="desc">整合測驗、文件宣導、活動報名與教育訓練，<br>為華美光學員工提供一站式人資服務入口。</p>
+  <div class="cta-wrap">
+    <a href="home.html" class="btn-enter">進入系統 <span class="arrow">→</span></a>
+    <a href="#" class="btn-secondary">ℹ️ 使用說明</a>
+  </div>
+  <div class="chips">
+    <div class="chip"><span class="icon">📝</span> 線上測驗</div>
+    <div class="chip"><span class="icon">📁</span> 文件宣導</div>
+    <div class="chip"><span class="icon">🎉</span> 活動報名</div>
+    <div class="chip"><span class="icon">🎓</span> 教育訓練</div>
+  </div>
+</div>
+<div class="bottom-bar">
+  <span>© 2025 華美光學股份有限公司　人資部</span>
+  <span id="clock"></span>
+</div>
+<script>
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('clock').textContent = now.toLocaleTimeString('zh-TW', {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+  const container = document.getElementById('particles');
+  for (let i = 0; i < 18; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + 'vw';
+    p.style.animationDuration = (8 + Math.random() * 14) + 's';
+    p.style.animationDelay = (Math.random() * 12) + 's';
+    p.style.opacity = (.2 + Math.random() * .4).toString();
+    container.appendChild(p);
+  }
+</script>
+</body>
+</html>

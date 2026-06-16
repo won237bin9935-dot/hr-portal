@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>活動名稱 — 華美光學人資系統</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --sidebar-bg: #2e3141;
+      --accent: #f56a6a;
+      --bg: #f5f4f0;
+      --card-bg: #ffffff;
+      --text-dark: #333;
+      --text-mid: #666;
+      --text-light: #999;
+      --border: #e4e2de;
+      --sidebar-width: 260px;
+
+      /* ★ 活動主色 — 只需改這三個變數 ★ */
+      --event-primary: #1a7fbf;
+      --event-dark: #0d5f8f;
+      --event-light: #e8f4fc;
+    }
+    body { font-family: 'Segoe UI','Microsoft JhengHei',sans-serif; background: var(--bg); color: var(--text-dark); display: flex; min-height: 100vh; }
+
+    /* ── Sidebar ── */
+    #sidebar { width: var(--sidebar-width); background: var(--sidebar-bg); display: flex; flex-direction: column; position: fixed; top:0; left:0; bottom:0; z-index:100; transition: transform .3s; }
+    .sidebar-header { padding: 28px 24px 20px; border-bottom: 1px solid rgba(255,255,255,.08); display: flex; align-items: center; }
+    .logo-icon { width:40px; height:40px; background:var(--accent); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+    .logo-text { color:#fff; font-size:15px; font-weight:700; line-height:1.3; margin-left:12px; }
+    .logo-sub { color:rgba(255,255,255,.45); font-size:11px; display:block; margin-top:2px; }
+    #sidebar-close { display:none; background:none; border:none; color:rgba(255,255,255,.5); font-size:22px; cursor:pointer; margin-left:auto; }
+    nav { flex:1; overflow-y:auto; padding:16px 0; }
+    .nav-section-label { color:rgba(255,255,255,.3); font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; padding:16px 24px 6px; }
+    .nav-item { display:flex; align-items:center; gap:12px; padding:11px 24px; color:rgba(255,255,255,.65); border-left:3px solid transparent; transition:all .18s; font-size:14px; text-decoration:none; }
+    .nav-item:hover { background:rgba(255,255,255,.06); color:#fff; }
+    .nav-item.active { background:rgba(245,106,106,.12); border-left-color:var(--accent); color:#fff; }
+    .nav-item .icon { font-size:17px; width:22px; text-align:center; flex-shrink:0; }
+    .nav-badge { margin-left:auto; background:var(--accent); color:#fff; font-size:10px; font-weight:700; padding:2px 7px; border-radius:20px; }
+    .sidebar-footer { padding:16px 24px; border-top:1px solid rgba(255,255,255,.08); color:rgba(255,255,255,.3); font-size:11px; }
+
+    /* ── Main ── */
+    #main { margin-left:var(--sidebar-width); flex:1; display:flex; flex-direction:column; }
+    .topbar { background:var(--card-bg); border-bottom:1px solid var(--border); padding:0 32px; height:60px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
+    .topbar-left { display:flex; align-items:center; gap:12px; }
+    .topbar-title { font-size:16px; font-weight:700; }
+    .breadcrumb { font-size:12px; color:var(--text-light); }
+    .breadcrumb a { color:var(--text-light); text-decoration:none; }
+    .breadcrumb a:hover { color:var(--accent); }
+    .topbar-avatar { width:34px; height:34px; background:var(--accent); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:13px; font-weight:700; }
+    .menu-toggle { display:none; background:none; border:none; font-size:22px; cursor:pointer; color:var(--text-dark); }
+    .content { padding:32px; flex:1; }
+    .back-link { display:inline-flex; align-items:center; gap:6px; color:var(--text-light); font-size:13px; text-decoration:none; margin-bottom:24px; transition:color .18s; }
+    .back-link:hover { color:var(--accent); }
+
+    /* ── Layout ── */
+    .event-layout { display: grid; grid-template-columns: 340px 1fr; gap: 28px; align-items: start; }
+
+    /* ── Poster column ── */
+    .poster-col { position: sticky; top: 80px; }
+
+    .poster-wrap {
+      background: var(--card-bg);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,.08);
+    }
+
+    .poster-img-area {
+      width: 100%;
+      aspect-ratio: 3/4;
+      position: relative;
+      overflow: hidden;
+      background: var(--event-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .poster-img-area img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .poster-placeholder-msg {
+      text-align: center;
+      color: var(--text-light);
+      padding: 24px;
+    }
+    .poster-placeholder-msg .pp-icon { font-size: 48px; display: block; margin-bottom: 12px; }
+    .poster-placeholder-msg p { font-size: 13px; line-height: 1.6; }
+
+    .poster-actions {
+      padding: 14px 16px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-download {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: var(--event-light);
+      color: var(--event-primary);
+      border: 1.5px solid var(--event-primary);
+      border-radius: 8px;
+      padding: 9px;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all .18s;
+      cursor: pointer;
+    }
+    .btn-download:hover { background: var(--event-primary); color: #fff; }
+
+    /* ── Info column ── */
+    .info-col { display: flex; flex-direction: column; gap: 20px; }
+
+    /* Event title card */
+    .title-card {
+      background: linear-gradient(135deg, var(--event-dark) 0%, var(--event-primary) 100%);
+      border-radius: 16px;
+      padding: 28px 32px;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+    .title-card::after {
+      content: '';
+      position: absolute;
+      right: -40px; top: -40px;
+      width: 180px; height: 180px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.06);
+    }
+    .event-category { font-size: 12px; font-weight: 700; letter-spacing: .1em; opacity: .75; margin-bottom: 8px; text-transform: uppercase; }
+    .event-title { font-size: 28px; font-weight: 900; line-height: 1.2; margin-bottom: 6px; }
+    .event-subtitle { font-size: 15px; opacity: .75; }
+
+    /* Meta card */
+    .meta-card {
+      background: var(--card-bg);
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .meta-card-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-mid);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+    }
+    .meta-cell {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+    }
+    .meta-cell:nth-child(even) { border-right: none; }
+    .meta-cell:nth-last-child(-n+2) { border-bottom: none; }
+    .meta-cell-label { font-size: 11px; color: var(--text-light); margin-bottom: 4px; }
+    .meta-cell-value { font-size: 14px; font-weight: 700; color: var(--text-dark); }
+
+    /* Status bar */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 20px;
+      background: #e8faf0;
+      border-radius: 10px;
+      border: 1px solid #b7efd0;
+    }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #27ae60; animation: pulse 2s infinite; flex-shrink: 0; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.7)} }
+    .status-text { font-size: 14px; font-weight: 700; color: #27ae60; }
+    .status-note { font-size: 13px; color: var(--text-mid); margin-left: auto; }
+
+    /* Activity list */
+    .section-card {
+      background: var(--card-bg);
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .section-card-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-card-body { padding: 20px; }
+
+    .activity-list { display: flex; flex-direction: column; gap: 14px; }
+    .activity-item { display: flex; gap: 14px; align-items: flex-start; }
+    .activity-num {
+      width: 30px; height: 30px;
+      background: var(--event-light);
+      color: var(--event-primary);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 800;
+      flex-shrink: 0;
+    }
+    .activity-text { flex:1; padding-top:5px; font-size:14px; line-height:1.6; color:var(--text-dark); }
+
+    /* Notice list */
+    .notice-list { display: flex; flex-direction: column; gap: 10px; }
+    .notice-row { display: flex; gap: 10px; font-size: 13px; color: var(--text-mid); line-height: 1.6; }
+    .notice-row .ni { flex-shrink: 0; margin-top: 1px; }
+
+    /* Register button */
+    .btn-register {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      background: linear-gradient(135deg, var(--event-dark), var(--event-primary));
+      color: #fff;
+      font-size: 16px;
+      font-weight: 800;
+      padding: 16px;
+      border-radius: 12px;
+      text-decoration: none;
+      letter-spacing: .04em;
+      transition: all .2s;
+      box-shadow: 0 6px 20px rgba(0,0,0,.15);
+      border: none;
+      cursor: pointer;
+    }
+    .btn-register:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0,0,0,.2); }
+    .register-note { text-align: center; font-size: 12px; color: var(--text-light); margin-top: 10px; line-height: 1.7; }
+
+    /* ── Color picker panel ── */
+    .color-panel {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      z-index: 200;
+    }
+
+    .color-toggle {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: var(--sidebar-bg);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-size: 20px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,.25);
+      transition: transform .2s;
+    }
+    .color-toggle:hover { transform: scale(1.1); }
+
+    .color-drawer {
+      display: none;
+      position: absolute;
+      right: 0;
+      bottom: 60px;
+      background: var(--card-bg);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      padding: 20px;
+      width: 260px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.15);
+    }
+    .color-drawer.open { display: block; }
+    .color-drawer h4 { font-size: 13px; font-weight: 700; margin-bottom: 14px; color: var(--text-dark); }
+
+    /* Preset swatches */
+    .swatch-label { font-size: 11px; color: var(--text-light); margin-bottom: 8px; }
+    .swatches { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 16px; }
+    .swatch {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all .15s;
+    }
+    .swatch:hover { transform: scale(1.15); }
+    .swatch.selected { border-color: var(--text-dark); }
+
+    /* Custom input */
+    .custom-label { font-size: 11px; color: var(--text-light); margin-bottom: 6px; }
+    .color-input-row { display: flex; gap: 8px; align-items: center; }
+    .color-hex-input {
+      flex: 1;
+      padding: 8px 10px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: monospace;
+      color: var(--text-dark);
+      outline: none;
+    }
+    .color-hex-input:focus { border-color: var(--event-primary); }
+    .color-preview-dot {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      background: var(--event-primary);
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .btn-apply {
+      width: 100%;
+      margin-top: 12px;
+      padding: 9px;
+      background: var(--sidebar-bg);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .18s;
+    }
+    .btn-apply:hover { background: #3a3e55; }
+
+    /* Overlay */
+    #sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:99; }
+
+    @media (max-width: 1000px) { .event-layout { grid-template-columns: 280px 1fr; } }
+    @media (max-width: 900px) {
+      #sidebar { transform: translateX(-100%); }
+      #sidebar.open { transform: translateX(0); }
+      #sidebar-close { display: block; }
+      #main { margin-left: 0; }
+      .menu-toggle { display: block; }
+      .event-layout { grid-template-columns: 1fr; }
+      .poster-col { position: static; }
+      .poster-img-area { aspect-ratio: unset; max-height: 420px; }
+    }
+    @media (max-width: 560px) { .content { padding: 20px 16px; } .meta-grid { grid-template-columns: 1fr; } .meta-cell { border-right: none; } .meta-cell:nth-last-child(-n+2) { border-bottom: 1px solid var(--border); } .meta-cell:last-child { border-bottom: none; } }
+  </style>
+</head>
+<body>
+
+<div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<aside id="sidebar">
+  <div class="sidebar-header">
+    <div class="logo-icon">🏢</div>
+    <div class="logo-text">華美光學<span class="logo-sub">人資入口網站</span></div>
+    <button onclick="toggleSidebar()" id="sidebar-close">✕</button>
+  </div>
+  <nav>
+    <div class="nav-section-label">主選單</div>
+    <a class="nav-item" href="home.html"><span class="icon">🏠</span> 首頁總覽</a>
+    <div class="nav-section-label">學習與測驗</div>
+    <a class="nav-item" href="#"><span class="icon">📝</span> 測驗專區<span class="nav-badge">3</span></a>
+    <a class="nav-item" href="#"><span class="icon">🎓</span> 教育訓練</a>
+    <div class="nav-section-label">資料與公告</div>
+    <a class="nav-item" href="#"><span class="icon">📁</span> 文件宣導</a>
+    <a class="nav-item active" href="events-list.html"><span class="icon">🎉</span> 活動報名</a>
+    <a class="nav-item" href="#"><span class="icon">📢</span> 最新公告</a>
+    <div class="nav-section-label">系統整合</div>
+    <a class="nav-item" href="#"><span class="icon">🔗</span> 相關系統連結</a>
+    <a class="nav-item" href="#"><span class="icon">🔔</span> 通知設定</a>
+  </nav>
+  <div class="sidebar-footer">© 2025 華美光學　人資部</div>
+</aside>
+
+<div id="main">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+      <div>
+        <div class="topbar-title" id="topbar-title">活動報名</div>
+        <div class="breadcrumb"><a href="home.html">首頁</a> › <a href="events-list.html">活動報名</a> › <span id="breadcrumb-name">活動名稱</span></div>
+      </div>
+    </div>
+    <div class="topbar-avatar">HR</div>
+  </header>
+
+  <main class="content">
+    <a href="events-list.html" class="back-link">← 返回活動列表</a>
+
+    <div class="event-layout">
+
+      <!-- 左：海報 -->
+      <div class="poster-col">
+        <div class="poster-wrap">
+          <div class="poster-img-area" id="poster-area">
+            <!-- ★ 將下方 src 換成 Google Drive 圖片連結 ★ -->
+            <img id="poster-img"
+              src="【貼上Google Drive圖片連結】"
+              alt="活動海報"
+              onerror="showPosterPlaceholder()"
+            />
+            <div class="poster-placeholder-msg" id="poster-placeholder" style="display:none;">
+              <span class="pp-icon">🖼️</span>
+              <p>將 Google Drive<br>圖片連結貼到<br><code>poster-img</code> 的 src</p>
+            </div>
+          </div>
+          <div class="poster-actions">
+            <!-- ★ 將下方 href 換成海報下載連結 ★ -->
+            <a href="【貼上下載連結】" class="btn-download" download>
+              ⬇ 下載海報
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右：資訊 -->
+      <div class="info-col">
+
+        <!-- 標題 -->
+        <div class="title-card">
+          <!-- ★ 修改以下活動資訊 ★ -->
+          <div class="event-category">🌊 親子活動</div>
+          <div class="event-title" id="event-title">活動名稱</div>
+          <div class="event-subtitle">活動副標題或標語</div>
+        </div>
+
+        <!-- 狀態 -->
+        <div class="status-bar">
+          <div class="status-dot"></div>
+          <span class="status-text">報名開放中</span>
+          <span class="status-note">截止日期：請洽人資部</span>
+        </div>
+
+        <!-- 活動資訊 -->
+        <div class="meta-card">
+          <div class="meta-card-header">📋 活動資訊</div>
+          <div class="meta-grid">
+            <!-- ★ 修改以下四格資訊 ★ -->
+            <div class="meta-cell">
+              <div class="meta-cell-label">活動日期</div>
+              <div class="meta-cell-value">7月5日（日）</div>
+            </div>
+            <div class="meta-cell">
+              <div class="meta-cell-label">活動時間</div>
+              <div class="meta-cell-value">10:30 ~ 12:00</div>
+            </div>
+            <div class="meta-cell">
+              <div class="meta-cell-label">活動地點</div>
+              <div class="meta-cell-value">oceanspace 繁殖場</div>
+            </div>
+            <div class="meta-cell">
+              <div class="meta-cell-label">參加對象</div>
+              <div class="meta-cell-value">員工及眷屬</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 活動內容 -->
+        <div class="section-card">
+          <div class="section-card-header">🎯 活動內容</div>
+          <div class="section-card-body">
+            <!-- ★ 修改以下活動內容 ★ -->
+            <div class="activity-list">
+              <div class="activity-item"><div class="activity-num">1</div><div class="activity-text">活動內容第一項說明文字。</div></div>
+              <div class="activity-item"><div class="activity-num">2</div><div class="activity-text">活動內容第二項說明文字。</div></div>
+              <div class="activity-item"><div class="activity-num">3</div><div class="activity-text">活動內容第三項說明文字。</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 注意事項 -->
+        <div class="section-card">
+          <div class="section-card-header">📌 注意事項</div>
+          <div class="section-card-body">
+            <!-- ★ 修改以下注意事項 ★ -->
+            <div class="notice-list">
+              <div class="notice-row"><span class="ni">⏰</span><span>請於活動開始前 10 分鐘抵達現場完成報到。</span></div>
+              <div class="notice-row"><span class="ni">✅</span><span>名額有限，報名後請準時出席，如需取消請提前告知人資部。</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 報名按鈕 -->
+        <!-- ★ 將下方 href 換成 Google 表單連結 ★ -->
+        <a href="【貼上Google表單連結】" target="_blank" class="btn-register">
+          前往報名表單 →
+        </a>
+        <p class="register-note">點擊後將開啟報名表單<br>請填寫完整資料後送出</p>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ── 選色器 ── -->
+<div class="color-panel">
+  <div class="color-drawer" id="color-drawer">
+    <h4>🎨 活動主色設定</h4>
+
+    <div class="swatch-label">預設色票（點一下套用）</div>
+    <div class="swatches">
+      <div class="swatch selected" style="background:#1a7fbf" title="海洋藍" onclick="applyColor('#1a7fbf','#0d5f8f','#e8f4fc',this)"></div>
+      <div class="swatch" style="background:#27ae60" title="森林綠" onclick="applyColor('#27ae60','#1e8449','#eaf7ee',this)"></div>
+      <div class="swatch" style="background:#f0a500" title="活力橘" onclick="applyColor('#f0a500','#c47f00','#fff7e0',this)"></div>
+      <div class="swatch" style="background:#f56a6a" title="珊瑚紅" onclick="applyColor('#f56a6a','#d94f4f','#fff0f0',this)"></div>
+      <div class="swatch" style="background:#9b59b6" title="優雅紫" onclick="applyColor('#9b59b6','#7d3c98','#f5eeff',this)"></div>
+      <div class="swatch" style="background:#2e3141" title="深灰黑" onclick="applyColor('#2e3141','#1a1e2e','#f0f1f5',this)"></div>
+      <div class="swatch" style="background:#e74c3c" title="鮮紅" onclick="applyColor('#e74c3c','#c0392b','#fdecea',this)"></div>
+      <div class="swatch" style="background:#16a085" title="青綠" onclick="applyColor('#16a085','#0e6655','#e0f5f1',this)"></div>
+      <div class="swatch" style="background:#d35400" title="深橘" onclick="applyColor('#d35400','#a04000','#fdeee5',this)"></div>
+      <div class="swatch" style="background:#2980b9" title="天藍" onclick="applyColor('#2980b9','#1a5f8a','#e8f3fb',this)"></div>
+      <div class="swatch" style="background:#8e44ad" title="深紫" onclick="applyColor('#8e44ad','#6c3483','#f3e8fb',this)"></div>
+      <div class="swatch" style="background:#27ae60" title="翠綠" onclick="applyColor('#2ecc71','#27ae60','#eafaf1',this)"></div>
+    </div>
+
+    <div class="custom-label">自訂色碼（輸入 # 開頭的色碼）</div>
+    <div class="color-input-row">
+      <input class="color-hex-input" id="hex-input" type="text" placeholder="#1a7fbf" maxlength="7" oninput="previewColor(this.value)"/>
+      <div class="color-preview-dot" id="preview-dot"></div>
+    </div>
+    <button class="btn-apply" onclick="applyCustomColor()">套用自訂色彩</button>
+  </div>
+  <button class="color-toggle" onclick="toggleColorDrawer()" title="選擇活動主色">🎨</button>
+</div>
+
+<script>
+  // Sidebar
+  function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    const closeBtn = document.getElementById('sidebar-close');
+    const isOpen = sidebar.classList.toggle('open');
+    overlay.style.display = isOpen ? 'block' : 'none';
+    closeBtn.style.display = isOpen ? 'block' : 'none';
+  }
+
+  // Poster fallback
+  function showPosterPlaceholder() {
+    document.getElementById('poster-img').style.display = 'none';
+    document.getElementById('poster-placeholder').style.display = 'block';
+  }
+
+  // Color drawer
+  function toggleColorDrawer() {
+    document.getElementById('color-drawer').classList.toggle('open');
+  }
+
+  // Apply preset color
+  function applyColor(primary, dark, light, el) {
+    document.documentElement.style.setProperty('--event-primary', primary);
+    document.documentElement.style.setProperty('--event-dark', dark);
+    document.documentElement.style.setProperty('--event-light', light);
+    document.querySelectorAll('.swatch').forEach(s => s.classList.remove('selected'));
+    if (el) el.classList.add('selected');
+    document.getElementById('hex-input').value = primary;
+    document.getElementById('preview-dot').style.background = primary;
+  }
+
+  // Preview custom color
+  function previewColor(val) {
+    if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+      document.getElementById('preview-dot').style.background = val;
+    }
+  }
+
+  // Apply custom color
+  function applyCustomColor() {
+    const val = document.getElementById('hex-input').value.trim();
+    if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+      const dark = shadeColor(val, -25);
+      const light = shadeColor(val, 90);
+      applyColor(val, dark, light, null);
+      document.querySelectorAll('.swatch').forEach(s => s.classList.remove('selected'));
+    } else {
+      alert('請輸入正確的色碼格式，例如：#1a7fbf');
+    }
+  }
+
+  // Darken / lighten hex
+  function shadeColor(hex, percent) {
+    const num = parseInt(hex.slice(1), 16);
+    const r = Math.min(255, Math.max(0, (num >> 16) + Math.round(255 * percent / 100)));
+    const g = Math.min(255, Math.max(0, ((num >> 8) & 0xff) + Math.round(255 * percent / 100)));
+    const b = Math.min(255, Math.max(0, (num & 0xff) + Math.round(255 * percent / 100)));
+    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  }
+
+  // Init preview dot
+  document.getElementById('preview-dot').style.background = '#1a7fbf';
+</script>
+</body>
+</html>
