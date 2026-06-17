@@ -1,724 +1,439 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>人資入口網站</title>
+  <title>首頁總覽 — 華美光學人資系統</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
       --sidebar-bg: #2e3141;
-      --sidebar-hover: #3a3e55;
-      --sidebar-active: #f56a6a;
       --accent: #f56a6a;
-      --accent-light: #fff0f0;
       --bg: #f5f4f0;
-      --card-bg: #ffffff;
+      --card-bg: #fff;
       --text-dark: #333;
       --text-mid: #666;
       --text-light: #999;
       --border: #e4e2de;
       --sidebar-width: 260px;
     }
+    body { font-family: 'Segoe UI','Microsoft JhengHei',sans-serif; background: var(--bg); color: var(--text-dark); display: flex; min-height: 100vh; }
 
-    body {
-      font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
-      background: var(--bg);
-      color: var(--text-dark);
-      display: flex;
-      min-height: 100vh;
-    }
+    /* Sidebar */
+    #sidebar { width:var(--sidebar-width); background:var(--sidebar-bg); display:flex; flex-direction:column; position:fixed; top:0; left:0; bottom:0; z-index:100; transition:transform .3s; }
+    .sidebar-header { padding:28px 24px 20px; border-bottom:1px solid rgba(255,255,255,.08); display:flex; align-items:center; }
+    .logo-icon { width:40px; height:40px; background:var(--accent); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+    .logo-text { color:#fff; font-size:15px; font-weight:700; line-height:1.3; margin-left:12px; }
+    .logo-sub { color:rgba(255,255,255,.45); font-size:11px; display:block; margin-top:2px; }
+    #sidebar-close { display:none; background:none; border:none; color:rgba(255,255,255,.5); font-size:22px; cursor:pointer; margin-left:auto; }
+    nav { flex:1; overflow-y:auto; padding:16px 0; }
+    .nav-section-label { color:rgba(255,255,255,.3); font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; padding:16px 24px 6px; }
+    .nav-item { display:flex; align-items:center; gap:12px; padding:11px 24px; color:rgba(255,255,255,.65); border-left:3px solid transparent; transition:all .18s; font-size:14px; text-decoration:none; }
+    .nav-item:hover { background:rgba(255,255,255,.06); color:#fff; }
+    .nav-item.active { background:rgba(245,106,106,.12); border-left-color:var(--accent); color:#fff; }
+    .nav-item .icon { font-size:17px; width:22px; text-align:center; flex-shrink:0; }
+    .nav-badge { margin-left:auto; background:var(--accent); color:#fff; font-size:10px; font-weight:700; padding:2px 7px; border-radius:20px; }
+    .sidebar-footer { padding:16px 24px; border-top:1px solid rgba(255,255,255,.08); color:rgba(255,255,255,.3); font-size:11px; }
 
-    /* ── Sidebar ── */
-    #sidebar {
-      width: var(--sidebar-width);
-      background: var(--sidebar-bg);
-      display: flex;
-      flex-direction: column;
-      position: fixed;
-      top: 0; left: 0; bottom: 0;
-      z-index: 100;
-      transition: transform .3s ease;
-    }
+    /* Main */
+    #main { margin-left:var(--sidebar-width); flex:1; display:flex; flex-direction:column; min-height:100vh; }
+    .topbar { background:var(--card-bg); border-bottom:1px solid var(--border); padding:0 32px; height:60px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
+    .topbar-left { display:flex; align-items:center; gap:12px; }
+    .topbar-title { font-size:16px; font-weight:700; }
+    .topbar-avatar { width:34px; height:34px; background:var(--accent); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:13px; font-weight:700; }
+    .menu-toggle { display:none; background:none; border:none; font-size:22px; cursor:pointer; color:var(--text-dark); }
+    .content { padding:32px; flex:1; }
 
-    .sidebar-header {
-      padding: 28px 24px 20px;
-      border-bottom: 1px solid rgba(255,255,255,.08);
-    }
-
-    .sidebar-logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .logo-icon {
-      width: 40px; height: 40px;
-      background: var(--accent);
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 20px;
-      flex-shrink: 0;
-    }
-
-    .logo-text {
-      color: #fff;
-      font-size: 15px;
-      font-weight: 700;
-      line-height: 1.3;
-    }
-
-    .logo-sub {
-      color: rgba(255,255,255,.45);
-      font-size: 11px;
-      font-weight: 400;
-      display: block;
-      margin-top: 2px;
-    }
-
-    nav { flex: 1; overflow-y: auto; padding: 16px 0; }
-
-    .nav-section-label {
-      color: rgba(255,255,255,.3);
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      padding: 16px 24px 6px;
-    }
-
-    .nav-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 11px 24px;
-      color: rgba(255,255,255,.65);
-      cursor: pointer;
-      border-left: 3px solid transparent;
-      transition: all .18s;
-      font-size: 14px;
-      text-decoration: none;
-    }
-
-    .nav-item:hover {
-      background: var(--sidebar-hover);
-      color: #fff;
-    }
-
-    .nav-item.active {
-      background: rgba(245,106,106,.12);
-      border-left-color: var(--accent);
-      color: #fff;
-    }
-
-    .nav-item .icon {
-      font-size: 17px;
-      width: 22px;
-      text-align: center;
-      flex-shrink: 0;
-    }
-
-    .nav-badge {
-      margin-left: auto;
-      background: var(--accent);
-      color: #fff;
-      font-size: 10px;
-      font-weight: 700;
-      padding: 2px 7px;
-      border-radius: 20px;
-    }
-
-    .sidebar-footer {
-      padding: 16px 24px;
-      border-top: 1px solid rgba(255,255,255,.08);
-      color: rgba(255,255,255,.3);
-      font-size: 11px;
-    }
-
-    /* ── Main ── */
-    #main {
-      margin-left: var(--sidebar-width);
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-
-    /* ── Top Bar ── */
-    .topbar {
-      background: var(--card-bg);
-      border-bottom: 1px solid var(--border);
-      padding: 0 32px;
-      height: 60px;
+    /* ── Welcome Banner ── */
+    .welcome-banner {
+      background: linear-gradient(135deg, #2e3141 0%, #3d4466 60%, #4a5080 100%);
+      border-radius: 16px;
+      padding: 28px 36px;
+      margin-bottom: 28px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 50;
-    }
-
-    .topbar-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--text-dark);
-    }
-
-    .topbar-right {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .topbar-date {
-      color: var(--text-light);
-      font-size: 13px;
-    }
-
-    .topbar-avatar {
-      width: 34px; height: 34px;
-      background: var(--accent);
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      color: #fff;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    /* ── Content ── */
-    .content {
-      padding: 32px;
-      flex: 1;
-    }
-
-    /* ── Page header ── */
-    .page-header {
-      margin-bottom: 28px;
-    }
-
-    .page-header h1 {
-      font-size: 22px;
-      font-weight: 700;
-      color: var(--text-dark);
-    }
-
-    .page-header p {
-      color: var(--text-mid);
-      font-size: 14px;
-      margin-top: 4px;
-    }
-
-    /* ── Announce banner ── */
-    .announce-banner {
-      background: var(--accent);
-      color: #fff;
-      border-radius: 12px;
-      padding: 16px 22px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      margin-bottom: 28px;
-      font-size: 14px;
-    }
-
-    .announce-banner .icon { font-size: 20px; }
-    .announce-banner strong { font-weight: 700; }
-
-    /* ── Stats row ── */
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-      margin-bottom: 28px;
-    }
-
-    .stat-card {
-      background: var(--card-bg);
-      border-radius: 12px;
-      padding: 18px 20px;
-      border: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-
-    .stat-icon {
-      width: 44px; height: 44px;
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 20px;
-      flex-shrink: 0;
-    }
-
-    .stat-icon.red { background: #fff0f0; }
-    .stat-icon.blue { background: #eef4ff; }
-    .stat-icon.green { background: #efffef; }
-    .stat-icon.orange { background: #fff7ee; }
-
-    .stat-info { flex: 1; }
-    .stat-num { font-size: 22px; font-weight: 800; color: var(--text-dark); line-height: 1; }
-    .stat-label { font-size: 12px; color: var(--text-light); margin-top: 4px; }
-
-    /* ── Function Cards ── */
-    .section-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text-mid);
-      text-transform: uppercase;
-      letter-spacing: .08em;
-      margin-bottom: 16px;
-    }
-
-    .cards-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 18px;
-      margin-bottom: 32px;
-    }
-
-    .func-card {
-      background: var(--card-bg);
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      padding: 24px;
-      cursor: pointer;
-      transition: all .2s;
+      gap: 24px;
       position: relative;
       overflow: hidden;
-      text-decoration: none;
-      display: block;
-      color: inherit;
     }
-
-    .func-card::before {
+    .welcome-banner::before {
       content: '';
       position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 3px;
-      background: var(--card-accent, var(--accent));
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform .2s;
+      right: -80px; top: -80px;
+      width: 260px; height: 260px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.04);
     }
-
-    .func-card:hover {
-      box-shadow: 0 6px 24px rgba(0,0,0,.09);
-      transform: translateY(-2px);
+    .welcome-banner::after {
+      content: '';
+      position: absolute;
+      left: 30%; bottom: -60px;
+      width: 160px; height: 160px;
+      border-radius: 50%;
+      background: rgba(245,106,106,.06);
     }
+    .welcome-text { color: #fff; z-index: 1; }
+    .welcome-text .greet { font-size: 14px; opacity: .7; margin-bottom: 6px; }
+    .welcome-text h2 { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+    .welcome-text p { font-size: 13px; opacity: .6; }
 
-    .func-card:hover::before { transform: scaleX(1); }
-
-    .func-card-icon {
-      width: 50px; height: 50px;
-      border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 24px;
-      margin-bottom: 14px;
-    }
-
-    .func-card h3 {
-      font-size: 15px;
-      font-weight: 700;
-      margin-bottom: 6px;
-      color: var(--text-dark);
-    }
-
-    .func-card p {
-      font-size: 13px;
-      color: var(--text-mid);
-      line-height: 1.6;
-    }
-
-    .func-card .card-footer {
-      margin-top: 16px;
+    /* Flip clock */
+    .flip-clock { display: flex; align-items: center; gap: 8px; z-index: 1; flex-shrink: 0; }
+    .flip-unit { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .flip-card {
+      background: rgba(0,0,0,.35);
+      border-radius: 8px;
+      min-width: 44px;
+      height: 48px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 800;
+      color: #fff;
+      font-variant-numeric: tabular-nums;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.1);
     }
-
-    .card-tag {
-      font-size: 11px;
-      font-weight: 600;
-      padding: 3px 10px;
-      border-radius: 20px;
-      background: var(--accent-light);
-      color: var(--accent);
+    .flip-card.flip {
+      animation: flipAnim .35s ease;
     }
-
-    .card-arrow {
-      color: var(--text-light);
-      font-size: 18px;
-      transition: transform .18s;
+    @keyframes flipAnim {
+      0% { transform: rotateX(0deg); }
+      50% { transform: rotateX(-90deg); opacity: .5; }
+      100% { transform: rotateX(0deg); }
     }
+    .flip-label { font-size: 10px; color: rgba(255,255,255,.45); letter-spacing: .06em; }
+    .flip-sep { color: rgba(255,255,255,.3); font-size: 20px; font-weight: 300; margin-bottom: 16px; }
 
-    .func-card:hover .card-arrow { transform: translateX(4px); color: var(--accent); }
+    /* ── Three col grid ── */
+    .three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
 
-    /* ── Notices ── */
-    .bottom-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 18px;
-    }
-
-    .notice-box {
+    .panel {
       background: var(--card-bg);
       border-radius: 14px;
       border: 1px solid var(--border);
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
-    .notice-box-header {
-      padding: 16px 20px;
+    .panel-header {
+      padding: 14px 18px;
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
+    .panel-header-left { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; }
+    .panel-header-icon { font-size: 16px; }
+    .panel-header a { font-size: 12px; color: var(--accent); text-decoration: none; font-weight: 600; }
+    .panel-header a:hover { text-decoration: underline; }
+    .panel-body { padding: 8px 0; flex: 1; }
 
-    .notice-box-header h3 {
-      font-size: 14px;
-      font-weight: 700;
-    }
-
-    .notice-box-header a {
-      font-size: 12px;
-      color: var(--accent);
-      text-decoration: none;
-    }
-
-    .notice-list { padding: 8px 0; }
-
-    .notice-item {
+    /* Notice items */
+    .notice-row {
       display: flex;
       align-items: flex-start;
-      gap: 12px;
-      padding: 12px 20px;
+      gap: 10px;
+      padding: 11px 18px;
       border-bottom: 1px solid var(--border);
       cursor: pointer;
       transition: background .15s;
+      text-decoration: none;
+      color: inherit;
     }
+    .notice-row:last-child { border-bottom: none; }
+    .notice-row:hover { background: var(--bg); }
+    .notice-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+    .dot-urgent { background: #ef4444; }
+    .dot-important { background: #f0a500; }
+    .dot-normal { background: #cbd5e1; }
+    .notice-info { flex: 1; }
+    .notice-title-text { font-size: 13px; font-weight: 600; line-height: 1.4; margin-bottom: 3px; color: var(--text-dark); }
+    .notice-meta { font-size: 11px; color: var(--text-light); }
 
-    .notice-item:last-child { border-bottom: none; }
-    .notice-item:hover { background: var(--bg); }
+    /* Event items */
+    .event-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 18px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background .15s;
+      text-decoration: none;
+      color: inherit;
+    }
+    .event-row:last-child { border-bottom: none; }
+    .event-row:hover { background: var(--bg); }
+    .event-status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .event-status-dot.open { background: #27ae60; animation: pulse 2s infinite; }
+    .event-status-dot.soon { background: #f0a500; }
+    .event-status-dot.closed { background: #cbd5e1; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.7)} }
+    .event-info { flex: 1; }
+    .event-name { font-size: 13px; font-weight: 600; margin-bottom: 3px; color: var(--text-dark); }
+    .event-date { font-size: 11px; color: var(--text-light); }
+    .event-status-tag { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; flex-shrink: 0; }
+    .tag-open { background: #e8faf0; color: #27ae60; }
+    .tag-soon { background: #fff7e0; color: #f0a500; }
+    .tag-closed { background: #f0f1f5; color: #999; }
 
-    .notice-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: var(--accent);
-      margin-top: 5px;
+    /* Doc items */
+    .doc-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 18px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background .15s;
+      text-decoration: none;
+      color: inherit;
+    }
+    .doc-row:last-child { border-bottom: none; }
+    .doc-row:hover { background: var(--bg); }
+    .doc-fmt-icon {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
       flex-shrink: 0;
     }
+    .fmt-pdf-bg { background: #fee2e2; }
+    .fmt-img-bg { background: #e0f7fa; }
+    .fmt-word-bg { background: #dbeafe; }
+    .fmt-other-bg { background: #f0f1f5; }
+    .doc-info { flex: 1; }
+    .doc-name { font-size: 13px; font-weight: 600; margin-bottom: 3px; color: var(--text-dark); }
+    .doc-meta-text { font-size: 11px; color: var(--text-light); }
+    .doc-open-btn { font-size: 11px; color: var(--accent); font-weight: 600; flex-shrink: 0; }
 
-    .notice-dot.grey { background: var(--border); }
+    /* Empty & Loading */
+    .panel-empty { text-align: center; padding: 32px 16px; color: var(--text-light); font-size: 13px; }
+    .panel-loading { text-align: center; padding: 32px; color: var(--text-light); }
+    .spinner { width: 24px; height: 24px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto 8px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
-    .notice-text { flex: 1; }
-    .notice-text p { font-size: 13px; color: var(--text-dark); line-height: 1.5; }
-    .notice-text span { font-size: 11px; color: var(--text-light); margin-top: 2px; display: block; }
+    #sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:99; }
 
-    /* ── Mobile toggle ── */
-    .menu-toggle {
-      display: none;
-      background: none;
-      border: none;
-      font-size: 22px;
-      cursor: pointer;
-      color: var(--text-dark);
-      padding: 4px;
-    }
-
-    @media (max-width: 900px) {
-      #sidebar { transform: translateX(-100%); }
-      #sidebar.open { transform: translateX(0); }
-      #main { margin-left: 0; }
-      .menu-toggle { display: block; }
-      .stats-row { grid-template-columns: repeat(2, 1fr); }
-      .cards-grid { grid-template-columns: repeat(2, 1fr); }
-      .bottom-grid { grid-template-columns: 1fr; }
-    }
-
-    @media (max-width: 560px) {
-      .content { padding: 20px 16px; }
-      .cards-grid { grid-template-columns: 1fr; }
-      .stats-row { grid-template-columns: repeat(2, 1fr); }
-    }
+    @media (max-width:1100px) { .three-col { grid-template-columns: 1fr 1fr; } .three-col .panel:last-child { grid-column: 1/-1; } }
+    @media (max-width:900px) { #sidebar{transform:translateX(-100%)} #sidebar.open{transform:translateX(0)} #sidebar-close{display:block} #main{margin-left:0} .menu-toggle{display:block} .three-col{grid-template-columns:1fr} .three-col .panel:last-child{grid-column:auto} .flip-clock{display:none} }
+    @media (max-width:560px) { .content{padding:20px 16px} .welcome-banner{padding:20px} }
   </style>
 </head>
 <body>
 
-<!-- ── Sidebar ── -->
-<div id="sidebar-overlay" onclick="toggleSidebar()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99;"></div>
-
+<div id="sidebar-overlay" onclick="toggleSidebar()"></div>
 <aside id="sidebar">
   <div class="sidebar-header">
-    <div class="sidebar-logo">
-      <div class="logo-icon">🏢</div>
-      <div class="logo-text">
-        公司名稱
-        <span class="logo-sub">人資入口網站</span>
-      </div>
-    </div>
-    <button onclick="toggleSidebar()" id="sidebar-close" style="display:none;background:none;border:none;color:rgba(255,255,255,.5);font-size:22px;cursor:pointer;margin-left:auto;padding:0 0 0 12px;line-height:1;">✕</button>
+    <div class="logo-icon">🏢</div>
+    <div class="logo-text">華美光學<span class="logo-sub">人資入口網站</span></div>
+    <button onclick="toggleSidebar()" id="sidebar-close">✕</button>
   </div>
-
   <nav>
     <div class="nav-section-label">主選單</div>
-    <a class="nav-item active" href="home.html">
-      <span class="icon">🏠</span> 首頁總覽
-    </a>
-
+    <a class="nav-item active" href="home.html"><span class="icon">🏠</span> 首頁總覽</a>
     <div class="nav-section-label">學習與測驗</div>
-    <a class="nav-item" href="quiz.html">
-      <span class="icon">📝</span> 測驗專區
-      <span class="nav-badge">3</span>
-    </a>
-    <a class="nav-item" href="#">
-      <span class="icon">🎓</span> 教育訓練
-    </a>
-
+    <a class="nav-item" href="quiz.html"><span class="icon">📝</span> 測驗專區</a>
+    <a class="nav-item" href="#"><span class="icon">🎓</span> 教育訓練</a>
     <div class="nav-section-label">資料與公告</div>
-    <a class="nav-item" href="docs.html">
-      <span class="icon">📁</span> 文件宣導
-    </a>
-    <a class="nav-item" href="events-list.html">
-      <span class="icon">🎉</span> 活動報名
-    </a>
-    <a class="nav-item" href="notice.html">
-      <span class="icon">📢</span> 最新公告
-    </a>
-
+    <a class="nav-item" href="docs.html"><span class="icon">📁</span> 文件宣導</a>
+    <a class="nav-item" href="events-list.html"><span class="icon">🎉</span> 活動報名</a>
+    <a class="nav-item" href="notice.html"><span class="icon">📢</span> 最新公告</a>
     <div class="nav-section-label">系統整合</div>
-    <a class="nav-item" href="links.html">
-      <span class="icon">🔗</span> 相關系統連結
-    </a>
-    <a class="nav-item" href="#">
-      <span class="icon">🔔</span> 通知設定
-    </a>
+    <a class="nav-item" href="links.html"><span class="icon">🔗</span> 相關系統連結</a>
   </nav>
-
-  <div class="sidebar-footer">
-    © 2025 人資部門．版本 1.0
-  </div>
+  <div class="sidebar-footer">© 2025 華美光學　人資部</div>
 </aside>
 
-<!-- ── Main ── -->
 <div id="main">
   <header class="topbar">
-    <div style="display:flex;align-items:center;gap:12px;">
+    <div class="topbar-left">
       <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
-      <span class="topbar-title">首頁總覽</span>
+      <div class="topbar-title">首頁總覽</div>
     </div>
-    <div class="topbar-right">
-      <span class="topbar-date" id="today-date"></span>
-      <div class="topbar-avatar">HR</div>
-    </div>
+    <div class="topbar-avatar">HR</div>
   </header>
 
   <main class="content">
 
-    <!-- Announce -->
-    <div class="announce-banner">
-      <span class="icon">📣</span>
-      <div>
-        <strong>最新公告：</strong>2025 年度員工教育訓練測驗開放報名，截止日 6/30，請盡速完成。
+    <!-- Welcome Banner -->
+    <div class="welcome-banner">
+      <div class="welcome-text">
+        <div class="greet">嗨，歡迎您的到訪 👋</div>
+        <h2>華美光學 人力資源系統</h2>
+        <p>讓每一位夥伴都能找到所需資源</p>
       </div>
+      <div class="flip-clock" id="flip-clock"></div>
     </div>
 
-    <!-- Stats -->
-    <div class="stats-row">
-      <div class="stat-card">
-        <div class="stat-icon red">📝</div>
-        <div class="stat-info">
-          <div class="stat-num">3</div>
-          <div class="stat-label">待完成測驗</div>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon blue">📁</div>
-        <div class="stat-info">
-          <div class="stat-num">12</div>
-          <div class="stat-label">最新文件</div>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon green">🎉</div>
-        <div class="stat-info">
-          <div class="stat-num">2</div>
-          <div class="stat-label">近期活動</div>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon orange">📢</div>
-        <div class="stat-info">
-          <div class="stat-num">5</div>
-          <div class="stat-label">未讀公告</div>
-        </div>
-      </div>
-    </div>
+    <!-- Three col -->
+    <div class="three-col">
 
-    <!-- Function Cards -->
-    <div class="section-title">功能入口</div>
-    <div class="cards-grid">
-
-      <a class="func-card" href="quiz.html" style="--card-accent:#f56a6a;">
-        <div class="func-card-icon" style="background:#fff0f0;">📝</div>
-        <h3>測驗專區</h3>
-        <p>線上測驗卷、成績查詢、歷史紀錄下載</p>
-        <div class="card-footer">
-          <span class="card-tag">3 份待完成</span>
-          <span class="card-arrow">→</span>
-        </div>
-      </a>
-
-      <a class="func-card" href="#" style="--card-accent:#4a90d9;">
-        <div class="func-card-icon" style="background:#eef4ff;">🎓</div>
-        <h3>教育訓練</h3>
-        <p>訓練課程資訊、影片教材、學習紀錄</p>
-        <div class="card-footer">
-          <span class="card-tag" style="background:#eef4ff;color:#4a90d9;">線上課程</span>
-          <span class="card-arrow">→</span>
-        </div>
-      </a>
-
-      <a class="func-card" href="docs.html" style="--card-accent:#5cb85c;">
-        <div class="func-card-icon" style="background:#efffef;">📁</div>
-        <h3>文件宣導</h3>
-        <p>法規宣導、公司政策、宣傳影片下載</p>
-        <div class="card-footer">
-          <span class="card-tag" style="background:#efffef;color:#5cb85c;">12 份文件</span>
-          <span class="card-arrow">→</span>
-        </div>
-      </a>
-
-      <a class="func-card" href="events-list.html" style="--card-accent:#f0a500;">
-        <div class="func-card-icon" style="background:#fff7ee;">🎉</div>
-        <h3>活動報名</h3>
-        <p>公司活動、報名表單、活動資料下載</p>
-        <div class="card-footer">
-          <span class="card-tag" style="background:#fff7ee;color:#f0a500;">2 個活動進行中</span>
-          <span class="card-arrow">→</span>
-        </div>
-      </a>
-
-      <a class="func-card" href="notice.html" style="--card-accent:#9b59b6;">
-        <div class="func-card-icon" style="background:#f5eeff;">📢</div>
-        <h3>最新公告</h3>
-        <p>人資公告、部門通知、重要訊息</p>
-        <div class="card-footer">
-          <span class="card-tag" style="background:#f5eeff;color:#9b59b6;">5 則未讀</span>
-          <span class="card-arrow">→</span>
-        </div>
-      </a>
-
-      <a class="func-card" href="links.html" style="--card-accent:#2e3141;">
-        <div class="func-card-icon" style="background:#f0f1f5;">🔗</div>
-        <h3>相關系統</h3>
-        <p>連結至各既有系統與 HTML 頁面</p>
-        <div class="card-footer">
-          <span class="card-tag" style="background:#f0f1f5;color:#2e3141;">外部連結</span>
-          <span class="card-arrow">→</span>
-        </div>
-      </a>
-
-    </div>
-
-    <!-- Bottom notices -->
-    <div class="bottom-grid">
-      <div class="notice-box">
-        <div class="notice-box-header">
-          <h3>📢 最新公告</h3>
+      <!-- 最新公告 -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-header-left"><span class="panel-header-icon">📢</span>最新公告</div>
           <a href="notice.html">查看全部</a>
         </div>
-        <div class="notice-list">
-          <div class="notice-item">
-            <div class="notice-dot"></div>
-            <div class="notice-text">
-              <p>2025 年度員工教育訓練測驗開放報名</p>
-              <span>2025-06-10 · 人資部</span>
-            </div>
-          </div>
-          <div class="notice-item">
-            <div class="notice-dot"></div>
-            <div class="notice-text">
-              <p>職場安全衛生法規宣導文件更新</p>
-              <span>2025-06-08 · 總務部</span>
-            </div>
-          </div>
-          <div class="notice-item">
-            <div class="notice-dot grey"></div>
-            <div class="notice-text">
-              <p>員工運動會活動報名截止提醒</p>
-              <span>2025-06-05 · 人資部</span>
-            </div>
-          </div>
-          <div class="notice-item">
-            <div class="notice-dot grey"></div>
-            <div class="notice-text">
-              <p>新版個資保護政策公告</p>
-              <span>2025-06-01 · 法務部</span>
-            </div>
-          </div>
+        <div class="panel-body" id="notice-panel">
+          <div class="panel-loading"><div class="spinner"></div></div>
         </div>
       </div>
 
-      <div class="notice-box">
-        <div class="notice-box-header">
-          <h3>🎉 近期活動</h3>
+      <!-- 進行中活動 -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-header-left"><span class="panel-header-icon">🎉</span>進行中活動</div>
           <a href="events-list.html">查看全部</a>
         </div>
-        <div class="notice-list">
-          <div class="notice-item">
-            <div class="notice-dot" style="background:#f0a500;"></div>
-            <div class="notice-text">
-              <p>2025 員工運動會</p>
-              <span>報名截止 2025-06-30 · 名額 200 人</span>
-            </div>
-          </div>
-          <div class="notice-item">
-            <div class="notice-dot" style="background:#f0a500;"></div>
-            <div class="notice-text">
-              <p>部門主管交流餐敘</p>
-              <span>報名截止 2025-06-20 · 名額 50 人</span>
-            </div>
-          </div>
-          <div class="notice-item">
-            <div class="notice-dot grey"></div>
-            <div class="notice-text">
-              <p>新人歡迎茶會（7 月）</p>
-              <span>即將開放報名</span>
-            </div>
-          </div>
+        <div class="panel-body" id="events-panel">
+          <div class="panel-loading"><div class="spinner"></div></div>
         </div>
       </div>
-    </div>
 
+      <!-- 最新文件 -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-header-left"><span class="panel-header-icon">📁</span>最新文件</div>
+          <a href="docs.html">查看全部</a>
+        </div>
+        <div class="panel-body" id="docs-panel">
+          <div class="panel-loading"><div class="spinner"></div></div>
+        </div>
+      </div>
+
+    </div>
   </main>
 </div>
 
+<script src="sheets-config.js"></script>
 <script>
-  // Date display
-  const d = new Date();
-  const opts = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
-  document.getElementById('today-date').textContent = d.toLocaleDateString('zh-TW', opts);
-
-  // Mobile sidebar toggle
+  // Sidebar
   function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('sidebar-overlay');
-    const closeBtn = document.getElementById('sidebar-close');
-    const isOpen = sidebar.classList.toggle('open');
-    overlay.style.display = isOpen ? 'block' : 'none';
-    closeBtn.style.display = isOpen ? 'block' : 'none';
+    const s = document.getElementById('sidebar');
+    const o = document.getElementById('sidebar-overlay');
+    const c = document.getElementById('sidebar-close');
+    const open = s.classList.toggle('open');
+    o.style.display = open ? 'block' : 'none';
+    c.style.display = open ? 'block' : 'none';
   }
 
-  // Nav active state
-  document.querySelectorAll('.nav-item').forEach(item => {
-    item.addEventListener('click', function(e) {
-      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-      this.classList.add('active');
-    });
+  // ── Flip Clock ──
+  const clockUnits = [
+    { id: 'fc-year',  label: '年',  getValue: d => String(d.getFullYear()) },
+    { id: 'fc-month', label: '月',  getValue: d => String(d.getMonth()+1).padStart(2,'0') },
+    { id: 'fc-day',   label: '日',  getValue: d => String(d.getDate()).padStart(2,'0') },
+    { id: 'fc-week',  label: '',    getValue: d => ['日','一','二','三','四','五','六'][d.getDay()], prefix: '週' },
+    { id: 'fc-hour',  label: '時',  getValue: d => String(d.getHours()).padStart(2,'0') },
+    { id: 'fc-min',   label: '分',  getValue: d => String(d.getMinutes()).padStart(2,'0') },
+  ];
+
+  const clockEl = document.getElementById('flip-clock');
+  clockUnits.forEach((u, i) => {
+    if (i === 4) {
+      const sep = document.createElement('div');
+      sep.className = 'flip-sep';
+      sep.textContent = '·';
+      clockEl.appendChild(sep);
+    }
+    const unit = document.createElement('div');
+    unit.className = 'flip-unit';
+    unit.innerHTML = `<div class="flip-card" id="${u.id}">--</div><div class="flip-label">${u.label}</div>`;
+    clockEl.appendChild(unit);
   });
+
+  let prevValues = {};
+  function updateClock() {
+    const now = new Date();
+    clockUnits.forEach(u => {
+      const val = (u.prefix || '') + u.getValue(now);
+      const el = document.getElementById(u.id);
+      if (el && el.textContent !== val) {
+        el.classList.remove('flip');
+        void el.offsetWidth;
+        el.classList.add('flip');
+        el.textContent = val;
+      }
+    });
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // ── Load Sheets data ──
+  async function loadHome() {
+    const [notices, events, docs] = await Promise.all([
+      fetchSheet(HRCONFIG.SHEETS.NOTICE),
+      fetchSheet(HRCONFIG.SHEETS.EVENTS),
+      fetchSheet(HRCONFIG.SHEETS.DOCS),
+    ]);
+
+    renderNotices(notices.filter(r => r['公告標題']));
+    renderEvents(events.filter(r => r['活動名稱'] && r['狀態'] !== '已結束'));
+    renderDocs(docs.filter(r => r['文件名稱']));
+  }
+
+  function renderNotices(rows) {
+    const el = document.getElementById('notice-panel');
+    if (!rows.length) { el.innerHTML = '<div class="panel-empty">目前沒有公告</div>'; return; }
+    const top3 = rows.slice(0, 3);
+    el.innerHTML = top3.map(n => {
+      const level = n['重要程度'] || '一般';
+      const dotCls = level === '緊急' ? 'dot-urgent' : level === '重要' ? 'dot-important' : 'dot-normal';
+      return `<a class="notice-row" href="notice.html">
+        <div class="notice-dot ${dotCls}"></div>
+        <div class="notice-info">
+          <div class="notice-title-text">${n['公告標題']}</div>
+          <div class="notice-meta">${n['發布日期'] || ''} ${n['發布單位'] ? '· '+n['發布單位'] : ''}</div>
+        </div>
+      </a>`;
+    }).join('');
+  }
+
+  function renderEvents(rows) {
+    const el = document.getElementById('events-panel');
+    if (!rows.length) { el.innerHTML = '<div class="panel-empty">目前沒有進行中活動</div>'; return; }
+    el.innerHTML = rows.map(e => {
+      const status = e['狀態'] || '報名中';
+      const dotCls = status === '報名中' ? 'open' : status === '即將開始' ? 'soon' : 'closed';
+      const tagCls = status === '報名中' ? 'tag-open' : status === '即將開始' ? 'tag-soon' : 'tag-closed';
+      const link = e['活動頁連結'] || 'events-list.html';
+      return `<a class="event-row" href="${link}">
+        <div class="event-status-dot ${dotCls}"></div>
+        <div class="event-info">
+          <div class="event-name">${e['活動名稱']}</div>
+          <div class="event-date">${e['日期'] || ''} ${e['地點'] ? '· '+e['地點'] : ''}</div>
+        </div>
+        <span class="event-status-tag ${tagCls}">${status}</span>
+      </a>`;
+    }).join('');
+  }
+
+  function renderDocs(rows) {
+    const el = document.getElementById('docs-panel');
+    if (!rows.length) { el.innerHTML = '<div class="panel-empty">目前沒有文件</div>'; return; }
+    const top3 = rows.slice(-3).reverse();
+    el.innerHTML = top3.map(d => {
+      const fmt = (d['檔案格式'] || '').toUpperCase();
+      const isImg = ['JPG','JPEG','PNG'].includes(fmt);
+      const bgCls = fmt === 'PDF' ? 'fmt-pdf-bg' : isImg ? 'fmt-img-bg' : fmt === 'DOCX'||fmt === 'WORD' ? 'fmt-word-bg' : 'fmt-other-bg';
+      const icon = fmt === 'PDF' ? '📄' : isImg ? '🖼️' : fmt === 'DOCX'||fmt === 'WORD' ? '📝' : '📁';
+      return `<a class="doc-row" href="${d['檔案連結'] || 'docs.html'}" target="_blank">
+        <div class="doc-fmt-icon ${bgCls}">${icon}</div>
+        <div class="doc-info">
+          <div class="doc-name">${d['文件名稱']}</div>
+          <div class="doc-meta-text">${fmt || '檔案'} ${d['上傳日期'] ? '· '+d['上傳日期'] : ''}</div>
+        </div>
+        <span class="doc-open-btn">開啟 →</span>
+      </a>`;
+    }).join('');
+  }
+
+  loadHome();
 </script>
 </body>
 </html>
