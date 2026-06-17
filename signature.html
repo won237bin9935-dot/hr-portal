@@ -8,7 +8,6 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --accent: #f56a6a;
-      --accent-hover: #e05555;
       --green: #27ae60;
       --border: #e8e8e8;
       --bg: #f8f9fa;
@@ -18,90 +17,50 @@
     }
     body { font-family: 'Segoe UI','Microsoft JhengHei',sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-    /* Header */
-    .header { background: #fff; border-bottom: 1px solid var(--border); padding: 14px 20px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 10; }
-    .header-logo { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
-    .header-title { font-size: 14px; font-weight: 700; color: var(--text); }
+    .header { background: #fff; border-bottom: 1px solid var(--border); padding: 14px 20px; display: flex; align-items: center; gap: 12px; }
+    .header-logo { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .header-title { font-size: 14px; font-weight: 700; }
     .header-sub { font-size: 11px; color: var(--text-light); }
 
     .container { max-width: 560px; margin: 0 auto; padding: 24px 16px 40px; }
 
-    /* Doc name banner */
-    .doc-banner {
-      background: linear-gradient(135deg, #2e3141, #3d4466);
-      border-radius: 12px;
-      padding: 18px 20px;
-      margin-bottom: 24px;
-      color: #fff;
-    }
+    .doc-banner { background: linear-gradient(135deg, #2e3141, #3d4466); border-radius: 12px; padding: 18px 20px; margin-bottom: 20px; color: #fff; }
     .doc-banner .label { font-size: 11px; opacity: .6; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .08em; }
     .doc-banner .name { font-size: 18px; font-weight: 800; }
 
-    /* Form */
     .form-card { background: #fff; border-radius: 14px; border: 1px solid var(--border); padding: 20px; margin-bottom: 16px; }
-    .form-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 16px; color: var(--text); padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+    .form-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
     .field { margin-bottom: 14px; }
     .field:last-child { margin-bottom: 0; }
     .field label { font-size: 12px; font-weight: 600; color: var(--text-mid); display: block; margin-bottom: 6px; }
-    .field input {
-      width: 100%;
-      padding: 10px 14px;
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
-      font-size: 15px;
-      color: var(--text);
-      background: #fff;
-      transition: border-color .15s;
-      outline: none;
-      font-family: inherit;
-    }
+    .field input { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 15px; color: var(--text); outline: none; font-family: inherit; }
     .field input:focus { border-color: var(--accent); }
-    .field input::placeholder { color: var(--text-light); }
 
-    /* Signature area */
     .sig-card { background: #fff; border-radius: 14px; border: 1px solid var(--border); padding: 20px; margin-bottom: 16px; }
-    .sig-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+    .sig-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
     .sig-hint { font-size: 12px; color: var(--text-light); margin-bottom: 12px; }
-    .sig-wrap { position: relative; border: 2px dashed var(--border); border-radius: 10px; overflow: hidden; background: #fafafa; }
-    .sig-wrap.active { border-color: var(--accent); background: #fff; }
-    canvas { display: block; width: 100%; touch-action: none; cursor: crosshair; }
-    .sig-placeholder { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--text-light); font-size: 13px; pointer-events: none; transition: opacity .2s; }
-    .sig-placeholder.hidden { opacity: 0; }
-    .sig-actions { display: flex; justify-content: flex-end; margin-top: 10px; }
-    .btn-clear { background: none; border: 1.5px solid var(--border); color: var(--text-mid); font-size: 13px; font-weight: 600; padding: 7px 16px; border-radius: 20px; cursor: pointer; transition: all .15s; font-family: inherit; }
+
+    .canvas-wrap { position: relative; border: 2px dashed var(--border); border-radius: 10px; background: #fafafa; overflow: hidden; }
+    #sig-canvas { display: block; width: 100%; height: 200px; cursor: crosshair; touch-action: none; }
+    .canvas-placeholder { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); color: var(--text-light); font-size: 13px; pointer-events: none; }
+
+    .sig-actions { margin-top: 10px; display: flex; justify-content: flex-end; }
+    .btn-clear { background: none; border: 1.5px solid var(--border); color: var(--text-mid); font-size: 13px; font-weight: 600; padding: 7px 16px; border-radius: 20px; cursor: pointer; font-family: inherit; }
     .btn-clear:hover { border-color: var(--accent); color: var(--accent); }
 
-    /* Submit */
-    .btn-submit {
-      width: 100%;
-      background: var(--green);
-      color: #fff;
-      font-size: 16px;
-      font-weight: 800;
-      padding: 15px;
-      border-radius: 12px;
-      border: none;
-      cursor: pointer;
-      transition: all .2s;
-      font-family: inherit;
-      letter-spacing: .04em;
-    }
-    .btn-submit:hover { background: #219a52; transform: translateY(-1px); }
-    .btn-submit:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+    .btn-submit { width: 100%; background: var(--green); color: #fff; font-size: 16px; font-weight: 800; padding: 15px; border-radius: 12px; border: none; cursor: pointer; font-family: inherit; transition: background .2s; }
+    .btn-submit:hover { background: #219a52; }
+    .btn-submit:disabled { background: #ccc; cursor: not-allowed; }
 
-    /* Status */
-    .status { display: none; text-align: center; padding: 40px 20px; }
-    .status.show { display: block; }
-    .status-icon { font-size: 56px; display: block; margin-bottom: 16px; }
-    .status h2 { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
-    .status p { font-size: 14px; color: var(--text-mid); line-height: 1.6; }
+    .success-box { display: none; text-align: center; padding: 48px 20px; background: #fff; border-radius: 14px; border: 1px solid var(--border); }
+    .success-box .icon { font-size: 56px; display: block; margin-bottom: 16px; }
+    .success-box h2 { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+    .success-box p { font-size: 14px; color: var(--text-mid); line-height: 1.7; }
 
-    /* Loading overlay */
-    .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(255,255,255,.85); z-index: 100; align-items: center; justify-content: center; flex-direction: column; gap: 16px; }
-    .loading-overlay.show { display: flex; }
-    .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--green); border-radius: 50%; animation: spin .8s linear infinite; }
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(255,255,255,.85); z-index: 100; align-items: center; justify-content: center; flex-direction: column; gap: 14px; }
+    .overlay.show { display: flex; }
+    .spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--green); border-radius: 50%; animation: spin .8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .loading-text { font-size: 14px; color: var(--text-mid); font-weight: 600; }
   </style>
 </head>
 <body>
@@ -116,25 +75,9 @@
 
 <div class="container">
 
-  <!-- Success/Error state -->
-  <div class="status" id="success-state">
-    <span class="status-icon">✅</span>
-    <h2>簽名完成！</h2>
-    <p>感謝您完成簽名確認。<br>您的簽名已成功送出，人資部門將會收到通知。</p>
-  </div>
-
-  <div class="status" id="error-state">
-    <span class="status-icon">❌</span>
-    <h2>送出失敗</h2>
-    <p id="error-msg">請稍後再試，或聯絡人資部門。</p>
-  </div>
-
-  <!-- Form -->
-  <div id="form-content">
-
+  <div id="form-area">
     <div class="doc-banner">
       <div class="label">文件名稱</div>
-      <!-- ★ 修改文件名稱 ★ -->
       <div class="name" id="doc-name">載入中…</div>
     </div>
 
@@ -142,202 +85,184 @@
       <h3>📋 基本資料</h3>
       <div class="field">
         <label>工號 *</label>
-        <input type="text" id="employeeId" placeholder="請輸入工號" inputmode="numeric"/>
+        <input type="text" id="f-id" placeholder="請輸入工號" inputmode="numeric"/>
       </div>
       <div class="field">
         <label>姓名 *</label>
-        <input type="text" id="name" placeholder="請輸入姓名"/>
+        <input type="text" id="f-name" placeholder="請輸入姓名"/>
       </div>
-
     </div>
 
     <div class="sig-card">
       <h3>✍️ 手寫簽名</h3>
-      <p class="sig-hint">請在下方空白處用手指或滑鼠簽名</p>
-      <div class="sig-wrap" id="sig-wrap">
+      <p class="sig-hint">請在下方用手指或滑鼠簽名</p>
+      <div class="canvas-wrap" id="canvas-wrap">
         <canvas id="sig-canvas"></canvas>
-        <div class="sig-placeholder" id="sig-placeholder">請在此處簽名</div>
+        <div class="canvas-placeholder" id="placeholder">請在此處簽名</div>
       </div>
       <div class="sig-actions">
-        <button class="btn-clear" onclick="clearSignature()">清除簽名</button>
+        <button class="btn-clear" id="btn-clear">清除簽名</button>
       </div>
     </div>
 
-    <button class="btn-submit" id="submit-btn" onclick="submitSignature()">
-      完成並送出
-    </button>
-
+    <button class="btn-submit" id="btn-submit">完成並送出</button>
   </div>
+
+  <div class="success-box" id="success-box">
+    <span class="icon">✅</span>
+    <h2>簽名完成！</h2>
+    <p>感謝您完成簽名確認。<br>您的簽名已成功送出。</p>
+  </div>
+
 </div>
 
-<div class="loading-overlay" id="loading">
+<div class="overlay" id="overlay">
   <div class="spinner"></div>
-  <div class="loading-text">正在送出簽名，請稍候…</div>
+  <div style="font-size:14px;color:#666;font-weight:600">正在送出，請稍候…</div>
 </div>
 
 <script>
-  // ★ 把 Apps Script 部署後的網址貼在這裡 ★
-  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxfo--2xa9vk6tlIzCjNyu3Y76AQIzYj-tM3XcvFQO72QwkWEqYIW_jSl2JRtE2tgql/exec';
+// ★ 貼上你的 Apps Script 網址 ★
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxfo--2xa9vk6tlIzCjNyu3Y76AQIzYj-tM3XcvFQO72QwkWEqYIW_jSl2JRtE2tgql/exec';
 
-  // 自動從網址讀取文件名稱，例如：signature.html?doc=性騷擾防治宣導
-  const urlParams = new URLSearchParams(window.location.search);
-  const DOC_NAME = urlParams.get('doc') || '未指定文件';
-  document.getElementById('doc-name').textContent = DOC_NAME;
+// 讀取網址參數
+const docName = new URLSearchParams(window.location.search).get('doc') || '未指定文件';
+document.getElementById('doc-name').textContent = docName;
 
-  // Canvas setup
-  const canvas = document.getElementById('sig-canvas');
-  const ctx = canvas.getContext('2d');
-  const wrap = document.getElementById('sig-wrap');
-  let isDrawing = false;
-  let hasSigned = false;
+// Canvas 初始化
+const canvas = document.getElementById('sig-canvas');
+const ctx = canvas.getContext('2d');
+let drawing = false;
+let signed = false;
 
-  function resizeCanvas() {
-    const rect = wrap.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = rect.width * dpr;
-    canvas.height = 200 * dpr;
-    canvas.style.height = '200px';
-    ctx.scale(dpr, dpr);
-    ctx.strokeStyle = '#1a1a2e';
-    ctx.lineWidth = 2.5;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
+function initCanvas() {
+  const w = canvas.parentElement.offsetWidth;
+  const h = 200;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  ctx.scale(dpr, dpr);
+  ctx.strokeStyle = '#1a1a2e';
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+}
+initCanvas();
+
+function getXY(e) {
+  const r = canvas.getBoundingClientRect();
+  if (e.touches && e.touches.length) {
+    return { x: e.touches[0].clientX - r.left, y: e.touches[0].clientY - r.top };
   }
-  resizeCanvas();
-  window.addEventListener('resize', resizeCanvas);
+  return { x: e.clientX - r.left, y: e.clientY - r.top };
+}
 
-  function getPos(e) {
-    const rect = canvas.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    if (e.touches) {
-      return {
-        x: (e.touches[0].clientX - rect.left),
-        y: (e.touches[0].clientY - rect.top)
-      };
-    }
-    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+canvas.addEventListener('mousedown', function(e) {
+  drawing = true;
+  const p = getXY(e);
+  ctx.beginPath();
+  ctx.moveTo(p.x, p.y);
+  if (!signed) {
+    signed = true;
+    document.getElementById('placeholder').style.display = 'none';
   }
+});
+canvas.addEventListener('mousemove', function(e) {
+  if (!drawing) return;
+  const p = getXY(e);
+  ctx.lineTo(p.x, p.y);
+  ctx.stroke();
+});
+canvas.addEventListener('mouseup', function() { drawing = false; });
+canvas.addEventListener('mouseleave', function() { drawing = false; });
 
-  function startDraw(e) {
-    e.preventDefault();
-    isDrawing = true;
-    const pos = getPos(e);
-    ctx.beginPath();
-    ctx.moveTo(pos.x, pos.y);
-    if (!hasSigned) {
-      hasSigned = true;
-      document.getElementById('sig-placeholder').classList.add('hidden');
-      wrap.classList.add('active');
-    }
+canvas.addEventListener('touchstart', function(e) {
+  e.preventDefault();
+  drawing = true;
+  const p = getXY(e);
+  ctx.beginPath();
+  ctx.moveTo(p.x, p.y);
+  if (!signed) {
+    signed = true;
+    document.getElementById('placeholder').style.display = 'none';
   }
+}, { passive: false });
+canvas.addEventListener('touchmove', function(e) {
+  e.preventDefault();
+  if (!drawing) return;
+  const p = getXY(e);
+  ctx.lineTo(p.x, p.y);
+  ctx.stroke();
+}, { passive: false });
+canvas.addEventListener('touchend', function(e) {
+  e.preventDefault();
+  drawing = false;
+}, { passive: false });
 
-  function draw(e) {
-    if (!isDrawing) return;
-    e.preventDefault();
-    const pos = getPos(e);
-    ctx.lineTo(pos.x, pos.y);
-    ctx.stroke();
+document.getElementById('btn-clear').addEventListener('click', function() {
+  const dpr = window.devicePixelRatio || 1;
+  ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+  signed = false;
+  document.getElementById('placeholder').style.display = 'block';
+});
+
+document.getElementById('btn-submit').addEventListener('click', async function() {
+  const empId = document.getElementById('f-id').value.trim();
+  const name = document.getElementById('f-name').value.trim();
+
+  if (!empId || !name) { alert('請填寫工號及姓名'); return; }
+  if (!signed) { alert('請完成手寫簽名'); return; }
+
+  // 合成圖片（工號姓名 + 簽名）
+  const dpr = window.devicePixelRatio || 1;
+  const w = canvas.width / dpr;
+  const h = canvas.height / dpr;
+  const out = document.createElement('canvas');
+  out.width = canvas.width;
+  out.height = canvas.height + 50 * dpr;
+  const octx = out.getContext('2d');
+  octx.fillStyle = '#ffffff';
+  octx.fillRect(0, 0, out.width, out.height);
+  octx.fillStyle = '#3d4449';
+  octx.font = `bold ${13 * dpr}px Microsoft JhengHei, sans-serif`;
+  octx.fillText(`工號：${empId}　姓名：${name}`, 12 * dpr, 28 * dpr);
+  octx.strokeStyle = '#e8e8e8';
+  octx.lineWidth = dpr;
+  octx.beginPath();
+  octx.moveTo(0, 40 * dpr);
+  octx.lineTo(out.width, 40 * dpr);
+  octx.stroke();
+  octx.drawImage(canvas, 0, 50 * dpr);
+
+  const imgData = out.toDataURL('image/png');
+
+  document.getElementById('overlay').classList.add('show');
+  document.getElementById('btn-submit').disabled = true;
+
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({
+        docName: docName,
+        employeeId: empId,
+        name: name,
+        department: '',
+        signature: imgData
+      })
+    });
+    document.getElementById('overlay').classList.remove('show');
+    document.getElementById('form-area').style.display = 'none';
+    document.getElementById('success-box').style.display = 'block';
+  } catch(err) {
+    document.getElementById('overlay').classList.remove('show');
+    document.getElementById('btn-submit').disabled = false;
+    alert('送出失敗，請檢查網路後再試。\n' + err.message);
   }
-
-  function endDraw(e) {
-    if (!isDrawing) return;
-    e.preventDefault();
-    isDrawing = false;
-    ctx.closePath();
-  }
-
-  canvas.addEventListener('mousedown', startDraw);
-  canvas.addEventListener('mousemove', draw);
-  canvas.addEventListener('mouseup', endDraw);
-  canvas.addEventListener('mouseleave', endDraw);
-  canvas.addEventListener('touchstart', startDraw, { passive: false });
-  canvas.addEventListener('touchmove', draw, { passive: false });
-  canvas.addEventListener('touchend', endDraw, { passive: false });
-
-  function clearSignature() {
-    const dpr = window.devicePixelRatio || 1;
-    ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
-    hasSigned = false;
-    document.getElementById('sig-placeholder').classList.remove('hidden');
-    wrap.classList.remove('active');
-  }
-
-  async function submitSignature() {
-    const employeeId = document.getElementById('employeeId').value.trim();
-    const name = document.getElementById('name').value.trim();
-    const department = document.getElementById('department').value.trim();
-
-    if (!employeeId || !name) {
-      alert('請填寫工號及姓名');
-      return;
-    }
-    if (!hasSigned) {
-      alert('請完成手寫簽名');
-      return;
-    }
-
-    document.getElementById('loading').classList.add('show');
-    document.getElementById('submit-btn').disabled = true;
-
-    // 合成簽名圖片：在簽名上方加入工號和姓名
-    const compositeCanvas = document.createElement('canvas');
-    const dpr = window.devicePixelRatio || 1;
-    compositeCanvas.width = canvas.width;
-    compositeCanvas.height = canvas.height + 50 * dpr;
-    const cctx = compositeCanvas.getContext('2d');
-
-    // 白色背景
-    cctx.fillStyle = '#ffffff';
-    cctx.fillRect(0, 0, compositeCanvas.width, compositeCanvas.height);
-
-    // 上方文字：工號 + 姓名
-    cctx.fillStyle = '#3d4449';
-    cctx.font = `bold ${14 * dpr}px 'Microsoft JhengHei', sans-serif`;
-    cctx.fillText(`工號：${employeeId}　姓名：${name}`, 12 * dpr, 28 * dpr);
-
-    // 分隔線
-    cctx.strokeStyle = '#e8e8e8';
-    cctx.lineWidth = 1 * dpr;
-    cctx.beginPath();
-    cctx.moveTo(0, 40 * dpr);
-    cctx.lineTo(compositeCanvas.width, 40 * dpr);
-    cctx.stroke();
-
-    // 貼上原始簽名
-    cctx.drawImage(canvas, 0, 50 * dpr);
-
-    const signatureData = compositeCanvas.toDataURL('image/png');
-
-    try {
-      // 使用 no-cors 模式送出（Apps Script 需要）
-      await fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({
-          docName: DOC_NAME,
-          employeeId,
-          name,
-          department: '',
-          signature: signatureData
-        })
-      });
-
-      document.getElementById('loading').classList.remove('show');
-      // no-cors 模式無法讀取回應，送出後直接顯示成功
-      document.getElementById('form-content').style.display = 'none';
-      document.getElementById('success-state').classList.add('show');
-    } catch(err) {
-      document.getElementById('loading').classList.remove('show');
-      document.getElementById('submit-btn').disabled = false;
-      // 即使有錯誤也可能已送出，提示使用者確認
-      if(confirm('送出時發生問題，請確認網路連線後再試。
-
-錯誤：' + (err.message || '未知錯誤'))) {
-        document.getElementById('submit-btn').disabled = false;
-      }
-    }
-  }
+});
 </script>
 </body>
 </html>
