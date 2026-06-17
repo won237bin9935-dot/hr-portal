@@ -111,9 +111,9 @@
 
     #sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:99; }
 
-    @media (max-width:1100px) { .past-grid { grid-template-columns:repeat(3,1fr); } }
-    @media (max-width:900px) { #sidebar{transform:translateX(-100%)} #sidebar.open{transform:translateX(0)} #sidebar-close{display:block} #main{margin-left:0} .menu-toggle{display:block} .past-grid{grid-template-columns:repeat(2,1fr)} }
-    @media (max-width:560px) { .content{padding:20px 16px} .event-card{width:100%} .past-grid{grid-template-columns:repeat(2,1fr)} .hero-icon{display:none} }
+    
+    @media (max-width:900px) { #sidebar{transform:translateX(-100%)} #sidebar.open{transform:translateX(0)} #sidebar-close{display:block} #main{margin-left:0} .menu-toggle{display:block} .event-card{width:calc(50% - 8px)} .past-card{width:calc(50% - 7px)} }
+    @media (max-width:560px) { .content{padding:20px 16px} .event-card{width:100%} .past-card{width:calc(50% - 7px)} .hero-icon{display:none} }
   </style>
 </head>
 <body>
@@ -226,7 +226,7 @@
       activeGrid.style.display='none';
     } else {
       activeEmpty.style.display='none';
-      activeGrid.style.display='grid';
+      activeGrid.style.display='flex';
       filtered.forEach(e=>activeGrid.appendChild(buildActiveCard(e)));
     }
     activeSection.style.display='block';
