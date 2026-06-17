@@ -4,10 +4,11 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>首頁總覽 — 華美光學人資系統</title>
+  <link rel="stylesheet" href="style.css">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --sidebar-bg: #fdd0d0;
+      
       --accent: #f56a6a;
       --bg: #f8f9fa;
       --card-bg: #fff;
@@ -15,71 +16,46 @@
       --text-mid: #666;
       --text-light: #999;
       --border: #e8e8e8;
-      --sidebar-width: 260px;
+      
     }
     body { font-family: 'Segoe UI','Microsoft JhengHei',sans-serif; background: var(--bg); color: var(--text-dark); display: flex; min-height: 100vh; }
 
     /* Sidebar */
-    #sidebar { width:var(--sidebar-width); background:var(--sidebar-bg); border-right:1px solid var(--sidebar-border); display:flex; flex-direction:column; position:fixed; top:0; left:0; bottom:0; z-index:100; transition:transform .3s; }
-    .sidebar-header { padding:28px 24px 20px; border-bottom:1px solid var(--sidebar-border); display:flex; align-items:center; }
-    .logo-icon { width:40px; height:40px; background:var(--accent); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
-    .logo-text { color:#3d4449; font-size:15px; font-weight:700; line-height:1.3; margin-left:12px; }
-    .logo-sub { color:#999; font-size:11px; display:block; margin-top:2px; }
-    #sidebar-close { display:none; background:none; border:none; color:var(--text-light); font-size:22px; cursor:pointer; margin-left:auto; }
-    nav { flex:1; overflow-y:auto; padding:16px 0; }
-    .nav-section-label { color:#b05050; font-size:16px; font-weight:800; letter-spacing:.02em; text-transform:none; padding:16px 20px 6px; }
-    .nav-item { display:flex; align-items:center; gap:12px; padding:11px 24px; color:var(--sidebar-text); border-left:3px solid transparent; transition:all .18s; font-size:14px; text-decoration:none; font-weight:700; }
-    .nav-item:hover { background:transparent; color:#f56a6a; }
-    .nav-item.active { background:#ffffff; border-left-color:#f56a6a; color:#f56a6a; font-weight:700; }
-    .nav-item .icon { font-size:18px; width:22px; text-align:center; flex-shrink:0; }
-    .nav-badge { margin-left:auto; background:var(--accent); color:#fff; font-size:10px; font-weight:700; padding:2px 7px; border-radius:20px; }
-    .sidebar-footer { padding:16px 24px; border-top:1px solid var(--sidebar-border); color:var(--sidebar-label); font-size:11px; }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
     /* Main */
-    #main { margin-left:var(--sidebar-width); flex:1; display:flex; flex-direction:column; min-height:100vh; }
-    .topbar { background:var(--card-bg); border-bottom:1px solid var(--border); padding:0 32px; height:60px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
-    .topbar-left { display:flex; align-items:center; gap:12px; }
-    .topbar-title { font-size:16px; font-weight:700; }
-    .topbar-avatar { width:34px; height:34px; background:var(--accent); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:13px; font-weight:700; }
-    .menu-toggle { display:none; background:none; border:none; font-size:22px; cursor:pointer; color:var(--text-dark); }
+    
+    
+    
+    
+    
+    
     .content { padding:32px; flex:1; }
 
     /* ── Welcome Banner ── */
-    .welcome-banner {
-      background: linear-gradient(135deg, #2e3141 0%, #3d4466 60%, #4a5080 100%);
-      border-radius: 16px;
-      padding: 22px 32px;
-      margin-bottom: 28px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 24px;
-      position: relative;
-      overflow: hidden;
-    }
-    .welcome-banner::before {
-      content: '';
-      position: absolute;
-      right: -80px; top: -80px;
-      width: 260px; height: 260px;
-      border-radius: 50%;
-      background: rgba(255,255,255,.04);
-    }
-    .welcome-banner::after {
-      content: '';
-      position: absolute;
-      left: 30%; bottom: -60px;
-      width: 160px; height: 160px;
-      border-radius: 50%;
-      background: rgba(245,106,106,.06);
-    }
-    .welcome-text { color: #fff; z-index: 1; }
-    .welcome-text .greet { font-size: 14px; opacity: .7; margin-bottom: 6px; }
-    .welcome-text h2 { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
-    .welcome-text p { font-size: 13px; opacity: .6; }
+    
+    
+    
+    
+    
+    
+    
 
     /* Flip clock */
-    .flip-clock { display: flex; align-items: center; gap: 8px; z-index: 1; flex-shrink: 0; }
+    
     .flip-unit { display: flex; flex-direction: column; align-items: center; gap: 4px; }
     .flip-card {
       background: #ffffff;
@@ -232,11 +208,67 @@
     .spinner { width: 24px; height: 24px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto 8px; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    #sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:99; }
+    
 
     @media (max-width:1100px) { .three-col { grid-template-columns: 1fr 1fr; } .three-col .panel:last-child { grid-column: 1/-1; } }
-    @media (max-width:900px) { #sidebar{transform:translateX(-100%)} #sidebar.open{transform:translateX(0)} #sidebar-close{display:block} #main{margin-left:0} .menu-toggle{display:block} .three-col{grid-template-columns:1fr} .three-col .panel:last-child{grid-column:auto} .flip-clock{display:none} }
+     #sidebar.open{transform:translateX(0)} #sidebar-close{display:block} #main{margin-left:0} .menu-toggle{display:block} .three-col{grid-template-columns:1fr} .three-col .panel:last-child{grid-column:auto} .flip-clock{display:none} }
     @media (max-width:560px) { .content{padding:20px 16px} .welcome-banner{padding:20px} }
+  
+    .welcome-banner {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 28px;
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 36px;
+    }
+    .welcome-banner-bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      z-index: 0;
+    }
+    .welcome-banner-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.15);
+      z-index: 1;
+    }
+    .welcome-text {
+      position: relative;
+      z-index: 2;
+    }
+    .welcome-text .greet {
+      font-size: 13px;
+      color: #4a6080;
+      margin-bottom: 4px;
+      font-weight: 500;
+    }
+    .welcome-text h2 {
+      font-size: 20px;
+      font-weight: 900;
+      color: #2c4a6e;
+      margin-bottom: 3px;
+      text-shadow: 0 1px 3px rgba(255,255,255,.6);
+    }
+    .welcome-text p {
+      font-size: 13px;
+      color: #4a6080;
+      font-weight: 500;
+    }
+    .flip-clock {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
   </style>
 </head>
 <body>
@@ -252,14 +284,14 @@
     <div class="nav-section-label">主選單</div>
     <a class="nav-item active" href="home.html"><span class="icon">🏠</span> 首頁總覽</a>
     <div class="nav-section-label">學習與測驗</div>
-    <a class="nav-item" href="quiz.html"><span class="icon">📝</span> 測驗專區</a>
+    <a class="nav-item " href="quiz.html"><span class="icon">📝</span> 測驗專區</a>
     <a class="nav-item" href="#"><span class="icon">🎓</span> 教育訓練</a>
     <div class="nav-section-label">資料與公告</div>
-    <a class="nav-item" href="docs.html"><span class="icon">📁</span> 文件宣導</a>
-    <a class="nav-item" href="events-list.html"><span class="icon">🎉</span> 活動報名</a>
-    <a class="nav-item" href="notice.html"><span class="icon">📢</span> 最新公告</a>
+    <a class="nav-item " href="docs.html"><span class="icon">📁</span> 文件宣導</a>
+    <a class="nav-item " href="events-list.html"><span class="icon">🎉</span> 活動報名</a>
+    <a class="nav-item " href="notice.html"><span class="icon">📢</span> 最新公告</a>
     <div class="nav-section-label">系統整合</div>
-    <a class="nav-item" href="links.html"><span class="icon">🔗</span> 相關系統連結</a>
+    <a class="nav-item " href="links.html"><span class="icon">🔗</span> 相關系統連結</a>
   </nav>
   <div class="sidebar-footer">© 2025 華美光學　人資部</div>
 </aside>
@@ -277,6 +309,8 @@
 
     <!-- Welcome Banner -->
     <div class="welcome-banner">
+      <div class="welcome-banner-bg" style="background-image:url('https://lh3.googleusercontent.com/d/1QOYGVrgsZlhIJsb_4v5qygy0zPFKlCvH')"></div>
+      <div class="welcome-banner-overlay"></div>
       <div class="welcome-text">
         <div class="greet">嗨，歡迎您的到訪 👋</div>
         <h2>華美光學 人力資源系統</h2>
@@ -329,12 +363,12 @@
 <script>
   // Sidebar
   function toggleSidebar() {
-    const s = document.getElementById('sidebar');
-    const o = document.getElementById('sidebar-overlay');
-    const c = document.getElementById('sidebar-close');
-    const open = s.classList.toggle('open');
-    o.style.display = open ? 'block' : 'none';
-    c.style.display = open ? 'block' : 'none';
+    const s=document.getElementById('sidebar');
+    const o=document.getElementById('sidebar-overlay');
+    const c=document.getElementById('sidebar-close');
+    const open=s.classList.toggle('open');
+    o.style.display=open?'block':'none';
+    if(c) c.style.display=open?'block':'none';
   }
 
   // ── Flip Clock ──
