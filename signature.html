@@ -309,8 +309,11 @@
     const signatureData = compositeCanvas.toDataURL('image/png');
 
     try {
-      const res = await fetch(APPS_SCRIPT_URL, {
+      // 使用 no-cors 模式送出（Apps Script 需要）
+      await fetch(APPS_SCRIPT_URL, {
         method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain' },
         body: JSON.stringify({
           docName: DOC_NAME,
           employeeId,
@@ -319,22 +322,20 @@
           signature: signatureData
         })
       });
-      const result = await res.json();
 
       document.getElementById('loading').classList.remove('show');
-
-      if (result.success) {
-        document.getElementById('form-content').style.display = 'none';
-        document.getElementById('success-state').classList.add('show');
-      } else {
-        throw new Error(result.error || '未知錯誤');
-      }
+      // no-cors 模式無法讀取回應，送出後直接顯示成功
+      document.getElementById('form-content').style.display = 'none';
+      document.getElementById('success-state').classList.add('show');
     } catch(err) {
       document.getElementById('loading').classList.remove('show');
       document.getElementById('submit-btn').disabled = false;
-      document.getElementById('error-msg').textContent = err.message || '請稍後再試';
-      document.getElementById('form-content').style.display = 'none';
-      document.getElementById('error-state').classList.add('show');
+      // 即使有錯誤也可能已送出，提示使用者確認
+      if(confirm('送出時發生問題，請確認網路連線後再試。
+
+錯誤：' + (err.message || '未知錯誤'))) {
+        document.getElementById('submit-btn').disabled = false;
+      }
     }
   }
 </script>
