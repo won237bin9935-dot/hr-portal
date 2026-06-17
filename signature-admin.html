@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>簽名紀錄後台 — 華美光學</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --accent: #f56a6a;
+      --bg: #f8f9fa;
+      --card-bg: #fff;
+      --text: #3d4449;
+      --text-mid: #666;
+      --text-light: #999;
+      --border: #e8e8e8;
+      --green: #27ae60;
+    }
+    body { font-family: 'Segoe UI','Microsoft JhengHei',sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    .header { background: #2e3141; padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .header-logo { width: 36px; height: 36px; background: var(--accent); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .header-title { color: #fff; font-size: 15px; font-weight: 700; }
+    .header-sub { color: rgba(255,255,255,.5); font-size: 12px; }
+    .header-badge { background: var(--accent); color: #fff; font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 20px; }
+
+    .content { padding: 28px 32px; max-width: 1200px; margin: 0 auto; }
+
+    /* Stats */
+    .stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 24px; }
+    .stat { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); padding: 18px 20px; }
+    .stat-num { font-size: 28px; font-weight: 800; color: var(--text); }
+    .stat-label { font-size: 13px; color: var(--text-light); margin-top: 4px; }
+
+    /* Filter */
+    .filter-bar { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); padding: 16px 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .filter-bar label { font-size: 13px; font-weight: 600; color: var(--text-mid); }
+    .filter-bar input, .filter-bar select { padding: 7px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; color: var(--text); outline: none; font-family: inherit; }
+    .filter-bar input:focus, .filter-bar select:focus { border-color: var(--accent); }
+    .btn-refresh { background: var(--accent); color: #fff; border: none; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; margin-left: auto; }
+    .btn-refresh:hover { background: #e05555; }
+
+    /* Records */
+    .records { display: flex; flex-direction: column; gap: 12px; }
+
+    .record-card { background: var(--card-bg); border-radius: 14px; border: 1px solid var(--border); overflow: hidden; transition: box-shadow .2s; }
+    .record-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); }
+
+    .record-header { padding: 14px 20px; display: flex; align-items: center; gap: 14px; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .record-avatar { width: 40px; height: 40px; background: #f0f1f5; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: var(--text-mid); flex-shrink: 0; }
+    .record-info { flex: 1; }
+    .record-name { font-size: 15px; font-weight: 700; color: var(--text); }
+    .record-meta { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+    .record-doc { font-size: 12px; font-weight: 600; color: var(--accent); background: #fff5f5; padding: 3px 10px; border-radius: 20px; flex-shrink: 0; }
+    .record-date { font-size: 12px; color: var(--text-light); text-align: right; flex-shrink: 0; }
+    .record-toggle { color: var(--text-light); font-size: 18px; flex-shrink: 0; transition: transform .2s; }
+    .record-card.expanded .record-toggle { transform: rotate(180deg); }
+
+    .record-body { display: none; padding: 16px 20px; background: #fafafa; }
+    .record-card.expanded .record-body { display: block; }
+    .sig-label { font-size: 12px; font-weight: 600; color: var(--text-mid); margin-bottom: 8px; }
+    .sig-img { max-width: 360px; border: 1px solid var(--border); border-radius: 8px; background: #fff; padding: 8px; display: block; }
+    .sig-img-placeholder { color: var(--text-light); font-size: 13px; padding: 20px; text-align: center; background: #fff; border: 1px dashed var(--border); border-radius: 8px; }
+
+    /* Empty & Loading */
+    .loading { text-align: center; padding: 60px; color: var(--text-light); }
+    .spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto 12px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .empty { text-align: center; padding: 48px; color: var(--text-light); }
+    .empty .ei { font-size: 48px; display: block; margin-bottom: 12px; }
+
+    @media (max-width: 760px) { .content { padding: 20px 16px; } .stats { grid-template-columns: 1fr 1fr; } .header { padding: 14px 16px; } }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="header-logo">🏢</div>
+    <div>
+      <div class="header-title">簽名紀錄後台</div>
+      <div class="header-sub">華美光學人資系統</div>
+    </div>
+  </div>
+  <div class="header-badge" id="total-badge">載入中…</div>
+</div>
+
+<div class="content">
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-num" id="stat-total">-</div>
+      <div class="stat-label">總簽名數</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" id="stat-today">-</div>
+      <div class="stat-label">今日簽名</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" id="stat-docs">-</div>
+      <div class="stat-label">文件種類</div>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <label>搜尋：</label>
+    <input type="text" id="search-input" placeholder="姓名、工號、文件名稱" oninput="filterRecords()" style="width:200px"/>
+    <label>文件：</label>
+    <select id="doc-filter" onchange="filterRecords()">
+      <option value="">全部文件</option>
+    </select>
+    <button class="btn-refresh" onclick="loadRecords()">🔄 重新整理</button>
+  </div>
+
+  <div id="loading-state" class="loading">
+    <div class="spinner"></div>
+    <p>載入簽名紀錄中…</p>
+  </div>
+
+  <div class="records" id="records-list"></div>
+
+</div>
+
+<script src="sheets-config.js"></script>
+<script>
+  let allRecords = [];
+
+  async function loadRecords() {
+    document.getElementById('loading-state').style.display = 'block';
+    document.getElementById('records-list').innerHTML = '';
+
+    const rows = await fetchSheet('簽名紀錄');
+    allRecords = rows.filter(r => r['工號'] || r['姓名']);
+
+    document.getElementById('loading-state').style.display = 'none';
+
+    // Stats
+    const today = new Date().toISOString().slice(0, 10);
+    const todayCount = allRecords.filter(r => r['簽名日期'] === today).length;
+    const docTypes = new Set(allRecords.map(r => r['文件名稱']).filter(Boolean));
+
+    document.getElementById('stat-total').textContent = allRecords.length;
+    document.getElementById('stat-today').textContent = todayCount;
+    document.getElementById('stat-docs').textContent = docTypes.size;
+    document.getElementById('total-badge').textContent = `共 ${allRecords.length} 筆`;
+
+    // Doc filter options
+    const docFilter = document.getElementById('doc-filter');
+    docFilter.innerHTML = '<option value="">全部文件</option>';
+    docTypes.forEach(doc => {
+      const opt = document.createElement('option');
+      opt.value = doc;
+      opt.textContent = doc;
+      docFilter.appendChild(opt);
+    });
+
+    filterRecords();
+  }
+
+  function filterRecords() {
+    const search = document.getElementById('search-input').value.toLowerCase();
+    const docFilter = document.getElementById('doc-filter').value;
+
+    const filtered = allRecords.filter(r => {
+      const matchSearch = !search ||
+        (r['姓名'] || '').toLowerCase().includes(search) ||
+        (r['工號'] || '').toLowerCase().includes(search) ||
+        (r['文件名稱'] || '').toLowerCase().includes(search) ||
+        (r['部門'] || '').toLowerCase().includes(search);
+      const matchDoc = !docFilter || r['文件名稱'] === docFilter;
+      return matchSearch && matchDoc;
+    });
+
+    renderRecords(filtered);
+  }
+
+  function renderRecords(records) {
+    const list = document.getElementById('records-list');
+    list.innerHTML = '';
+
+    if (records.length === 0) {
+      list.innerHTML = '<div class="empty"><span class="ei">📝</span><p>沒有符合條件的簽名紀錄</p></div>';
+      return;
+    }
+
+    // Sort by date desc
+    const sorted = [...records].sort((a, b) => {
+      const da = (a['簽名日期'] || '') + (a['簽名時間'] || '');
+      const db = (b['簽名日期'] || '') + (b['簽名時間'] || '');
+      return db.localeCompare(da);
+    });
+
+    sorted.forEach((r, i) => {
+      const card = document.createElement('div');
+      card.className = 'record-card';
+
+      const initials = (r['姓名'] || '?').charAt(0);
+      const sigHtml = r['簽名圖片']
+        ? `<img class="sig-img" src="${r['簽名圖片']}" alt="簽名" onerror="this.outerHTML='<div class=sig-img-placeholder>圖片載入失敗</div>'">`
+        : '<div class="sig-img-placeholder">無簽名圖片</div>';
+
+      card.innerHTML = `
+        <div class="record-header" onclick="toggleCard(this)">
+          <div class="record-avatar">${initials}</div>
+          <div class="record-info">
+            <div class="record-name">${r['姓名'] || '-'} <span style="font-weight:400;color:var(--text-mid);font-size:13px">（${r['工號'] || '-'}）</span></div>
+            <div class="record-meta">${r['部門'] || '-'}</div>
+          </div>
+          <div class="record-doc">${r['文件名稱'] || '-'}</div>
+          <div class="record-date">${r['簽名日期'] || '-'}<br>${r['簽名時間'] || ''}</div>
+          <div class="record-toggle">▼</div>
+        </div>
+        <div class="record-body">
+          <div class="sig-label">手寫簽名：</div>
+          ${sigHtml}
+        </div>`;
+
+      list.appendChild(card);
+    });
+  }
+
+  function toggleCard(header) {
+    const card = header.closest('.record-card');
+    card.classList.toggle('expanded');
+  }
+
+  loadRecords();
+</script>
+</body>
+</html>
