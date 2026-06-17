@@ -289,6 +289,9 @@
             ? `<a href="${d['檔案連結']}" target="_blank" class="btn-doc">⬇ 開啟</a>`
             : `<span style="font-size:12px;color:var(--text-light)">連結未設定</span>`}
         </div>
+        ${(d['是否須回傳簽名'] || '').trim() === '是'
+          ? `<a href="signature.html?doc=${encodeURIComponent(d['文件名稱'])}" class="btn-sign">✍️ 前往簽名</a>`
+          : ''}
       </div>`;
     return card;
   }
