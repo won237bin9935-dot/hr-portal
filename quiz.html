@@ -49,8 +49,8 @@
     /* Hero */
     .quiz-hero {
       background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 50%, #a855f7 100%);
-      border-radius: 20px;
-      padding: 36px 40px;
+      border-radius: 16px;
+      padding: 22px 32px;
       margin-bottom: 28px;
       color: #fff;
       position: relative;
@@ -81,10 +81,10 @@
     .tab.active { background:var(--quiz-color); border-color:var(--quiz-color); color:#fff; }
 
     /* Quiz cards */
-    .quiz-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:18px; }
+    .quiz-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
 
     .quiz-card {
-      background: var(--card-bg);
+      background: linear-gradient(160deg, #faf8ff 0%, #f3eeff 100%);
       border-radius: 16px;
       border: 1px solid var(--border);
       padding: 24px;
@@ -137,7 +137,7 @@
 
     #sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:99; }
 
-    @media (max-width:900px) { #sidebar{transform:translateX(-100%)} #sidebar.open{transform:translateX(0)} #sidebar-close{display:block} #main{margin-left:0} .menu-toggle{display:block} .quiz-grid{grid-template-columns:1fr} .stats-row{grid-template-columns:repeat(3,1fr)} }
+    @media (max-width:900px) { #sidebar{transform:translateX(-100%)} #sidebar.open{transform:translateX(0)} #sidebar-close{display:block} #main{margin-left:0} .menu-toggle{display:block} .quiz-grid{grid-template-columns:repeat(2,1fr)} .stats-row{grid-template-columns:repeat(3,1fr)} }
     @media (max-width:560px) { .content{padding:20px 16px} .stats-row{grid-template-columns:1fr 1fr} .quiz-hero{padding:24px} .hero-icon{display:none} }
   </style>
 </head>

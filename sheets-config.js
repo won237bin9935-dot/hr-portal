@@ -101,6 +101,19 @@ function applyEventColor(themeName, customHex) {
   document.documentElement.style.setProperty('--event-light', color.light);
 }
 
+
+// 修正 Google Sheets 日期格式 Date(yyyy,m,d) → yyyy-MM-dd
+function formatSheetDate(val) {
+  if (!val) return '';
+  const match = String(val).match(/Date\((\d+),(\d+),(\d+)\)/);
+  if (match) {
+    const y = match[1];
+    const m = String(parseInt(match[2])+1).padStart(2,'0');
+    const d = String(match[3]).padStart(2,'0');
+    return y+'-'+m+'-'+d;
+  }
+  return String(val);
+}
 function shadeHex(hex, pct) {
   const num = parseInt(hex.slice(1), 16);
   const r = Math.min(255, Math.max(0, (num >> 16) + Math.round(255 * pct / 100)));
@@ -119,4 +132,18 @@ function statusBadge(status) {
     '開放中':   { cls: 'open',   label: '● 開放中' },
   };
   return map[status] || { cls: 'closed', label: status };
+}
+
+// 修正 Google Sheets 日期格式 Date(yyyy,m,d) → yyyy-MM-dd
+function formatSheetDate(val) {
+  if (!val) return '';
+  const s = String(val);
+  const match = s.match(/Date\((\d+),(\d+),(\d+)\)/);
+  if (match) {
+    const y = match[1];
+    const m = String(parseInt(match[2])+1).padStart(2,'0');
+    const d = String(match[3]).padStart(2,'0');
+    return y+'-'+m+'-'+d;
+  }
+  return s;
 }

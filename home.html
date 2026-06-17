@@ -48,7 +48,7 @@
     .welcome-banner {
       background: linear-gradient(135deg, #2e3141 0%, #3d4466 60%, #4a5080 100%);
       border-radius: 16px;
-      padding: 28px 36px;
+      padding: 22px 32px;
       margin-bottom: 28px;
       display: flex;
       align-items: center;
@@ -82,20 +82,21 @@
     .flip-clock { display: flex; align-items: center; gap: 8px; z-index: 1; flex-shrink: 0; }
     .flip-unit { display: flex; flex-direction: column; align-items: center; gap: 4px; }
     .flip-card {
-      background: rgba(0,0,0,.35);
+      background: #ffffff;
       border-radius: 8px;
       min-width: 44px;
       height: 48px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 800;
-      color: #fff;
+      color: #2e3141;
       font-variant-numeric: tabular-nums;
       position: relative;
       overflow: hidden;
-      border: 1px solid rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.2);
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
     }
     .flip-card.flip {
       animation: flipAnim .35s ease;
@@ -105,7 +106,7 @@
       50% { transform: rotateX(-90deg); opacity: .5; }
       100% { transform: rotateX(0deg); }
     }
-    .flip-label { font-size: 10px; color: rgba(255,255,255,.45); letter-spacing: .06em; }
+    .flip-label { font-size: 10px; color: rgba(255,255,255,.6); letter-spacing: .06em; }
     .flip-sep { color: rgba(255,255,255,.3); font-size: 20px; font-weight: 300; margin-bottom: 16px; }
 
     /* ── Three col grid ── */
@@ -121,15 +122,15 @@
     }
 
     .panel-header {
-      padding: 14px 18px;
+      padding: 16px 18px;
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
-    .panel-header-left { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; }
+    .panel-header-left { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 800; }
     .panel-header-icon { font-size: 16px; }
-    .panel-header a { font-size: 12px; color: var(--accent); text-decoration: none; font-weight: 600; }
+    .panel-header a { font-size: 14px; color: var(--accent); text-decoration: none; font-weight: 600; }
     .panel-header a:hover { text-decoration: underline; }
     .panel-body { padding: 8px 0; flex: 1; }
 
@@ -152,8 +153,8 @@
     .dot-important { background: #f0a500; }
     .dot-normal { background: #cbd5e1; }
     .notice-info { flex: 1; }
-    .notice-title-text { font-size: 13px; font-weight: 600; line-height: 1.4; margin-bottom: 3px; color: var(--text-dark); }
-    .notice-meta { font-size: 11px; color: var(--text-light); }
+    .notice-title-text { font-size: 15px; font-weight: 600; line-height: 1.4; margin-bottom: 3px; color: var(--text-dark); }
+    .notice-meta { font-size: 13px; color: var(--text-light); }
 
     /* Event items */
     .event-row {
@@ -175,9 +176,9 @@
     .event-status-dot.closed { background: #cbd5e1; }
     @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.7)} }
     .event-info { flex: 1; }
-    .event-name { font-size: 13px; font-weight: 600; margin-bottom: 3px; color: var(--text-dark); }
-    .event-date { font-size: 11px; color: var(--text-light); }
-    .event-status-tag { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; flex-shrink: 0; }
+    .event-name { font-size: 15px; font-weight: 600; margin-bottom: 3px; color: var(--text-dark); }
+    .event-date { font-size: 13px; color: var(--text-light); }
+    .event-status-tag { font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 10px; flex-shrink: 0; }
     .tag-open { background: #e8faf0; color: #27ae60; }
     .tag-soon { background: #fff7e0; color: #f0a500; }
     .tag-closed { background: #f0f1f5; color: #999; }
@@ -208,9 +209,9 @@
     .fmt-word-bg { background: #dbeafe; }
     .fmt-other-bg { background: #f0f1f5; }
     .doc-info { flex: 1; }
-    .doc-name { font-size: 13px; font-weight: 600; margin-bottom: 3px; color: var(--text-dark); }
-    .doc-meta-text { font-size: 11px; color: var(--text-light); }
-    .doc-open-btn { font-size: 11px; color: var(--accent); font-weight: 600; flex-shrink: 0; }
+    .doc-name { font-size: 15px; font-weight: 600; margin-bottom: 3px; color: var(--text-dark); }
+    .doc-meta-text { font-size: 13px; color: var(--text-light); }
+    .doc-open-btn { font-size: 13px; color: var(--accent); font-weight: 600; flex-shrink: 0; }
 
     /* Empty & Loading */
     .panel-empty { text-align: center; padding: 32px 16px; color: var(--text-light); font-size: 13px; }
@@ -388,7 +389,7 @@
         <div class="notice-dot ${dotCls}"></div>
         <div class="notice-info">
           <div class="notice-title-text">${n['公告標題']}</div>
-          <div class="notice-meta">${n['發布日期'] || ''} ${n['發布單位'] ? '· '+n['發布單位'] : ''}</div>
+          <div class="notice-meta">${formatSheetDate(n['發布日期'])} ${n['發布單位'] ? '· '+n['發布單位'] : ''}</div>
         </div>
       </a>`;
     }).join('');
@@ -406,7 +407,7 @@
         <div class="event-status-dot ${dotCls}"></div>
         <div class="event-info">
           <div class="event-name">${e['活動名稱']}</div>
-          <div class="event-date">${e['日期'] || ''} ${e['地點'] ? '· '+e['地點'] : ''}</div>
+          <div class="event-date">${formatSheetDate(e['日期']) || e['日期'] || ''} ${e['地點'] ? '· '+e['地點'] : ''}</div>
         </div>
         <span class="event-status-tag ${tagCls}">${status}</span>
       </a>`;
@@ -426,7 +427,7 @@
         <div class="doc-fmt-icon ${bgCls}">${icon}</div>
         <div class="doc-info">
           <div class="doc-name">${d['文件名稱']}</div>
-          <div class="doc-meta-text">${fmt || '檔案'} ${d['上傳日期'] ? '· '+d['上傳日期'] : ''}</div>
+          <div class="doc-meta-text">${fmt || '檔案'} ${d['上傳日期'] ? '· '+formatSheetDate(d['上傳日期']) : ''}</div>
         </div>
         <span class="doc-open-btn">開啟 →</span>
       </a>`;
