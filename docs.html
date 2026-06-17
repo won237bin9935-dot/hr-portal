@@ -49,7 +49,7 @@
     .docs-hero {
       background: linear-gradient(135deg, #0369a1 0%, #0891b2 50%, #06b6d4 100%);
       border-radius: 16px;
-      padding: 22px 32px;
+      padding: 18px 32px;
       margin-bottom: 28px;
       color: #fff;
       position: relative;
@@ -61,15 +61,15 @@
     .hero-icon { font-size:72px; opacity:.2; position:absolute; right:40px; top:50%; transform:translateY(-50%); }
 
     /* Filter bar */
-    .filter-bar { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
-    .filter-bar h2 { font-size:16px; font-weight:700; }
+    .filter-bar { display:flex; align-items:center; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
+    .filter-bar h2 { font-size:15px; font-weight:700; color:#666; margin-right:4px; }
     .filter-tabs { display:flex; gap:8px; flex-wrap:wrap; }
     .tab { padding:6px 16px; border-radius:30px; font-size:13px; font-weight:600; cursor:pointer; border:1.5px solid var(--border); background:var(--card-bg); color:var(--text-mid); transition:all .18s; }
     .tab:hover { border-color:var(--docs-color); color:var(--docs-color); }
     .tab.active { background:var(--docs-color); border-color:var(--docs-color); color:#fff; }
 
     /* Docs grid */
-    .docs-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+    .docs-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; align-items:start; }
 
     .doc-card {
       background: var(--card-bg);
@@ -85,8 +85,7 @@
     /* Image preview */
     .doc-preview {
       width: 100%;
-      min-height: 160px;
-      max-height: 320px;
+      height: 180px;
       background: var(--docs-light);
       display: flex;
       align-items: center;
@@ -94,7 +93,7 @@
       overflow: hidden;
       position: relative;
     }
-    .doc-preview img { width:100%; height:auto; object-fit:contain; }
+    .doc-preview img { width:100%; height:100%; object-fit:cover; }
     .doc-preview.no-img { background: linear-gradient(135deg, #e0f7fa, #b2ebf2); }
     .doc-preview-icon { font-size:48px; opacity:.5; }
     .doc-format-badge {
@@ -183,7 +182,7 @@
     <div class="docs-hero">
       <div class="hero-text">
         <h1>📁 文件宣導</h1>
-        <p>公司政策、法規宣導、表單下載及宣傳圖片，<br>所有重要文件一站查閱。</p>
+        <p>公司政策、法規宣導、表單下載及宣傳圖片，所有重要文件一站查閱。</p>
       </div>
       <div class="hero-icon">📄</div>
     </div>
