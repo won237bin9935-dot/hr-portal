@@ -80,12 +80,13 @@
 
     /* Flip clock */
     .flip-clock { display: flex; align-items: center; gap: 8px; z-index: 1; flex-shrink: 0; }
-    .flip-unit { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .flip-unit { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 52px; }
     .flip-card {
       background: #ffffff;
       border-radius: 8px;
-      min-width: 44px;
+      min-width: 52px;
       height: 48px;
+      padding: 0 8px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -119,14 +120,26 @@
       overflow: hidden;
       display: flex;
       flex-direction: column;
+      box-shadow: 0 2px 12px rgba(0,0,0,.06);
+      transition: box-shadow .2s;
     }
+    .panel:hover { box-shadow: 0 4px 20px rgba(0,0,0,.1); }
 
     .panel-header {
-      padding: 16px 18px;
+      padding: 14px 18px;
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
+      position: relative;
+    }
+    .panel-header::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 10px; bottom: 10px;
+      width: 3px;
+      border-radius: 0 3px 3px 0;
+      background: var(--accent);
     }
     .panel-header-left { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 800; }
     .panel-header-icon { font-size: 16px; }
@@ -147,7 +160,7 @@
       color: inherit;
     }
     .notice-row:last-child { border-bottom: none; }
-    .notice-row:hover { background: var(--bg); }
+    .notice-row:hover { background: #fff5f5; }
     .notice-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
     .dot-urgent { background: #ef4444; }
     .dot-important { background: #f0a500; }
@@ -169,7 +182,7 @@
       color: inherit;
     }
     .event-row:last-child { border-bottom: none; }
-    .event-row:hover { background: var(--bg); }
+    .event-row:hover { background: #f0fff4; }
     .event-status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
     .event-status-dot.open { background: #27ae60; animation: pulse 2s infinite; }
     .event-status-dot.soon { background: #f0a500; }
@@ -196,7 +209,7 @@
       color: inherit;
     }
     .doc-row:last-child { border-bottom: none; }
-    .doc-row:hover { background: var(--bg); }
+    .doc-row:hover { background: #f0f9ff; }
     .doc-fmt-icon {
       width: 36px; height: 36px;
       border-radius: 8px;

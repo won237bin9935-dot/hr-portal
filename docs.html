@@ -69,7 +69,7 @@
     .tab.active { background:var(--docs-color); border-color:var(--docs-color); color:#fff; }
 
     /* Docs grid */
-    .docs-grid { display:flex; flex-wrap:wrap; gap:16px; }
+    .docs-grid { display:flex; flex-wrap:wrap; gap:16px; max-width:918px; margin:0 auto; justify-content:flex-start; }
 
     .doc-card {
       background: var(--card-bg);
@@ -79,8 +79,9 @@
       transition: all .2s;
       display: flex;
       flex-direction: column;
-      width: 240px;
+      width: 290px;
       flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
     }
     .doc-card:hover { box-shadow:0 6px 24px rgba(0,0,0,.09); transform:translateY(-2px); }
 
