@@ -80,13 +80,13 @@
 
     /* Flip clock */
     .flip-clock { display: flex; align-items: center; gap: 8px; z-index: 1; flex-shrink: 0; }
-    .flip-unit { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 52px; }
+    .flip-unit { display: flex; flex-direction: column; align-items: center; gap: 4px; }
     .flip-card {
       background: #ffffff;
       border-radius: 8px;
-      min-width: 52px;
+      min-width: 48px;
       height: 48px;
-      padding: 0 8px;
+      padding: 0 10px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -342,7 +342,7 @@
     { id: 'fc-year',  label: '年',  getValue: d => String(d.getFullYear()) },
     { id: 'fc-month', label: '月',  getValue: d => String(d.getMonth()+1).padStart(2,'0') },
     { id: 'fc-day',   label: '日',  getValue: d => String(d.getDate()).padStart(2,'0') },
-    { id: 'fc-week',  label: '',    getValue: d => ['日','一','二','三','四','五','六'][d.getDay()], prefix: '週' },
+    { id: 'fc-week',  label: '星期', getValue: d => ['日','一','二','三','四','五','六'][d.getDay()] },
     { id: 'fc-hour',  label: '時',  getValue: d => String(d.getHours()).padStart(2,'0') },
     { id: 'fc-min',   label: '分',  getValue: d => String(d.getMinutes()).padStart(2,'0') },
   ];
@@ -365,7 +365,7 @@
   function updateClock() {
     const now = new Date();
     clockUnits.forEach(u => {
-      const val = (u.prefix || '') + u.getValue(now);
+      const val = u.getValue(now);
       const el = document.getElementById(u.id);
       if (el && el.textContent !== val) {
         el.classList.remove('flip');

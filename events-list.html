@@ -63,9 +63,9 @@
     .section-label::after { content:''; flex:1; height:1px; background:var(--border); }
 
     /* Active grid - 3 col */
-    .events-grid { display:flex; flex-wrap:wrap; gap:16px; max-width:948px; margin:0 auto; justify-content:flex-start; }
+    .events-grid { display:flex; flex-direction:row; flex-wrap:wrap; gap:16px; width:100%; }
 
-    .event-card { background:var(--card-bg); border-radius:12px; border:1px solid var(--border); overflow:hidden; transition:all .2s; text-decoration:none; color:inherit; display:flex; flex-direction:column; cursor:pointer; width:300px; flex-shrink:0; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+    .event-card { background:var(--card-bg); border-radius:12px; border:1px solid var(--border); overflow:hidden; transition:all .2s; text-decoration:none; color:inherit; display:inline-flex; flex-direction:column; cursor:pointer; width:300px; flex-shrink:0; box-shadow:0 2px 8px rgba(0,0,0,.06); }
     .event-card:hover { box-shadow:0 6px 20px rgba(0,0,0,.1); transform:translateY(-2px); }
 
     .event-poster { width:100%; min-height:120px; background:#f0f1f5; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; }
