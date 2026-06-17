@@ -215,26 +215,78 @@ document.getElementById('btn-submit').addEventListener('click', async function()
   if (!empId || !name) { alert('請填寫工號及姓名'); return; }
   if (!signed) { alert('請完成手寫簽名'); return; }
 
-  // 合成圖片（工號姓名 + 簽名）
-  const dpr = window.devicePixelRatio || 1;
-  const w = canvas.width / dpr;
-  const h = canvas.height / dpr;
+  // 合成圖片 B5 尺寸（1240 × 1754px）
+  const B5W = 1240;
+  const B5H = 1754;
   const out = document.createElement('canvas');
-  out.width = canvas.width;
-  out.height = canvas.height + 50 * dpr;
+  out.width = B5W;
+  out.height = B5H;
   const octx = out.getContext('2d');
+
+  // 白色背景
   octx.fillStyle = '#ffffff';
-  octx.fillRect(0, 0, out.width, out.height);
-  octx.fillStyle = '#3d4449';
-  octx.font = `bold ${13 * dpr}px Microsoft JhengHei, sans-serif`;
-  octx.fillText(`工號：${empId}　姓名：${name}`, 12 * dpr, 28 * dpr);
+  octx.fillRect(0, 0, B5W, B5H);
+
+  // 邊框
+  octx.strokeStyle = '#cccccc';
+  octx.lineWidth = 2;
+  octx.strokeRect(20, 20, B5W - 40, B5H - 40);
+
+  // 標題區背景
+  octx.fillStyle = '#f8f9fa';
+  octx.fillRect(20, 20, B5W - 40, 160);
+
+  // 標題區底線
   octx.strokeStyle = '#e8e8e8';
-  octx.lineWidth = dpr;
+  octx.lineWidth = 1.5;
   octx.beginPath();
-  octx.moveTo(0, 40 * dpr);
-  octx.lineTo(out.width, 40 * dpr);
+  octx.moveTo(20, 180);
+  octx.lineTo(B5W - 20, 180);
   octx.stroke();
-  octx.drawImage(canvas, 0, 50 * dpr);
+
+  // 文件名稱
+  octx.fillStyle = '#3d4449';
+  octx.font = 'bold 36px Microsoft JhengHei, sans-serif';
+  octx.fillText('文件名稱：' + docName, 48, 80);
+
+  // 工號、姓名、回簽日期（同一行）
+  const today = new Date();
+  const dateStr = today.getFullYear() + '-' +
+    String(today.getMonth()+1).padStart(2,'0') + '-' +
+    String(today.getDate()).padStart(2,'0');
+  octx.font = '28px Microsoft JhengHei, sans-serif';
+  octx.fillText(`工號：${empId}　　姓名：${name}　　回簽日期：${dateStr}`, 48, 148);
+
+  // 簽名區標籤
+  octx.fillStyle = '#999999';
+  octx.font = '24px Microsoft JhengHei, sans-serif';
+  octx.fillText('簽名：', 48, 240);
+
+  // 把原始簽名畫到 B5 畫布上，置中並放大
+  const sigW = B5W - 100;
+  const sigH = B5H - 320;
+  const srcW = canvas.width;
+  const srcH = canvas.height;
+
+  // 等比例縮放
+  const scale = Math.min(sigW / srcW, sigH / srcH);
+  const drawW = srcW * scale;
+  const drawH = srcH * scale;
+  const drawX = (B5W - drawW) / 2;
+  const drawY = 260;
+
+  // 簽名區邊框
+  octx.strokeStyle = '#dddddd';
+  octx.lineWidth = 1;
+  octx.strokeRect(40, 255, B5W - 80, drawH + 20);
+
+  octx.drawImage(canvas, drawX, drawY, drawW, drawH);
+
+  // 底部版權
+  octx.fillStyle = '#cccccc';
+  octx.font = '20px Microsoft JhengHei, sans-serif';
+  octx.textAlign = 'center';
+  octx.fillText('華美光學股份有限公司 人資部', B5W / 2, B5H - 40);
 
   const imgData = out.toDataURL('image/png');
 
