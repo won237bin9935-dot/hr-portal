@@ -86,7 +86,7 @@
 
     
 
-     #sidebar.open{transform:translateX(0)} #sidebar-close{display:block} #main{margin-left:0} .menu-toggle{display:block} .links-grid{grid-template-columns:1fr} }
+    @media (max-width:900px) { #sidebar{transform:translateX(-100%)} #sidebar.open{transform:translateX(0)} #sidebar-close{display:block!important} #main{margin-left:0} .menu-toggle{display:block} .links-grid{grid-template-columns:1fr} }
     @media (max-width:560px) { .content{padding:20px 16px} .hero-icon{display:none} .links-hero{padding:24px} .coming-soon{padding:40px 20px} }
   
     .page-hero {
@@ -186,8 +186,7 @@
         <div class="page-hero-desc">整合各部門常用系統與工具，一站式快速存取所有內部資源。</div>
       </div>
     </div>
-      <div class="hero-icon">🖥️</div>
-    </div>
+
 
     <!-- 目前顯示即將上線，之後填入連結後換成 links-grid -->
     <div class="coming-soon">

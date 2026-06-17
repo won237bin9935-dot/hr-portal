@@ -105,7 +105,7 @@
 
     
 
-     #sidebar.open{transform:translateX(0)} #sidebar-close{display:block} #main{margin-left:0} .menu-toggle{display:block} .event-layout{grid-template-columns:1fr} .poster-col{position:static} .poster-img-area{aspect-ratio:unset;max-height:400px} }
+    @media (max-width:900px) { #sidebar{transform:translateX(-100%)} #sidebar.open{transform:translateX(0)} #sidebar-close{display:block!important} #main{margin-left:0} .menu-toggle{display:block} .event-layout{grid-template-columns:1fr} .poster-col{position:static} .poster-img-area{aspect-ratio:unset;max-height:400px} }
     @media (max-width:560px) { .content{padding:20px 16px} .meta-grid{grid-template-columns:1fr} .meta-cell{border-right:none} .meta-cell:nth-last-child(-n+2){border-bottom:1px solid var(--border)} .meta-cell:last-child{border-bottom:none} }
   
     /* Layout fix */

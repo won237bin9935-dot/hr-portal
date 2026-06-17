@@ -94,7 +94,7 @@
     
 
     @media (max-width:1100px) { .quiz-grid { grid-template-columns:repeat(2,1fr); } }
-     #sidebar.open{transform:translateX(0)} #sidebar-close{display:block} #main{margin-left:0} .menu-toggle{display:block} }
+    @media (max-width:900px) { #sidebar{transform:translateX(-100%)} #sidebar.open{transform:translateX(0)} #sidebar-close{display:block!important} #main{margin-left:0} .menu-toggle{display:block} }
     @media (max-width:560px) { .content{padding:20px 16px} .quiz-grid{grid-template-columns:1fr} .hero-icon{display:none} }
   
     .page-hero {
@@ -192,8 +192,7 @@
         <div class="page-hero-desc">完成各項線上測驗，提升專業知識與工作技能，請依規定期限完成指定測驗。</div>
       </div>
     </div>
-      <div class="hero-icon">🎯</div>
-    </div>
+
 
     <div class="list-header">
       <h2>所有測驗</h2>

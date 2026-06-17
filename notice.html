@@ -106,7 +106,7 @@
 
     
 
-     #sidebar.open{transform:translateX(0)} #sidebar-close{display:block} #main{margin-left:0} .menu-toggle{display:block} }
+    @media (max-width:900px) { #sidebar{transform:translateX(-100%)} #sidebar.open{transform:translateX(0)} #sidebar-close{display:block!important} #main{margin-left:0} .menu-toggle{display:block} }
     @media (max-width:560px) { .content{padding:20px 16px} .hero-icon{display:none} .notice-hero{padding:24px} }
   
     .page-hero {
@@ -206,8 +206,7 @@
         <div class="page-hero-desc">人資部門最新消息、重要通知及政策公告，請定期查閱以免錯過重要資訊。</div>
       </div>
     </div>
-      <div class="hero-icon">📣</div>
-    </div>
+
 
     <div class="filter-bar">
       <h2>所有公告</h2>
