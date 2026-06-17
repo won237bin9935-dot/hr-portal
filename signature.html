@@ -135,7 +135,7 @@
     <div class="doc-banner">
       <div class="label">文件名稱</div>
       <!-- ★ 修改文件名稱 ★ -->
-      <div class="name" id="doc-name">衛教：高血壓</div>
+      <div class="name" id="doc-name">載入中…</div>
     </div>
 
     <div class="form-card">
@@ -148,10 +148,7 @@
         <label>姓名 *</label>
         <input type="text" id="name" placeholder="請輸入姓名"/>
       </div>
-      <div class="field">
-        <label>部門 *</label>
-        <input type="text" id="department" placeholder="請輸入部門"/>
-      </div>
+
     </div>
 
     <div class="sig-card">
@@ -182,8 +179,10 @@
   // ★ 把 Apps Script 部署後的網址貼在這裡 ★
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxNQJKNYvxClVEk29dhUXKYzIzCnKmHyzrcYzbfiqGfzlJ4KZrJXT95luo9BYkLSHz0/exec';
 
-  // ★ 文件名稱（每份文件改這裡）★
-  const DOC_NAME = document.getElementById('doc-name').textContent;
+  // 自動從網址讀取文件名稱，例如：signature.html?doc=性騷擾防治宣導
+  const urlParams = new URLSearchParams(window.location.search);
+  const DOC_NAME = urlParams.get('doc') || '未指定文件';
+  document.getElementById('doc-name').textContent = DOC_NAME;
 
   // Canvas setup
   const canvas = document.getElementById('sig-canvas');
@@ -268,8 +267,8 @@
     const name = document.getElementById('name').value.trim();
     const department = document.getElementById('department').value.trim();
 
-    if (!employeeId || !name || !department) {
-      alert('請填寫工號、姓名及部門');
+    if (!employeeId || !name) {
+      alert('請填寫工號及姓名');
       return;
     }
     if (!hasSigned) {
@@ -280,7 +279,34 @@
     document.getElementById('loading').classList.add('show');
     document.getElementById('submit-btn').disabled = true;
 
-    const signatureData = canvas.toDataURL('image/png');
+    // 合成簽名圖片：在簽名上方加入工號和姓名
+    const compositeCanvas = document.createElement('canvas');
+    const dpr = window.devicePixelRatio || 1;
+    compositeCanvas.width = canvas.width;
+    compositeCanvas.height = canvas.height + 50 * dpr;
+    const cctx = compositeCanvas.getContext('2d');
+
+    // 白色背景
+    cctx.fillStyle = '#ffffff';
+    cctx.fillRect(0, 0, compositeCanvas.width, compositeCanvas.height);
+
+    // 上方文字：工號 + 姓名
+    cctx.fillStyle = '#3d4449';
+    cctx.font = `bold ${14 * dpr}px 'Microsoft JhengHei', sans-serif`;
+    cctx.fillText(`工號：${employeeId}　姓名：${name}`, 12 * dpr, 28 * dpr);
+
+    // 分隔線
+    cctx.strokeStyle = '#e8e8e8';
+    cctx.lineWidth = 1 * dpr;
+    cctx.beginPath();
+    cctx.moveTo(0, 40 * dpr);
+    cctx.lineTo(compositeCanvas.width, 40 * dpr);
+    cctx.stroke();
+
+    // 貼上原始簽名
+    cctx.drawImage(canvas, 0, 50 * dpr);
+
+    const signatureData = compositeCanvas.toDataURL('image/png');
 
     try {
       const res = await fetch(APPS_SCRIPT_URL, {
@@ -289,7 +315,7 @@
           docName: DOC_NAME,
           employeeId,
           name,
-          department,
+          department: '',
           signature: signatureData
         })
       });
