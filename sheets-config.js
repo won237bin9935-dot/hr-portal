@@ -9,7 +9,7 @@ const HRCONFIG = {
   SHEETS_ID: '1b4xq2XxSCbuIF6SZU-x0Jz4Du_n-YRAJCSQrkm2ze3U',
 
   // ★ 測驗系統設定（部署 Apps Script 後，把網址填在這裡）
-  QUIZ_APPS_SCRIPT_URL: 'YOUR_DEPLOY_ID_先留空',
+  QUIZ_APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxfo--2xa9vk6tlIzCjNyu3Y76AQIzYj-tM3XcvFQO72QwkWEqYIW_jSl2JRtE2tgql/exec',
 
   // 各分頁名稱（跟 Sheets 裡的分頁名稱要一致）
   SHEETS: {
