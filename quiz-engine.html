@@ -581,10 +581,9 @@ function renderJudge(q, idx){
       card.classList.add('disabled');
       const isCorrect = q.correct === letter;
       const isChosen  = answers[idx] === letter;
-      if(isChosen && isCorrect)  card.classList.add('state-correct');
-      else if(isChosen && !isCorrect) card.classList.add('state-wrong');
-      // highlight correct answer if user was wrong
-      else if(!isChosen && isCorrect && answers[idx]!==null) card.classList.add('state-correct');
+      if(isChosen && isCorrect)  card.classList.add('state-correct');  // 選對：綠框
+      else if(isChosen && !isCorrect) card.classList.add('state-wrong'); // 選錯：紅框
+      // 沒選的：完全不加框線
     } else {
       card.classList.toggle('selected', answers[idx]===letter);
     }
@@ -744,13 +743,32 @@ function finishQuiz(){
 
 async function saveResult(score,correctCount,total,elapsed){
   try {
-    const res=await fetch(APPS_URL,{method:'POST',body:JSON.stringify({
+    // 整理每題明細
+    const details = questions.map((q,i) => {
+      const userAns = q.type==='multi'
+        ? (answers[i] instanceof Set ? [...answers[i]].join(',') : '未作答')
+        : (answers[i] || '未作答');
+      const correctAns = q.type==='multi'
+        ? [...q.correct].join(',')
+        : q.correct;
+      return {
+        qNum       : i+1,
+        qText      : q.text,
+        userAnswer : userAns,
+        correctAnswer: correctAns,
+        isCorrect  : results[i],
+      };
+    });
+
+    const res=await fetch(APPS_URL,{method:'POST',mode:'no-cors',body:JSON.stringify({
       action:'saveQuizResult', quizName:quizTitle, employeeId:empId, employeeName:empName,
-      score, correctCount, total, elapsed, timestamp:new Date().toLocaleString('zh-TW')
+      score, correctCount, total, elapsed,
+      timestamp:new Date().toLocaleString('zh-TW'),
+      details,
     })});
-    const j=await res.json();
-    $('save-status').textContent = j.status==='ok' ? '✅ 成績已儲存' : '⚠️ 儲存失敗：'+j.message;
-    $('save-status').style.color = j.status==='ok' ? 'var(--green)' : 'var(--red)';
+    // no-cors 模式下無法讀取回應內容，只要不拋錯就代表送出成功
+    $('save-status').textContent = '✅ 成績已儲存';
+    $('save-status').style.color = 'var(--green)';
   } catch(e){
     $('save-status').textContent='⚠️ 成績儲存失敗（'+e.message+'）';
     $('save-status').style.color='var(--red)';
