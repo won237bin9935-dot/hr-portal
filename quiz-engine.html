@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>線上測驗 | 華美光學</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    :root {
+      --pink:        #e05c8a;
+      --pink-light:  #fce8f0;
+      --pink-dark:   #c0446e;
+      --green:       #3ab87a;
+      --green-light: #e6f9f0;
+      --red:         #e05c5c;
+      --red-light:   #fdeaea;
+      --border:      #e8d5e0;
+      --radius:      14px;
+    }
+
+    body { background: #f7f0f4; margin: 0; font-family: 'Noto Sans TC', sans-serif; }
+
+    .quiz-wrap {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 24px 16px 60px;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: 0 4px 24px rgba(200,100,140,.13);
+      overflow: hidden;
+    }
+    .card-head {
+      background: linear-gradient(135deg, var(--pink), var(--pink-dark));
+      color: #fff;
+      padding: 22px 28px 18px;
+    }
+    .card-head h1 { margin: 0 0 4px; font-size: 1.3rem; }
+    .card-head p  { margin: 0; opacity: .85; font-size: .88rem; }
+    .card-body { padding: 28px; }
+
+    /* ── Login ── */
+    .login-icon { font-size: 2.8rem; text-align: center; margin-bottom: 12px; }
+    .login-title { text-align: center; color: var(--pink); font-size: 1.1rem; margin: 0 0 22px; }
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-weight: 600; font-size: .88rem; color: #555; margin-bottom: 5px; }
+    .field input {
+      width: 100%; padding: 10px 14px; box-sizing: border-box;
+      border: 1.5px solid var(--border); border-radius: 8px; font-size: .98rem;
+      transition: border .2s;
+    }
+    .field input:focus { outline: none; border-color: var(--pink); box-shadow: 0 0 0 3px rgba(224,92,138,.15); }
+
+    /* Timer toggle */
+    .timer-box {
+      background: #f8f8f8; border-radius: 8px; padding: 12px 16px; margin-bottom: 18px;
+    }
+    .timer-box .tb-lbl { font-size: .88rem; font-weight: 600; color: #555; margin-bottom: 8px; }
+    .tb-opts { display: flex; gap: 16px; }
+    .tb-opts label { display: flex; align-items: center; gap: 5px; font-size: .88rem; cursor: pointer; }
+    .tb-opts input[type=radio] { accent-color: var(--pink); }
+    #timer-min-group { margin-top: 8px; font-size: .88rem; color: #555; display: flex; align-items: center; gap: 6px; }
+    #timer-min-group input { width: 70px; padding: 5px 8px; border: 1.5px solid var(--border); border-radius: 6px; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 11px 26px; border: none; border-radius: 8px;
+      font-size: .98rem; font-weight: 600; cursor: pointer;
+      transition: transform .1s, background .2s;
+    }
+    .btn:active { transform: scale(.97); }
+    .btn-pink  { background: var(--pink); color: #fff; box-shadow: 0 4px 14px rgba(224,92,138,.3); width: 100%; }
+    .btn-pink:hover { background: var(--pink-dark); }
+    .btn-next  { background: var(--pink); color: #fff; box-shadow: 0 4px 14px rgba(224,92,138,.3); }
+    .btn-next:hover { background: var(--pink-dark); }
+    .btn-gray  { background: #f0f0f0; color: #555; }
+    .btn-gray:hover { background: #e5e5e5; }
+    .btn-outline { background: transparent; border: 2px solid var(--pink); color: var(--pink); padding: 9px 22px; }
+    .btn-outline:hover { background: var(--pink-light); }
+
+    /* ── Progress ── */
+    .prog-bar { height: 6px; background: #f0dde8; border-radius: 3px; margin-bottom: 22px; overflow: hidden; }
+    .prog-fill { height: 100%; background: linear-gradient(90deg, var(--pink), var(--pink-dark)); border-radius: 3px; transition: width .4s; }
+    .q-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; font-size: .84rem; color: #999; }
+    .q-meta .q-num { font-weight: 700; color: var(--pink); font-size: .98rem; }
+    #timer-display {
+      background: var(--pink-light); color: var(--pink-dark);
+      padding: 3px 12px; border-radius: 20px; font-weight: 700; font-size: .88rem;
+    }
+    #timer-display.urgent { background: #fdeaea; color: var(--red); animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.55} }
+
+    /* ── Question text ── */
+    .q-text {
+      font-size: 1.05rem; font-weight: 700; line-height: 1.65;
+      margin-bottom: 20px; color: #222;
+      border-left: 4px solid var(--pink); padding-left: 12px;
+    }
+
+    /* ── 判斷題：圖片卡片 ── */
+    .judge-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px;
+    }
+    .judge-card {
+      border: 2.5px solid var(--border); border-radius: 12px;
+      padding: 14px 10px 10px; text-align: center; cursor: pointer;
+      transition: border .15s, background .15s, transform .1s;
+      background: #fafafa;
+    }
+    .judge-card:hover { border-color: var(--pink); background: var(--pink-light); transform: translateY(-2px); }
+    .judge-card img { width: 100%; max-width: 160px; height: 150px; object-fit: contain; pointer-events: none; }
+    .judge-card .jc-label { font-size: .88rem; color: #666; margin-top: 6px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .judge-card .jc-radio {
+      width: 16px; height: 16px; border-radius: 50%; border: 2px solid #ccc;
+      display: inline-block; flex-shrink: 0; transition: all .15s;
+    }
+
+    /* selected / correct / wrong states */
+    .judge-card.selected { border-color: var(--pink); background: var(--pink-light); }
+    .judge-card.selected .jc-radio { background: var(--pink); border-color: var(--pink); }
+    .judge-card.state-correct { border-color: var(--green); background: var(--green-light); }
+    .judge-card.state-correct .jc-radio { background: var(--green); border-color: var(--green); }
+    .judge-card.state-wrong   { border-color: var(--red);   background: var(--red-light); }
+    .judge-card.state-wrong   .jc-radio { background: var(--red); border-color: var(--red); }
+    .judge-card.disabled { pointer-events: none; }
+
+    /* ── 一般選擇題：文字選項 ── */
+    .choice-list { list-style: none; padding: 0; margin: 0 0 18px; }
+    .choice-list li { margin-bottom: 10px; }
+    .choice-opt {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 12px 16px; border: 2px solid var(--border); border-radius: 10px;
+      cursor: pointer; font-size: .95rem; line-height: 1.5; transition: border .15s, background .15s;
+    }
+    .choice-opt:hover { border-color: var(--pink); background: var(--pink-light); }
+    .choice-opt.selected  { border-color: var(--pink); background: var(--pink-light); }
+    .choice-opt.state-correct { border-color: var(--green); background: var(--green-light); }
+    .choice-opt.state-wrong   { border-color: var(--red);   background: var(--red-light); }
+    .choice-opt.state-answer  { border-color: var(--green); background: var(--green-light); opacity: .75; }
+    .choice-opt.disabled { pointer-events: none; }
+    .opt-letter {
+      width: 24px; height: 24px; border-radius: 50%; border: 2px solid #ccc;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .78rem; font-weight: 700; flex-shrink: 0; transition: all .15s;
+    }
+    .choice-opt.selected  .opt-letter { background: var(--pink);  border-color: var(--pink);  color: #fff; }
+    .choice-opt.state-correct .opt-letter { background: var(--green); border-color: var(--green); color: #fff; }
+    .choice-opt.state-wrong   .opt-letter { background: var(--red);   border-color: var(--red);   color: #fff; }
+    .choice-opt.state-answer  .opt-letter { background: var(--green); border-color: var(--green); color: #fff; }
+
+    /* ── Feedback bar ── */
+    .feedback {
+      display: none; padding: 11px 16px; border-radius: 8px;
+      font-size: .9rem; font-weight: 600; margin-bottom: 16px;
+      align-items: center; gap: 8px;
+    }
+    .feedback.show { display: flex; }
+    .feedback.fb-correct { background: var(--green-light); color: #1e7a4a; border: 1.5px solid var(--green); }
+    .feedback.fb-wrong   { background: var(--red-light);   color: #b33030; border: 1.5px solid var(--red); }
+
+    /* ── Nav ── */
+    .nav { display: flex; justify-content: flex-end; gap: 10px; margin-top: 4px; }
+
+    /* ── Result ── */
+    .result-hero { text-align: center; padding: 16px 0 24px; }
+    .score-ring { position: relative; width: 130px; height: 130px; margin: 0 auto 16px; }
+    .score-ring svg { width: 130px; height: 130px; transform: rotate(-90deg); }
+    .score-ring circle.bg   { fill: none; stroke: #f0dde8; stroke-width: 10; }
+    .score-ring circle.fill { fill: none; stroke: var(--pink); stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset 1s ease; }
+    .score-text { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .score-text .sn { font-size: 2rem; font-weight: 800; color: var(--pink); line-height: 1; }
+    .score-text .sl { font-size: .7rem; color: #aaa; margin-top: 2px; }
+    .result-stats { display: flex; justify-content: center; gap: 28px; margin-bottom: 20px; }
+    .rs { text-align: center; }
+    .rs-n { font-size: 1.5rem; font-weight: 800; color: var(--pink); }
+    .rs-l { font-size: .76rem; color: #999; margin-top: 2px; }
+    .grade-msg { font-size: 1.05rem; font-weight: 600; margin-bottom: 20px; }
+
+    /* Review */
+    .review h3 { font-size: .95rem; font-weight: 700; color: #666; border-bottom: 2px solid var(--border); padding-bottom: 8px; margin-bottom: 14px; }
+    .rv-item { padding: 14px; border-radius: 10px; border: 1.5px solid var(--border); margin-bottom: 10px; }
+    .rv-item.rv-ok  { border-color: var(--green); background: var(--green-light); }
+    .rv-item.rv-ng  { border-color: var(--red);   background: var(--red-light); }
+    .rv-top { display: flex; gap: 8px; margin-bottom: 6px; }
+    .rv-icon { font-size: 1.1rem; flex-shrink: 0; }
+    .rv-q { font-size: .88rem; font-weight: 600; line-height: 1.5; }
+    .rv-detail { font-size: .82rem; color: #666; margin-left: 26px; line-height: 1.6; }
+    .rv-expl { margin-top: 5px; padding: 7px 10px; background: rgba(255,255,255,.65); border-radius: 6px; color: #555; }
+
+    .result-actions { display: flex; gap: 10px; justify-content: center; margin-top: 24px; flex-wrap: wrap; }
+    #save-status { font-size: .84rem; color: #999; text-align: center; margin-top: 10px; }
+
+    /* Loading / Error */
+    .loading { text-align: center; padding: 60px 20px; color: #aaa; }
+    .spinner { width: 38px; height: 38px; border: 4px solid #f0dde8; border-top-color: var(--pink); border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto 14px; }
+    @keyframes spin { to { transform: rotate(360deg) } }
+    .err-box { background: #fdeaea; border: 1.5px solid var(--red); border-radius: 10px; padding: 20px; text-align: center; color: var(--red); }
+
+    @media(max-width:520px){
+      .card-body { padding: 18px 14px; }
+      .judge-card img { height: 110px; }
+    }
+  </style>
+</head>
+<body>
+<div class="main-content" id="main-content">
+<div class="quiz-wrap">
+
+  <!-- Loading -->
+  <div id="s-loading" class="card">
+    <div class="card-body">
+      <div class="loading"><div class="spinner"></div><p id="load-msg">載入題目中…</p></div>
+    </div>
+  </div>
+
+  <!-- Login -->
+  <div id="s-login" class="card" style="display:none">
+    <div class="card-head">
+      <h1 id="title-login">線上測驗</h1>
+      <p id="desc-login"></p>
+    </div>
+    <div class="card-body">
+      <div class="login-icon">📝</div>
+      <h2 class="login-title">請填入您的資料後開始測驗</h2>
+      <div class="field"><label>工號</label><input id="inp-id"   type="text" placeholder="請輸入工號" /></div>
+      <div class="field"><label>姓名</label><input id="inp-name" type="text" placeholder="請輸入姓名" /></div>
+
+      <div class="timer-box">
+        <div class="tb-lbl">⏱ 計時功能</div>
+        <div class="tb-opts">
+          <label><input type="radio" name="tc" value="no" checked /> 不計時</label>
+          <label><input type="radio" name="tc" value="yes" /> 開啟計時</label>
+        </div>
+        <div id="timer-min-group" style="display:none">
+          限時 <input type="number" id="t-min" min="1" max="120" value="30" /> 分鐘
+        </div>
+      </div>
+
+      <button class="btn btn-pink" id="btn-start">開始測驗 →</button>
+      <p id="login-err" style="color:var(--red);font-size:.85rem;margin-top:8px;display:none">請填入工號與姓名</p>
+    </div>
+  </div>
+
+  <!-- Quiz -->
+  <div id="s-quiz" class="card" style="display:none">
+    <div class="card-head">
+      <h1 id="title-quiz"></h1>
+      <p id="user-info-quiz"></p>
+    </div>
+    <div class="card-body">
+      <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+      <div class="q-meta">
+        <span class="q-num" id="q-num">第 1 題 / 共 10 題</span>
+        <span id="timer-display" style="display:none"></span>
+      </div>
+      <div class="q-text" id="q-text"></div>
+
+      <!-- 判斷題 -->
+      <div id="judge-area" style="display:none">
+        <div class="judge-grid">
+          <div class="judge-card" id="jc-A" data-val="A">
+            <img id="jimg-A" src="" alt="正確" />
+            <div class="jc-label"><span class="jc-radio"></span><span id="jlbl-A"></span></div>
+          </div>
+          <div class="judge-card" id="jc-B" data-val="B">
+            <img id="jimg-B" src="" alt="錯誤" />
+            <div class="jc-label"><span class="jc-radio"></span><span id="jlbl-B"></span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 選擇題 -->
+      <div id="choice-area" style="display:none">
+        <ul class="choice-list" id="choice-list"></ul>
+      </div>
+
+      <!-- Feedback -->
+      <div class="feedback" id="feedback">
+        <span id="fb-icon"></span><span id="fb-msg"></span>
+      </div>
+
+      <div class="nav">
+        <button class="btn btn-next" id="btn-next" style="display:none">前往下一題 →</button>
+        <button class="btn btn-next" id="btn-finish" style="display:none">查看結果 ✓</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div id="s-result" class="card" style="display:none">
+    <div class="card-head"><h1>測驗結果</h1><p id="user-info-result"></p></div>
+    <div class="card-body">
+      <div class="result-hero">
+        <div class="score-ring">
+          <svg viewBox="0 0 130 130">
+            <circle class="bg" cx="65" cy="65" r="55"/>
+            <circle class="fill" id="ring-fill" cx="65" cy="65" r="55" stroke-dasharray="346" stroke-dashoffset="346"/>
+          </svg>
+          <div class="score-text"><div class="sn" id="sn">0</div><div class="sl">分</div></div>
+        </div>
+        <div class="result-stats">
+          <div class="rs"><div class="rs-n" id="rs-ok">0</div><div class="rs-l">答對題數</div></div>
+          <div class="rs"><div class="rs-n" id="rs-tot">0</div><div class="rs-l">總題數</div></div>
+          <div class="rs"><div class="rs-n" id="rs-time">-</div><div class="rs-l">作答時間</div></div>
+        </div>
+        <div class="grade-msg" id="grade-msg"></div>
+        <div id="save-status">⏳ 成績儲存中…</div>
+      </div>
+
+      <div class="review">
+        <h3>📋 每題詳解</h3>
+        <div id="rv-list"></div>
+      </div>
+
+      <div class="result-actions">
+        <button class="btn btn-outline" id="btn-retry">🔄 重新作答</button>
+        <a href="quiz.html" class="btn btn-gray">← 回測驗列表</a>
+      </div>
+    </div>
+  </div>
+
+</div><!-- quiz-wrap -->
+</div><!-- main-content -->
+
+<script src="sheets-config.js" defer></script>
+<script>
+// ── 固定圖片（判斷題用） ─────────────────────────────────
+const OWL_CORRECT = 'https://drive.google.com/uc?export=view&id=1bnCbx_gv-UN-QipAz-zbewjB4EheycTX';
+const OWL_WRONG   = 'https://drive.google.com/uc?export=view&id=1-jFpxc0yFeM62cqerb--XruEFFdqMPLF';
+
+// ── Apps Script & Sheet ──────────────────────────────────
+const APPS_URL  = (typeof QUIZ_APPS_SCRIPT_URL !== 'undefined') ? QUIZ_APPS_SCRIPT_URL : 'https://script.google.com/macros/s/YOUR_DEPLOY_ID/exec';
+const SHEET_ID  = (typeof GOOGLE_SHEET_ID !== 'undefined')      ? GOOGLE_SHEET_ID      : '1b4xq2XxSCbuIF6SZU-x0Jz4Du_n-YRAJCSQrkm2ze3U';
+
+// ── URL param ────────────────────────────────────────────
+const params    = new URLSearchParams(location.search);
+const QUIZ_NAME = params.get('quiz') || '';
+const SHEET_TAB = params.get('tab')  || QUIZ_NAME;
+
+// ── State ────────────────────────────────────────────────
+let questions   = [];
+let answers     = [];   // 每題使用者選的字母（字串）
+let results     = [];   // true/false
+let current     = 0;
+let empId = '', empName = '', quizTitle = '';
+let startTime   = null;
+let timerOn     = false, timerLimit = 1800, timerElapsed = 0, timerTick = null;
+let answered    = false; // 當前題是否已作答
+
+// ── Show/hide screens ────────────────────────────────────
+const $ = id => document.getElementById(id);
+function show(id){ ['s-loading','s-login','s-quiz','s-result'].forEach(s=>$(s).style.display=s===id?'':'none'); }
+
+// ── Fetch CSV from Sheets ────────────────────────────────
+async function loadQuiz(){
+  $('load-msg').textContent = `載入「${QUIZ_NAME}」題目中…`;
+  try {
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_TAB)}`;
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('網路錯誤');
+    const csv = await res.text();
+    questions = parseCSV(csv);
+    if(!questions.length) throw new Error('找不到題目，請確認分頁名稱');
+    answers = questions.map(()=>null);
+    results = questions.map(()=>null);
+    quizTitle = QUIZ_NAME;
+    $('title-login').textContent  = quizTitle;
+    $('desc-login').textContent   = `共 ${questions.length} 題`;
+    show('s-login');
+  } catch(e){
+    $('s-loading').innerHTML = `<div class="card-body"><div class="err-box">❌ 載入失敗<br><small>${e.message}</small></div></div>`;
+  }
+}
+
+// ── CSV parser ───────────────────────────────────────────
+// 欄位：題號|題目|選項A|選項B|選項C|選項D|正確答案|題型|解析|圖片URL
+function parseCSV(csv){
+  const rows = csvToArr(csv);
+  if(rows.length < 2) return [];
+  const h = rows[0].map(s=>s.trim());
+  const ci = name => h.findIndex(x=>x.includes(name));
+  const iQ=ci('題目'), iA=ci('選項A'), iB=ci('選項B'), iC=ci('選項C'), iD=ci('選項D');
+  const iAns=ci('正確答案'), iType=ci('題型'), iExpl=ci('解析'), iImg=ci('圖片');
+
+  return rows.slice(1).filter(r=>r[iQ]?.trim()).map((r,i)=>{
+    const type = (r[iType]||'').trim().includes('判') ? 'judge'
+               : (r[iType]||'').trim().includes('多') ? 'multi' : 'single';
+
+    // 選項（判斷題只取A、B）
+    const optCols = type==='judge'
+      ? [{l:'A',v:r[iA]},{l:'B',v:r[iB]}]
+      : [iA,iB,iC,iD].map((ci2,j)=>({l:['A','B','C','D'][j],v:r[ci2]}))
+                      .filter(o=>o.v?.trim());
+
+    // 正確答案
+    const raw = (r[iAns]||'').trim().toUpperCase();
+    const correct = type==='multi'
+      ? new Set(raw.split(',').map(s=>s.trim()))
+      : raw.split(',')[0].trim(); // 單選/判斷取第一個字母
+
+    return {
+      id: i+1,
+      text: r[iQ].trim(),
+      type,
+      options: optCols.map(o=>({letter:o.l, text:(o.v||'').trim()})),
+      correct,
+      explanation: r[iExpl]?.trim()||'',
+      image: r[iImg]?.trim()||'',
+    };
+  });
+}
+
+function csvToArr(str){
+  const arr=[]; let row=[],cur='',inQ=false;
+  for(let i=0;i<str.length;i++){
+    const c=str[i],n=str[i+1];
+    if(inQ){ if(c==='"'&&n==='"'){cur+='"';i++;} else if(c==='"'){inQ=false;} else cur+=c; }
+    else{ if(c==='"'){inQ=true;} else if(c===','){row.push(cur);cur='';}
+      else if(c==='\r'&&n==='\n'){arr.push(row);row=[];cur='';i++;}
+      else if(c==='\n'||c==='\r'){arr.push(row);row=[];cur='';} else cur+=c; }
+  }
+  row.push(cur);arr.push(row);
+  return arr.filter(r=>r.some(c=>c.trim()));
+}
+
+// ── Timer ────────────────────────────────────────────────
+function startTimer(){
+  if(!timerOn) return;
+  $('timer-display').style.display='';
+  timerElapsed=0;
+  const update=()=>{
+    timerElapsed++;
+    const left=timerLimit-timerElapsed;
+    if(left<=0){ clearInterval(timerTick); finishQuiz(); return; }
+    const m=String(Math.floor(left/60)).padStart(2,'0'), s=String(left%60).padStart(2,'0');
+    $('timer-display').textContent=`⏱ ${m}:${s}`;
+    $('timer-display').classList.toggle('urgent', left<=60);
+  };
+  update();
+  timerTick=setInterval(update,1000);
+}
+function stopTimer(){ clearInterval(timerTick); }
+function elapsedStr(){
+  const sec=timerOn?timerElapsed:Math.round((Date.now()-startTime)/1000);
+  const m=Math.floor(sec/60), s=sec%60;
+  return m>0?`${m} 分 ${s} 秒`:`${s} 秒`;
+}
+
+// ── Render question ──────────────────────────────────────
+function renderQ(idx){
+  const q = questions[idx];
+  const total = questions.length;
+  answered = answers[idx] !== null;
+
+  $('q-num').textContent  = `第 ${idx+1} 題 / 共 ${total} 題`;
+  $('prog-fill').style.width = `${((idx+1)/total)*100}%`;
+  $('q-text').textContent = `${idx+1}. ${q.text}`;
+
+  // Hide feedback
+  const fb=$('feedback');
+  fb.className='feedback';
+  fb.style.display='none';
+
+  // Show correct area
+  $('judge-area').style.display  = q.type==='judge'  ? '' : 'none';
+  $('choice-area').style.display = q.type!=='judge'  ? '' : 'none';
+
+  if(q.type==='judge'){
+    renderJudge(q, idx);
+  } else {
+    renderChoice(q, idx);
+  }
+
+  // If already answered, show feedback again
+  if(answered) showFeedback(idx);
+
+  // Nav buttons
+  $('btn-next').style.display   = (answered && idx < total-1) ? '' : 'none';
+  $('btn-finish').style.display = (answered && idx === total-1) ? '' : 'none';
+}
+
+function renderJudge(q, idx){
+  // Set images & labels
+  $('jimg-A').src = OWL_CORRECT;
+  $('jimg-B').src = OWL_WRONG;
+  $('jlbl-A').textContent = q.options[0]?.text || '正確';
+  $('jlbl-B').textContent = q.options[1]?.text || '錯誤';
+
+  ['A','B'].forEach(letter=>{
+    const card = $(`jc-${letter}`);
+    card.className='judge-card';
+    if(answered){
+      card.classList.add('disabled');
+      const isCorrect = q.correct === letter;
+      const isChosen  = answers[idx] === letter;
+      if(isChosen && isCorrect)  card.classList.add('state-correct');
+      else if(isChosen && !isCorrect) card.classList.add('state-wrong');
+      // highlight correct answer if user was wrong
+      else if(!isChosen && isCorrect && answers[idx]!==null) card.classList.add('state-correct');
+    } else {
+      card.classList.toggle('selected', answers[idx]===letter);
+    }
+  });
+}
+
+function renderChoice(q, idx){
+  const list=$('choice-list');
+  list.innerHTML='';
+  q.options.forEach(opt=>{
+    const li=document.createElement('li');
+    const isSelected = q.type==='multi'
+      ? (answers[idx] instanceof Set && answers[idx].has(opt.letter))
+      : answers[idx]===opt.letter;
+
+    let cls='choice-opt';
+    if(answered){
+      const isCorrect = q.type==='multi'
+        ? q.correct.has(opt.letter)
+        : q.correct===opt.letter;
+      const chosen = q.type==='multi'
+        ? (answers[idx] instanceof Set && answers[idx].has(opt.letter))
+        : answers[idx]===opt.letter;
+      if(chosen && isCorrect)  cls+=' state-correct disabled';
+      else if(chosen && !isCorrect) cls+=' state-wrong disabled';
+      else if(!chosen && isCorrect) cls+=' state-answer disabled';
+      else cls+=' disabled';
+    } else {
+      if(isSelected) cls+=' selected';
+    }
+
+    li.innerHTML=`<div class="${cls}" data-letter="${opt.letter}">
+      <span class="opt-letter">${opt.letter}</span>
+      <span>${opt.text}</span>
+    </div>`;
+    list.appendChild(li);
+
+    if(!answered){
+      li.querySelector('.choice-opt').addEventListener('click',()=>selectChoice(idx,opt.letter,q));
+    }
+  });
+}
+
+// ── Selection handlers ───────────────────────────────────
+function initJudgeClicks(){
+  ['A','B'].forEach(letter=>{
+    $(`jc-${letter}`).addEventListener('click',()=>{
+      if(answered) return;
+      const q=questions[current];
+      if(q.type!=='judge') return;
+      answers[current]=letter;
+      grade(current);
+      renderQ(current);
+    });
+  });
+}
+
+function selectChoice(idx, letter, q){
+  if(q.type==='single'){
+    answers[idx]=letter;
+    grade(idx);
+    renderQ(idx);
+  } else {
+    // multi: toggle
+    if(!(answers[idx] instanceof Set)) answers[idx]=new Set();
+    if(answers[idx].has(letter)) answers[idx].delete(letter);
+    else answers[idx].add(letter);
+    renderChoice(q,idx); // just re-render options, don't lock yet
+    // Show confirm button for multi
+    // (for simplicity, auto-submit on any click for now — can add confirm btn if needed)
+  }
+}
+
+// ── Grade & feedback ─────────────────────────────────────
+function grade(idx){
+  const q=questions[idx];
+  let ok=false;
+  if(q.type==='multi'){
+    const ans=answers[idx] instanceof Set ? answers[idx] : new Set();
+    ok = ans.size===q.correct.size && [...ans].every(a=>q.correct.has(a));
+  } else {
+    ok = answers[idx]===q.correct;
+  }
+  results[idx]=ok;
+  answered=true;
+}
+
+function showFeedback(idx){
+  const q=questions[idx];
+  const ok=results[idx];
+  const fb=$('feedback');
+  fb.style.display='flex';
+  if(ok){
+    fb.className='feedback fb-correct show';
+    $('fb-icon').textContent='✅';
+    $('fb-msg').textContent='答對囉～請往下一題，GO~';
+  } else {
+    fb.className='feedback fb-wrong show';
+    $('fb-icon').textContent='❌';
+    $('fb-msg').textContent=q.explanation || '答錯了，請繼續加油！';
+  }
+}
+
+// ── Finish ───────────────────────────────────────────────
+function finishQuiz(){
+  stopTimer();
+  // grade any remaining unanswered
+  questions.forEach((_,i)=>{ if(results[i]===null){ answers[i]=answers[i]||''; grade(i); } });
+
+  const correctCount=results.filter(Boolean).length;
+  const total=questions.length;
+  const score=Math.round(correctCount/total*100);
+  const elapsed=elapsedStr();
+
+  show('s-result');
+  $('user-info-result').textContent=`${empId} ${empName}`;
+  $('rs-ok').textContent=correctCount;
+  $('rs-tot').textContent=total;
+  $('rs-time').textContent=elapsed;
+
+  // Animate score
+  let cur=0; const step=score/40;
+  const anim=setInterval(()=>{ cur=Math.min(cur+step,score); $('sn').textContent=Math.round(cur); if(cur>=score)clearInterval(anim); },25);
+  const C=2*Math.PI*55; // r=55
+  $('ring-fill').style.strokeDasharray=C;
+  setTimeout(()=>{ $('ring-fill').style.strokeDashoffset=C*(1-score/100); },100);
+
+  const gm=$('grade-msg');
+  if(score>=90) gm.innerHTML='🎉 <span style="color:var(--green)">非常優秀！</span>';
+  else if(score>=70) gm.innerHTML='👍 <span style="color:#f5a623">表現不錯！</span>';
+  else gm.innerHTML='📚 <span style="color:var(--red)">繼續加油！</span>';
+
+  // Review
+  const rv=$('rv-list'); rv.innerHTML='';
+  questions.forEach((q,i)=>{
+    const ok=results[i];
+    const userAns = q.type==='multi'
+      ? (answers[i] instanceof Set ? [...answers[i]].join('、') : '未作答')
+      : (answers[i]||'未作答');
+    const correctAns = q.type==='multi' ? [...q.correct].join('、') : q.correct;
+    const d=document.createElement('div');
+    d.className=`rv-item ${ok?'rv-ok':'rv-ng'}`;
+    d.innerHTML=`
+      <div class="rv-top"><span class="rv-icon">${ok?'✅':'❌'}</span><div class="rv-q">第${i+1}題：${q.text}</div></div>
+      <div class="rv-detail">
+        <span>您的答案：<strong>${userAns}</strong></span>
+        ${!ok?`<span>正確答案：<strong>${correctAns}</strong></span>`:''}
+        ${q.explanation?`<div class="rv-expl">📖 ${q.explanation}</div>`:''}
+      </div>`;
+    rv.appendChild(d);
+  });
+
+  saveResult(score,correctCount,total,elapsed);
+}
+
+async function saveResult(score,correctCount,total,elapsed){
+  try {
+    const res=await fetch(APPS_URL,{method:'POST',body:JSON.stringify({
+      action:'saveQuizResult', quizName:quizTitle, employeeId:empId, employeeName:empName,
+      score, correctCount, total, elapsed, timestamp:new Date().toLocaleString('zh-TW')
+    })});
+    const j=await res.json();
+    $('save-status').textContent = j.status==='ok' ? '✅ 成績已儲存' : '⚠️ 儲存失敗：'+j.message;
+    $('save-status').style.color = j.status==='ok' ? 'var(--green)' : 'var(--red)';
+  } catch(e){
+    $('save-status').textContent='⚠️ 成績儲存失敗（'+e.message+'）';
+    $('save-status').style.color='var(--red)';
+  }
+}
+
+// ── Listeners ────────────────────────────────────────────
+document.querySelectorAll('input[name=tc]').forEach(r=>{
+  r.addEventListener('change',()=>{ $('timer-min-group').style.display=r.value==='yes'?'':'none'; });
+});
+
+$('btn-start').addEventListener('click',()=>{
+  empId   = $('inp-id').value.trim();
+  empName = $('inp-name').value.trim();
+  if(!empId||!empName){ $('login-err').style.display=''; return; }
+  $('login-err').style.display='none';
+  timerOn    = document.querySelector('input[name=tc]:checked').value==='yes';
+  timerLimit = parseInt($('t-min').value||'30')*60;
+  $('title-quiz').textContent     = quizTitle;
+  $('user-info-quiz').textContent = `${empId} ${empName}`;
+  current=0; startTime=Date.now();
+  show('s-quiz');
+  renderQ(0);
+  startTimer();
+  initJudgeClicks();
+});
+
+$('btn-next').addEventListener('click',()=>{
+  if(current<questions.length-1){ current++; renderQ(current); }
+});
+
+$('btn-finish').addEventListener('click', finishQuiz);
+
+$('btn-retry').addEventListener('click',()=>{
+  answers=questions.map(()=>null);
+  results=questions.map(()=>null);
+  current=0; timerElapsed=0; startTime=Date.now();
+  show('s-quiz'); renderQ(0); startTimer();
+  initJudgeClicks();
+});
+
+// ── Boot ─────────────────────────────────────────────────
+if(!QUIZ_NAME){
+  $('s-loading').innerHTML='<div class="card-body"><div class="err-box">❌ 未指定測驗名稱，請從測驗列表進入。</div></div>';
+} else {
+  loadQuiz();
+}
+</script>
+</body>
+</html>
