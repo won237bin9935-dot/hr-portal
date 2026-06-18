@@ -123,7 +123,7 @@
 
 <script>
 // ★ 貼上你的 Apps Script 網址 ★
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxfo--2xa9vk6tlIzCjNyu3Y76AQIzYj-tM3XcvFQO72QwkWEqYIW_jSl2JRtE2tgql/exec';
+const SCRIPT_URL = '【貼上Apps Script網址】';
 
 // 讀取網址參數
 const docName = new URLSearchParams(window.location.search).get('doc') || '未指定文件';
@@ -252,11 +252,11 @@ document.getElementById('btn-submit').addEventListener('click', async function()
   const cropDrawH = cropH * cropScale;
 
   // 計算總高度
-  const headerH = 180;  // 標題區
+  const headerH = 200;  // 標題區（含已閱讀完畢）
   const sigLabelH = 50; // 簽名標籤
   const sigAreaH = Math.max(cropDrawH, 150); // 簽名實際高度
   const footerH = 60;   // 底部
-  const totalH = headerH + sigLabelH + sigAreaH + footerH + 40;
+  const totalH = headerH + 40 + sigLabelH + sigAreaH + footerH + 40;
 
   const out = document.createElement('canvas');
   out.width = OW;
@@ -294,6 +294,11 @@ document.getElementById('btn-submit').addEventListener('click', async function()
   octx.font = '30px Microsoft JhengHei, sans-serif';
   octx.fillStyle = '#555';
   octx.fillText(`工號：${empId}　　姓名：${name}　　回簽日期：${dateStr}`, PADDING, 140);
+
+  // 已閱讀完畢聲明
+  octx.fillStyle = '#3d4449';
+  octx.font = `bold ${26 * 1}px Microsoft JhengHei, sans-serif`;
+  octx.fillText('本人已閱讀完畢上述文件內容', PADDING, 178);
 
   // 簽名標籤
   let curY = headerH + 40;

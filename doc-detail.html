@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>文件閱覽 — 華美光學</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --accent: #f56a6a;
+      --bg: #f8f9fa;
+      --card-bg: #fff;
+      --text-dark: #3d4449;
+      --text-mid: #666;
+      --text-light: #999;
+      --border: #e8e8e8;
+    }
+    body { display:flex; min-height:100vh; font-family:'Segoe UI','Microsoft JhengHei',sans-serif; background:var(--bg); color:var(--text-dark); }
+    #main { margin-left:var(--sidebar-width,260px); flex:1; display:flex; flex-direction:column; min-height:100vh; }
+    .content { padding:28px 32px; flex:1; }
+    .back-link { display:inline-flex; align-items:center; gap:6px; color:var(--text-light); font-size:13px; text-decoration:none; margin-bottom:20px; transition:color .18s; }
+    .back-link:hover { color:var(--accent); }
+
+    /* Doc viewer */
+    .doc-viewer-wrap {
+      background: var(--card-bg);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.06);
+    }
+
+    .doc-viewer-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #fafafa;
+    }
+    .doc-viewer-title { font-size: 16px; font-weight: 800; color: var(--text-dark); }
+    .doc-format-tag { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; background: #e8f3fb; color: #2980b9; }
+
+    /* Image viewer */
+    .doc-img-area {
+      width: 100%;
+      background: #f0f0f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      min-height: 400px;
+    }
+    .doc-img-area img {
+      max-width: 100%;
+      max-height: 70vh;
+      object-fit: contain;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.12);
+    }
+
+    /* PDF viewer */
+    .doc-pdf-area { width: 100%; height: 70vh; }
+    .doc-pdf-area iframe { width: 100%; height: 100%; border: none; }
+    .doc-pdf-fallback { display: none; padding: 40px; text-align: center; }
+    .doc-pdf-fallback .fi { font-size: 48px; display: block; margin-bottom: 12px; }
+    .btn-open-pdf { display: inline-flex; align-items: center; gap: 8px; background: #2980b9; color: #fff; padding: 10px 24px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 14px; margin-top: 12px; }
+
+    /* Sign section */
+    .sign-section {
+      background: var(--card-bg);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,.06);
+    }
+    .sign-section-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      background: #fafafa;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .sign-section-header h3 { font-size: 15px; font-weight: 800; }
+    .sign-section-body { padding: 20px 24px; }
+
+    /* Read confirm */
+    .read-confirm {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      background: #e8faf0;
+      border: 1px solid #b2f0d0;
+      border-radius: 10px;
+      margin-bottom: 16px;
+      cursor: pointer;
+      transition: all .18s;
+      user-select: none;
+    }
+    .read-confirm:hover { background: #d0f5e8; }
+    .read-confirm.checked { background: #27ae60; border-color: #27ae60; }
+    .read-confirm.checked .rc-text { color: #fff; }
+    .read-confirm.checked .rc-icon { color: #fff; }
+    .rc-icon { font-size: 20px; color: #27ae60; transition: color .18s; }
+    .rc-text { font-size: 14px; font-weight: 700; color: #27ae60; transition: color .18s; }
+
+    .btn-sign {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      background: var(--accent);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 800;
+      padding: 14px;
+      border-radius: 10px;
+      text-decoration: none;
+      transition: all .2s;
+      border: none;
+      cursor: pointer;
+      opacity: .4;
+      pointer-events: none;
+      font-family: inherit;
+    }
+    .btn-sign.enabled { opacity: 1; pointer-events: auto; }
+    .btn-sign.enabled:hover { background: #e05555; transform: translateY(-1px); }
+
+    .sign-note { text-align: center; font-size: 12px; color: var(--text-light); margin-top: 10px; }
+
+    /* No sign needed */
+    .no-sign-box { padding: 20px 24px; text-align: center; color: var(--text-light); font-size: 14px; }
+
+    .loading { text-align: center; padding: 60px; color: var(--text-light); }
+    .spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto 12px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width:900px) { #main{margin-left:0} }
+    @media (max-width:560px) { .content{padding:20px 16px} }
+  </style>
+</head>
+<body>
+
+<div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+<aside id="sidebar">
+  <div class="sidebar-header">
+    <div class="logo-icon">🏢</div>
+    <div class="logo-text">華美光學<span class="logo-sub">人力資源系統</span></div>
+    <button onclick="toggleSidebar()" id="sidebar-close">✕</button>
+  </div>
+  <nav>
+    <div class="nav-section-label">主選單</div>
+    <a class="nav-item" href="home.html"><span class="icon">🏠</span> 首頁總覽</a>
+    <div class="nav-section-label">學習與測驗</div>
+    <a class="nav-item" href="quiz.html"><span class="icon">📝</span> 測驗專區</a>
+    <a class="nav-item" href="#"><span class="icon">🎓</span> 教育訓練</a>
+    <div class="nav-section-label">資料與公告</div>
+    <a class="nav-item active" href="docs.html"><span class="icon">📁</span> 文件宣導</a>
+    <a class="nav-item" href="events-list.html"><span class="icon">🎉</span> 活動報名</a>
+    <a class="nav-item" href="notice.html"><span class="icon">📢</span> 最新公告</a>
+    <div class="nav-section-label">系統整合</div>
+    <a class="nav-item" href="links.html"><span class="icon">🔗</span> 相關系統連結</a>
+  </nav>
+  <div class="sidebar-footer">華美光學 人力營運處</div>
+</aside>
+
+<div id="main">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+      <div>
+        <div class="topbar-title" id="topbar-title">文件閱覽</div>
+        <div class="breadcrumb"><a href="home.html">首頁</a> › <a href="docs.html">文件宣導</a> › <span id="breadcrumb-name">載入中</span></div>
+      </div>
+    </div>
+    <div class="topbar-avatar">HR</div>
+  </header>
+
+  <main class="content">
+    <a href="docs.html" class="back-link">← 返回文件宣導</a>
+
+    <div id="loading" class="loading"><div class="spinner"></div><p>載入文件中…</p></div>
+    <div id="doc-content" style="display:none">
+
+      <!-- 文件顯示區 -->
+      <div class="doc-viewer-wrap" id="doc-viewer-wrap">
+        <div class="doc-viewer-header">
+          <div class="doc-viewer-title" id="doc-title">文件名稱</div>
+          <span class="doc-format-tag" id="doc-format">JPG</span>
+        </div>
+        <div id="doc-display"></div>
+      </div>
+
+      <!-- 簽名區 -->
+      <div class="sign-section" id="sign-section" style="display:none">
+        <div class="sign-section-header">
+          <span>✍️</span>
+          <h3>閱讀確認與簽名</h3>
+        </div>
+        <div class="sign-section-body">
+          <div class="read-confirm" id="read-confirm" onclick="toggleRead()">
+            <span class="rc-icon" id="rc-icon">☐</span>
+            <span class="rc-text">我已閱讀完畢上述文件內容</span>
+          </div>
+          <button class="btn-sign" id="btn-sign" onclick="goSign()">
+            ✍️ 前往簽名
+          </button>
+          <p class="sign-note">勾選確認後即可前往手寫簽名</p>
+        </div>
+      </div>
+
+      <div class="no-sign-box" id="no-sign-box" style="display:none">
+        📄 此文件無需回傳簽名
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="sheets-config.js"></script>
+<script>
+  function toggleSidebar() {
+    const s=document.getElementById('sidebar');
+    const o=document.getElementById('sidebar-overlay');
+    const c=document.getElementById('sidebar-close');
+    const open=s.classList.toggle('open');
+    o.style.display=open?'block':'none';
+    if(c) c.style.display=open?'block':'none';
+  }
+
+  let docName = '';
+  let needSign = false;
+  let isRead = false;
+
+  async function loadDoc() {
+    const params = new URLSearchParams(window.location.search);
+    const name = params.get('doc');
+    if (!name) { window.location.href = 'docs.html'; return; }
+
+    const rows = await fetchSheet(HRCONFIG.SHEETS.DOCS);
+    const d = rows.find(r => r['文件名稱'] === decodeURIComponent(name));
+    if (!d) { window.location.href = 'docs.html'; return; }
+
+    docName = d['文件名稱'];
+    needSign = (d['是否須回傳簽名'] || '').trim() === '是';
+
+    document.title = docName + ' — 華美光學';
+    document.getElementById('topbar-title').textContent = docName;
+    document.getElementById('breadcrumb-name').textContent = docName;
+    document.getElementById('doc-title').textContent = docName;
+
+    const fmt = (d['檔案格式'] || '').toUpperCase();
+    document.getElementById('doc-format').textContent = fmt || '檔案';
+
+    // Display document
+    const display = document.getElementById('doc-display');
+    const isImg = ['JPG','JPEG','PNG','GIF'].includes(fmt);
+    const isPDF = fmt === 'PDF';
+    const fileUrl = d['檔案連結'] || '';
+
+    if (isImg && fileUrl) {
+      display.innerHTML = `
+        <div class="doc-img-area">
+          <img src="${fileUrl}" alt="${docName}" onerror="this.src='';this.alt='圖片載入失敗'">
+        </div>`;
+    } else if (isPDF && fileUrl) {
+      // Convert drive link to embed
+      const embedUrl = fileUrl.replace('/view', '/preview').replace('?usp=drive_link','').replace('?usp=sharing','');
+      display.innerHTML = `
+        <div class="doc-pdf-area">
+          <iframe src="${embedUrl}" allowfullscreen></iframe>
+        </div>
+        <div class="doc-pdf-fallback" id="pdf-fallback">
+          <span class="fi">📄</span>
+          <p>PDF 無法在此裝置預覽</p>
+          <a href="${fileUrl}" target="_blank" class="btn-open-pdf">⬇ 開啟 PDF</a>
+        </div>`;
+      // Detect if iframe fails on mobile
+      setTimeout(() => {
+        const iframe = display.querySelector('iframe');
+        if (iframe) {
+          iframe.onerror = () => {
+            document.getElementById('pdf-fallback').style.display = 'block';
+            iframe.parentElement.style.display = 'none';
+          };
+        }
+      }, 2000);
+    } else if (fileUrl) {
+      display.innerHTML = `
+        <div class="doc-img-area">
+          <div style="text-align:center;padding:40px;">
+            <div style="font-size:48px;margin-bottom:12px">📁</div>
+            <a href="${fileUrl}" target="_blank" class="btn-open-pdf" style="background:#3d4449">⬇ 開啟檔案</a>
+          </div>
+        </div>`;
+    }
+
+    // Sign section
+    if (needSign) {
+      document.getElementById('sign-section').style.display = 'block';
+    } else {
+      document.getElementById('no-sign-box').style.display = 'block';
+    }
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('doc-content').style.display = 'block';
+  }
+
+  function toggleRead() {
+    isRead = !isRead;
+    const confirm = document.getElementById('read-confirm');
+    const icon = document.getElementById('rc-icon');
+    const btn = document.getElementById('btn-sign');
+    confirm.classList.toggle('checked', isRead);
+    icon.textContent = isRead ? '☑' : '☐';
+    btn.classList.toggle('enabled', isRead);
+  }
+
+  function goSign() {
+    if (!isRead) return;
+    window.location.href = `signature.html?doc=${encodeURIComponent(docName)}`;
+  }
+
+  loadDoc();
+</script>
+</body>
+</html>
