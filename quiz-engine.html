@@ -357,11 +357,14 @@ function show(id){ ['s-loading','s-login','s-quiz','s-result'].forEach(s=>$(s).s
 async function loadQuiz(){
   $('load-msg').textContent = `載入「${QUIZ_NAME}」題目中…`;
   try {
-    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_TAB)}`;
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_TAB)}&headers=1`;
     const res = await fetch(url);
     if(!res.ok) throw new Error('網路錯誤');
-    const csv = await res.text();
-    questions = parseCSV(csv);
+    const text = await res.text();
+    const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
+    if(!match) throw new Error('無法解析回應');
+    const json = JSON.parse(match[1]);
+    questions = parseGviz(json);
     if(!questions.length) throw new Error('找不到題目，請確認分頁名稱');
     answers = questions.map(()=>null);
     results = questions.map(()=>null);
@@ -403,6 +406,53 @@ async function loadQuizMeta(){
     // 讀取失敗就不計時
     window._quizTimerEnabled = false;
   }
+}
+
+// ── Gviz JSON parser（比 CSV 更穩定，不會截掉尾端欄位）──────
+function parseGviz(json){
+  const table = json.table;
+  const cols = table.cols.map(c => c.label || c.id);
+  console.log('Gviz 欄位:', cols);
+
+  const ci = name => cols.findIndex(h => h.includes(name));
+  const iQ=ci('題目'), iA=ci('選項A'), iB=ci('選項B'), iC=ci('選項C'), iD=ci('選項D');
+  const iAns=ci('正確答案'), iType=ci('題型'), iExpl=ci('解析');
+  console.log('iExpl=', iExpl);
+
+  const getVal = (row, idx) => {
+    if(idx < 0 || !row.c[idx]) return '';
+    return row.c[idx].v !== null && row.c[idx].v !== undefined ? String(row.c[idx].v) : '';
+  };
+
+  return (table.rows || [])
+    .filter(row => row.c && getVal(row, iQ).trim())
+    .map((row, i) => {
+      const type = getVal(row, iType).includes('判') ? 'judge'
+                 : getVal(row, iType).includes('多') ? 'multi' : 'single';
+
+      const optCols = type==='judge'
+        ? [{l:'A',v:getVal(row,iA)},{l:'B',v:getVal(row,iB)}]
+        : [iA,iB,iC,iD].map((ci2,j)=>({l:['A','B','C','D'][j],v:getVal(row,ci2)}))
+                        .filter(o=>o.v.trim());
+
+      const raw = getVal(row, iAns).trim().toUpperCase();
+      const correct = type==='multi'
+        ? new Set(raw.split(',').map(s=>s.trim()))
+        : raw.split(',')[0].trim();
+
+      const expl = getVal(row, iExpl).trim();
+      console.log(`題${i+1} 解析:`, expl);
+
+      return {
+        id: i+1,
+        text: getVal(row, iQ).trim(),
+        type,
+        options: optCols.map(o=>({letter:o.l, text:o.v.trim()})),
+        correct,
+        explanation: expl,
+        image: '',
+      };
+    });
 }
 
 // ── CSV parser ───────────────────────────────────────────
