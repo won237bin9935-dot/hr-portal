@@ -225,19 +225,25 @@
       #sidebar-overlay.show { display: block; }
     }
     @media (max-width:560px) {
-      .content { padding: 20px 16px; }
+      body, #main { overflow-x: hidden; max-width: 100vw; }
+      .content { padding: 16px; overflow-x: hidden; }
       .welcome-banner {
         padding: 16px;
         height: auto;
-        grid-template-columns: 1fr;
-        text-align: center;
-        gap: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        overflow: hidden;
       }
-      .welcome-text { order: 1; }
-      .welcome-center { order: 2; }
+      .welcome-text { width: 100%; }
+      .welcome-center { width: 100%; }
+      .welcome-center h2 { font-size: 15px; }
       .flip-clock { display: none !important; }
-      .greet { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-      .welcome-center h2 { font-size: 14px; }
+      .greet { font-size: 13px; }
+      .three-col { grid-template-columns: 1fr !important; gap: 16px; }
+      .three-col .panel:last-child { grid-column: auto; }
+      .panel-header { flex-wrap: nowrap; gap: 8px; padding: 12px 14px; }
+      .panel-header a { font-size: 12px; white-space: nowrap; flex-shrink: 0; }
     }
   
     .welcome-banner {
