@@ -333,8 +333,12 @@ const OWL_CORRECT = 'https://drive.google.com/uc?export=view&id=1bnCbx_gv-UN-Qip
 const OWL_WRONG   = 'https://drive.google.com/uc?export=view&id=1-jFpxc0yFeM62cqerb--XruEFFdqMPLF';
 
 // ── Apps Script & Sheet ──────────────────────────────────
-const APPS_URL  = (typeof QUIZ_APPS_SCRIPT_URL !== 'undefined') ? QUIZ_APPS_SCRIPT_URL : 'https://script.google.com/macros/s/YOUR_DEPLOY_ID/exec';
-const SHEET_ID  = (typeof GOOGLE_SHEET_ID !== 'undefined')      ? GOOGLE_SHEET_ID      : '1b4xq2XxSCbuIF6SZU-x0Jz4Du_n-YRAJCSQrkm2ze3U';
+const APPS_URL  = (typeof HRCONFIG !== 'undefined' && HRCONFIG.QUIZ_APPS_SCRIPT_URL)
+  ? HRCONFIG.QUIZ_APPS_SCRIPT_URL
+  : 'https://script.google.com/macros/s/YOUR_DEPLOY_ID/exec';
+const SHEET_ID  = (typeof HRCONFIG !== 'undefined' && HRCONFIG.SHEETS_ID)
+  ? HRCONFIG.SHEETS_ID
+  : '1b4xq2XxSCbuIF6SZU-x0Jz4Du_n-YRAJCSQrkm2ze3U';
 
 // ── URL param ────────────────────────────────────────────
 const params    = new URLSearchParams(location.search);
