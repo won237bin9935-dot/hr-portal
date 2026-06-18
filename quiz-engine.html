@@ -51,9 +51,17 @@
       color: #fff;
       padding: 22px 28px 18px;
     }
+    #s-result .card-head {
+      background: #fff;
+      border-bottom: 2px solid #f0dde8;
+      padding: 16px 28px 12px;
+    }
+    #s-result .card-head h1 { color: #222; font-size: 1.2rem; }
+    #s-result .card-head p  { color: #555; }
     .card-head h1 { margin: 0 0 4px; font-size: 1.3rem; }
     .card-head p  { margin: 0; opacity: .85; font-size: .88rem; }
     .card-body { padding: 28px; }
+    #s-result .card-body { padding: 16px 28px; }
 
     /* ── Login ── */
     .login-icon { font-size: 2.8rem; text-align: center; margin-bottom: 12px; }
@@ -170,14 +178,14 @@
     .nav { display: flex; justify-content: flex-end; gap: 10px; margin-top: 4px; }
 
     /* ── Result ── */
-    .result-hero { text-align: center; padding: 16px 0 24px; }
-    .score-ring { position: relative; width: 130px; height: 130px; margin: 0 auto 16px; }
-    .score-ring svg { width: 130px; height: 130px; transform: rotate(-90deg); }
+    .result-hero { text-align: center; padding: 8px 0 16px; }
+    .score-ring { position: relative; width: 117px; height: 117px; margin: 0 auto 12px; }
+    .score-ring svg { width: 117px; height: 117px; transform: rotate(-90deg); }
     .score-ring circle.bg   { fill: none; stroke: #f0dde8; stroke-width: 10; }
     .score-ring circle.fill { fill: none; stroke: var(--pink); stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset 1s ease; }
     .score-text { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    .score-text .sn { font-size: 2rem; font-weight: 800; color: var(--pink); line-height: 1; }
-    .score-text .sl { font-size: .7rem; color: #aaa; margin-top: 2px; }
+    .score-text .sn { font-size: 1.8rem; font-weight: 800; color: var(--pink); line-height: 1; }
+    .score-text .sl { font-size: .68rem; color: #aaa; margin-top: 2px; }
     .result-stats { display: flex; justify-content: center; gap: 28px; margin-bottom: 20px; }
     .rs { text-align: center; }
     .rs-n { font-size: 1.5rem; font-weight: 800; color: var(--pink); }
@@ -290,9 +298,9 @@
     <div class="card-body">
       <div class="result-hero">
         <div class="score-ring">
-          <svg viewBox="0 0 130 130">
-            <circle class="bg" cx="65" cy="65" r="55"/>
-            <circle class="fill" id="ring-fill" cx="65" cy="65" r="55" stroke-dasharray="346" stroke-dashoffset="346"/>
+          <svg viewBox="0 0 117 117">
+            <circle class="bg" cx="58" cy="58" r="49"/>
+            <circle class="fill" id="ring-fill" cx="58" cy="58" r="49" stroke-dasharray="308" stroke-dashoffset="308"/>
           </svg>
           <div class="score-text"><div class="sn" id="sn">0</div><div class="sl">分</div></div>
         </div>
@@ -301,7 +309,7 @@
           <div class="rs"><div class="rs-n" id="rs-tot">0</div><div class="rs-l">總題數</div></div>
           <div class="rs"><div class="rs-n" id="rs-time">-</div><div class="rs-l">作答時間</div></div>
         </div>
-        <div class="grade-msg" id="grade-msg"></div>
+        <div class="grade-msg" id="grade-msg" style="display:none"></div>
         <div id="save-status">⏳ 成績儲存中…</div>
       </div>
 
@@ -714,14 +722,11 @@ function finishQuiz(){
   // Animate score
   let cur=0; const step=score/40;
   const anim=setInterval(()=>{ cur=Math.min(cur+step,score); $('sn').textContent=Math.round(cur); if(cur>=score)clearInterval(anim); },25);
-  const C=2*Math.PI*55; // r=55
+  const C=2*Math.PI*49; // r=55
   $('ring-fill').style.strokeDasharray=C;
   setTimeout(()=>{ $('ring-fill').style.strokeDashoffset=C*(1-score/100); },100);
 
-  const gm=$('grade-msg');
-  if(score>=90) gm.innerHTML='🎉 <span style="color:var(--green)">非常優秀！</span>';
-  else if(score>=70) gm.innerHTML='👍 <span style="color:#f5a623">表現不錯！</span>';
-  else gm.innerHTML='📚 <span style="color:var(--red)">繼續加油！</span>';
+  // 不顯示評語
 
   // Review
   const rv=$('rv-list'); rv.innerHTML='';
