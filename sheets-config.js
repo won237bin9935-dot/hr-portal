@@ -7,12 +7,9 @@ const HRCONFIG = {
   // ★ 把你的 Google Sheets ID 貼在這裡
   // 網址列 /d/ 和 /edit 之間的那段文字
   SHEETS_ID: '1b4xq2XxSCbuIF6SZU-x0Jz4Du_n-YRAJCSQrkm2ze3U',
-  const HRCONFIG = {
-  // ★ 把你的 Google Sheets ID 貼在這裡
-  SHEETS_ID: '1b4xq2XxSCbuIF6SZU-x0Jz4Du_n-YRAJCSQrkm2ze3U',
 
-  // ★ 測驗系統設定
-  QUIZ_APPS_SCRIPT_URL: 'https://script.google.com/macros/s/YOUR_DEPLOY_ID/exec',
+  // ★ 測驗系統設定（部署 Apps Script 後，把網址填在這裡）
+  QUIZ_APPS_SCRIPT_URL: 'YOUR_DEPLOY_ID_先留空',
 
   // 各分頁名稱（跟 Sheets 裡的分頁名稱要一致）
   SHEETS: {
@@ -55,14 +52,11 @@ async function fetchSheet(sheetName) {
   try {
     const res = await fetch(url);
     const text = await res.text();
-    // gviz 回應格式：/*O_o*/\ngoogle.visualization.Query.setResponse({...});
     const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
     if (!match) throw new Error('無法解析 gviz 回應');
     const json = JSON.parse(match[1]);
     const table = json.table;
-    // 取欄位名稱（第一列）
     const cols = table.cols.map(c => c.label || c.id);
-    // 過濾掉空白列
     const rows = (table.rows || [])
       .filter(row => row.c && row.c.some(cell => cell && cell.v !== null && cell.v !== ''))
       .map(row => {
@@ -113,19 +107,20 @@ function applyEventColor(themeName, customHex) {
   document.documentElement.style.setProperty('--event-light', color.light);
 }
 
-
 // 修正 Google Sheets 日期格式 Date(yyyy,m,d) → yyyy-MM-dd
 function formatSheetDate(val) {
   if (!val) return '';
-  const match = String(val).match(/Date\((\d+),(\d+),(\d+)\)/);
+  const s = String(val);
+  const match = s.match(/Date\((\d+),(\d+),(\d+)\)/);
   if (match) {
     const y = match[1];
     const m = String(parseInt(match[2])+1).padStart(2,'0');
     const d = String(match[3]).padStart(2,'0');
     return y+'-'+m+'-'+d;
   }
-  return String(val);
+  return s;
 }
+
 function shadeHex(hex, pct) {
   const num = parseInt(hex.slice(1), 16);
   const r = Math.min(255, Math.max(0, (num >> 16) + Math.round(255 * pct / 100)));
@@ -144,18 +139,4 @@ function statusBadge(status) {
     '開放中':   { cls: 'open',   label: '● 開放中' },
   };
   return map[status] || { cls: 'closed', label: status };
-}
-
-// 修正 Google Sheets 日期格式 Date(yyyy,m,d) → yyyy-MM-dd
-function formatSheetDate(val) {
-  if (!val) return '';
-  const s = String(val);
-  const match = s.match(/Date\((\d+),(\d+),(\d+)\)/);
-  if (match) {
-    const y = match[1];
-    const m = String(parseInt(match[2])+1).padStart(2,'0');
-    const d = String(match[3]).padStart(2,'0');
-    return y+'-'+m+'-'+d;
-  }
-  return s;
 }
