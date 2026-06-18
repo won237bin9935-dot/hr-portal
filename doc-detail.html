@@ -300,11 +300,13 @@
         </div>`;
     }
 
-    // Sign section
-    if (needSign) {
-      document.getElementById('sign-section').style.display = 'block';
-    } else {
-      document.getElementById('no-sign-box').style.display = 'block';
+    // 一律顯示已閱讀勾選區
+    document.getElementById('sign-section').style.display = 'block';
+
+    // 只有需要簽名的文件才顯示前往簽名按鈕
+    if (!needSign) {
+      document.getElementById('btn-sign').style.display = 'none';
+      document.getElementById('sign-note').style.display = 'none';
     }
 
     document.getElementById('loading').style.display = 'none';
