@@ -762,11 +762,12 @@ async function saveResult(score,correctCount,total,elapsed){
         ? [...q.correct].join(',')
         : q.correct;
       return {
-        qNum       : i+1,
-        qText      : q.text,
-        userAnswer : userAns,
+        qNum         : i+1,
+        qText        : q.text,
+        userAnswer   : userAns,
         correctAnswer: correctAns,
-        isCorrect  : results[i],
+        isCorrect    : results[i],
+        explanation  : q.explanation || '',
       };
     });
 
