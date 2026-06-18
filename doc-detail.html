@@ -246,8 +246,10 @@
     needSign = (d['是否須回傳簽名'] || '').trim() === '是';
 
     document.title = docName + ' — 華美光學';
-    document.getElementById('topbar-title').textContent = docName;
-    document.getElementById('breadcrumb-name').textContent = docName;
+    const topbarTitle = document.getElementById('topbar-title');
+    if(topbarTitle) topbarTitle.textContent = docName;
+    const breadcrumbName = document.getElementById('breadcrumb-name');
+    if(breadcrumbName) breadcrumbName.textContent = docName;
     document.getElementById('doc-title').textContent = docName;
 
     const fmt = (d['檔案格式'] || '').toUpperCase();
