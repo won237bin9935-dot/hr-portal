@@ -180,8 +180,10 @@
 
     // Update titles
     document.title = e['活動名稱'] + ' — 華美光學人資系統';
-    document.getElementById('topbar-name').textContent = e['活動名稱'];
-    document.getElementById('breadcrumb-name').textContent = e['活動名稱'];
+    const topbarName = document.getElementById('topbar-name');
+    if(topbarName) topbarName.textContent = e['活動名稱'];
+    const breadcrumbName = document.getElementById('breadcrumb-name');
+    if(breadcrumbName) breadcrumbName.textContent = e['活動名稱'];
 
     // Build activity items
     const activities = (e['活動內容'] || '').split('\n').filter(s => s.trim());
