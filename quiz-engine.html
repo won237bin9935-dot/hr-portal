@@ -20,17 +20,24 @@
 
     body { background: #f7f0f4; margin: 0; font-family: 'Noto Sans TC', sans-serif; }
 
-    .quiz-wrap {
-      max-width: 700px;
-      margin: 0 auto;
-      padding: 24px 16px 60px;
-    }
+    
 
     /* 確保整體置中 */
     #main-content {
       display: flex;
       justify-content: center;
+      align-items: flex-start;
+      width: 100%;
+      min-height: 100vh;
+      box-sizing: border-box;
+      padding: 0;
     }
+    .quiz-wrap {
+      max-width: 700px;
+      width: 100%;
+      padding: 24px 16px 60px;
+    }
+
 
     /* ── Card ── */
     .card {
@@ -60,16 +67,7 @@
     }
     .field input:focus { outline: none; border-color: var(--pink); box-shadow: 0 0 0 3px rgba(224,92,138,.15); }
 
-    /* Timer toggle */
-    .timer-box {
-      background: #f8f8f8; border-radius: 8px; padding: 12px 16px; margin-bottom: 18px;
-    }
-    .timer-box .tb-lbl { font-size: .88rem; font-weight: 600; color: #555; margin-bottom: 8px; }
-    .tb-opts { display: flex; gap: 16px; }
-    .tb-opts label { display: flex; align-items: center; gap: 5px; font-size: .88rem; cursor: pointer; }
-    .tb-opts input[type=radio] { accent-color: var(--pink); }
-    #timer-min-group { margin-top: 8px; font-size: .88rem; color: #555; display: flex; align-items: center; gap: 6px; }
-    #timer-min-group input { width: 70px; padding: 5px 8px; border: 1.5px solid var(--border); border-radius: 6px; }
+
 
     /* ── Buttons ── */
     .btn {
@@ -234,16 +232,7 @@
       <h2 class="login-title">請填入您的資料後開始測驗</h2>
       <div class="field"><label>姓名</label><input id="inp-name" type="text" placeholder="請輸入姓名" /></div>
 
-      <div class="timer-box">
-        <div class="tb-lbl">⏱ 計時功能</div>
-        <div class="tb-opts">
-          <label><input type="radio" name="tc" value="no" checked /> 不計時</label>
-          <label><input type="radio" name="tc" value="yes" /> 開啟計時</label>
-        </div>
-        <div id="timer-min-group" style="display:none">
-          限時 <input type="number" id="t-min" min="1" max="120" value="30" /> 分鐘
-        </div>
-      </div>
+
 
       <button class="btn btn-pink" id="btn-start">開始測驗 →</button>
       <p id="login-err" style="color:var(--red);font-size:.85rem;margin-top:8px;display:none">請填入工號與姓名</p>
@@ -449,7 +438,7 @@ function parseCSV(csv){
       options: optCols.map(o=>({letter:o.l, text:(o.v||'').trim()})),
       correct,
       explanation: r[iExpl]?.trim()||'',
-      image: r[iImg]?.trim()||'',
+      image: (iImg >= 0 ? r[iImg]?.trim() : '') || '',
     };
   });
 }
@@ -636,11 +625,16 @@ function showFeedback(idx){
   if(ok){
     fb.className='feedback fb-correct show';
     $('fb-icon').textContent='✅';
-    $('fb-msg').textContent='答對囉～請往下一題，GO~';
+    const correctOptR = q.options.find(o => o.letter === q.correct);
+    const correctLabelR = correctOptR ? `${q.correct}（${correctOptR.text}）` : '';
+    $('fb-msg').innerHTML = `答對囉～請往下一題，GO~${correctLabelR ? ` ✓ ${correctLabelR}` : ''}`;
   } else {
     fb.className='feedback fb-wrong show';
     $('fb-icon').textContent='❌';
-    $('fb-msg').textContent=q.explanation || '答錯了，請繼續加油！';
+    const correctOpt = q.options.find(o => o.letter === q.correct);
+    const correctLabel = correctOpt ? `【正確答案：${q.correct}（${correctOpt.text}）】` : '';
+    const explText = q.explanation || '答錯了，請繼續加油！';
+    $('fb-msg').innerHTML = `<span>${explText}</span>${correctLabel ? `<br><strong style="margin-top:4px;display:block">${correctLabel}</strong>` : ''}`;
   }
 }
 
