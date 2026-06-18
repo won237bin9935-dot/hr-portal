@@ -283,7 +283,7 @@
       ${q['備註']?`<div class="quiz-deadline">${q['備註']}</div>`:''}
       <div>
         ${hasLink&&!isClosed
-          ?`<a href="${q['表單連結']}" target="_blank" class="btn-quiz">開始測驗 →</a>`
+          ?`<a href="${q['表單連結']}" class="btn-quiz">開始測驗 →</a>`
           :isClosed
             ?`<span class="btn-quiz closed-btn">已截止</span>`
             :`<span class="btn-quiz disabled">即將開放</span>`
