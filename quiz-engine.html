@@ -415,6 +415,11 @@ function parseCSV(csv){
   const iQ=ci('題目'), iA=ci('選項A'), iB=ci('選項B'), iC=ci('選項C'), iD=ci('選項D');
   const iAns=ci('正確答案'), iType=ci('題型'), iExpl=ci('解析'), iImg=ci('圖片');
 
+  // Debug：印出標題列和第一行資料
+  console.log('CSV標題列:', h);
+  if(rows.length > 1) console.log('第一題資料:', rows[1]);
+  console.log('iExpl=', iExpl, '解析值=', rows[1]?.[iExpl]);
+
   return rows.slice(1).filter(r=>r[iQ]?.trim()).map((r,i)=>{
     const type = (r[iType]||'').trim().includes('判') ? 'judge'
                : (r[iType]||'').trim().includes('多') ? 'multi' : 'single';
@@ -620,6 +625,7 @@ function grade(idx){
 function showFeedback(idx){
   const q=questions[idx];
   const ok=results[idx];
+  console.log('題目:', q.text, '解析:', q.explanation);
   const fb=$('feedback');
   fb.style.display='flex';
   if(ok){
