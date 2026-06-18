@@ -738,7 +738,7 @@ function finishQuiz(){
       <div class="rv-detail">
         <span>您的答案：<strong>${userAns}</strong></span>
         ${!ok?`<span>正確答案：<strong>${correctAns}</strong></span>`:''}
-        ${q.explanation?`<div class="rv-expl">📖 ${q.explanation}</div>`:''}
+        ${(!ok && q.explanation)?`<div class="rv-expl">📖 ${q.explanation}</div>`:''}
       </div>`;
     rv.appendChild(d);
   });
