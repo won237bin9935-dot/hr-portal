@@ -56,8 +56,21 @@
       border-bottom: 2px solid #f0dde8;
       padding: 16px 28px 12px;
     }
-    #s-result .card-head h1 { color: #222; font-size: 1.2rem; }
-    #s-result .card-head p  { color: #555; }
+    #s-result .card-head h1 {
+      color: #222;
+      font-size: 2rem;
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    #s-result .card-head .quiz-name {
+      font-size: .88rem; color: #333; margin-bottom: 4px;
+    }
+    #s-result .card-head .user-info {
+      display: flex; gap: 32px; font-size: .88rem; color: #333;
+    }
+    #s-result .card-head .info-label { color: #aaa; font-size: .82rem; }
+    #s-result .card-head strong { color: #222; }
     .card-head h1 { margin: 0 0 4px; font-size: 1.3rem; }
     .card-head p  { margin: 0; opacity: .85; font-size: .88rem; }
     .card-body { padding: 28px; }
@@ -294,7 +307,14 @@
 
   <!-- Result -->
   <div id="s-result" class="card" style="display:none">
-    <div class="card-head"><h1>測驗結果</h1><p id="user-info-result"></p></div>
+    <div class="card-head">
+      <h1>測驗結果</h1>
+      <div class="quiz-name"><span class="info-label">測驗名稱：</span><strong id="result-quiz-name"></strong></div>
+      <div class="user-info">
+        <span><span class="info-label">姓名：</span><strong id="result-name"></strong></span>
+        <span><span class="info-label">測驗日期：</span><strong id="result-date"></strong></span>
+      </div>
+    </div>
     <div class="card-body">
       <div class="result-hero">
         <div class="score-ring">
@@ -714,7 +734,9 @@ function finishQuiz(){
 
   show('s-result');
   const todayR = new Date().toLocaleDateString('zh-TW', {year:'numeric',month:'2-digit',day:'2-digit'});
-  $('user-info-result').textContent=`${empName}　${todayR}`;
+  $('result-quiz-name').textContent = quizTitle;
+  $('result-name').textContent  = empName;
+  $('result-date').textContent  = todayR;
   $('rs-ok').textContent=correctCount;
   $('rs-tot').textContent=total;
   $('rs-time').textContent=elapsed;
