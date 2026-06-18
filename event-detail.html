@@ -78,12 +78,12 @@
 
     .meta-card { background:var(--card-bg); border-radius:14px; border:1px solid var(--border); overflow:hidden; }
     .meta-card-header { padding:14px 20px; border-bottom:1px solid var(--border); font-size:17px; font-weight:800; color:var(--text-mid); }
-    .meta-grid { display:grid; grid-template-columns:1fr 1fr; }
-    .meta-cell { padding:16px 20px; border-bottom:1px solid var(--border); border-right:1px solid var(--border); }
-    .meta-cell:nth-child(even) { border-right:none; }
-    .meta-cell:nth-last-child(-n+2) { border-bottom:none; }
-    .meta-cell-label { font-size:13px; color:var(--text-light); margin-bottom:4px; }
-    .meta-cell-value { font-size:15px; font-weight:800; }
+    .meta-grid { display:flex; flex-direction:column; }
+    .meta-cell { padding:12px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:16px; }
+    
+    .meta-cell:last-child { border-bottom:none; }
+    .meta-cell-label { font-size:13px; color:var(--text-light); min-width:80px; flex-shrink:0; }
+    .meta-cell-value { font-size:15px; font-weight:800; color:var(--text-dark); }
 
     .section-card { background:var(--card-bg); border-radius:14px; border:1px solid var(--border); overflow:hidden; }
     .section-card-header { padding:16px 20px; border-bottom:1px solid var(--border); font-size:14px; font-weight:700; display:flex; align-items:center; gap:8px; }
@@ -95,7 +95,7 @@
     .notice-list { display:flex; flex-direction:column; gap:10px; }
     .notice-row { display:flex; gap:10px; font-size:13px; color:var(--text-mid); line-height:1.6; }
 
-    .btn-register { display:flex; align-items:center; justify-content:center; gap:10px; width:100%; background:linear-gradient(135deg, var(--event-dark), var(--event-primary)); color:#fff; font-size:16px; font-weight:800; padding:16px; border-radius:12px; text-decoration:none; transition:all .2s; box-shadow:0 6px 20px rgba(0,0,0,.15); }
+    .btn-register { display:flex; align-items:center; justify-content:center; gap:10px; width:100%; background:linear-gradient(135deg, var(--event-dark), var(--event-primary)); color:#2e2e2e; font-size:16px; font-weight:800; padding:16px; border-radius:12px; text-decoration:none; transition:all .2s; box-shadow:0 6px 20px rgba(0,0,0,.15); }
     .btn-register:hover { transform:translateY(-2px); box-shadow:0 10px 28px rgba(0,0,0,.2); }
     .register-note { text-align:center; font-size:12px; color:var(--text-light); margin-top:10px; line-height:1.7; }
 

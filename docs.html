@@ -111,7 +111,7 @@
     /* Card body */
     .doc-card-body { padding:16px 18px; flex:1; display:flex; flex-direction:column; }
     .doc-category { font-size:11px; font-weight:700; color:var(--docs-color); text-transform:uppercase; letter-spacing:.08em; margin-bottom:6px; }
-    .doc-title { font-size:15px; font-weight:800; margin-bottom:6px; line-height:1.4; }
+    .doc-title { font-size:15px; font-weight:900; margin-bottom:6px; line-height:1.4; }
     .doc-desc { font-size:13px; color:var(--text-mid); line-height:1.6; margin-bottom:12px; flex:1; }
     .doc-meta { display:flex; align-items:center; justify-content:space-between; gap:8px; padding-top:12px; border-top:1px solid var(--border); }
     .doc-date { font-size:11px; color:var(--text-light); }
@@ -329,7 +329,7 @@
     card.innerHTML = `
       <div style="padding:12px 14px 8px;">
         ${catHTML}
-        <div class="doc-title" title="${titleText}">${shortTitle}</div>
+        <div class="doc-title" style="font-weight:900;" title="${titleText}">${shortTitle}</div>
       </div>
       ${previewHTML}
       <div class="doc-card-body" style="padding-top:10px;">
