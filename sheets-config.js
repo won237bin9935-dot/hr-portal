@@ -7,6 +7,12 @@ const HRCONFIG = {
   // ★ 把你的 Google Sheets ID 貼在這裡
   // 網址列 /d/ 和 /edit 之間的那段文字
   SHEETS_ID: '1b4xq2XxSCbuIF6SZU-x0Jz4Du_n-YRAJCSQrkm2ze3U',
+  const HRCONFIG = {
+  // ★ 把你的 Google Sheets ID 貼在這裡
+  SHEETS_ID: '1b4xq2XxSCbuIF6SZU-x0Jz4Du_n-YRAJCSQrkm2ze3U',
+
+  // ★ 測驗系統設定
+  QUIZ_APPS_SCRIPT_URL: 'https://script.google.com/macros/s/YOUR_DEPLOY_ID/exec',
 
   // 各分頁名稱（跟 Sheets 裡的分頁名稱要一致）
   SHEETS: {
