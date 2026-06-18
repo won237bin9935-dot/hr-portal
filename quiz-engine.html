@@ -681,16 +681,11 @@ function showFeedback(idx){
   if(ok){
     fb.className='feedback fb-correct show';
     $('fb-icon').textContent='✅';
-    const correctOptR = q.options.find(o => o.letter === q.correct);
-    const correctLabelR = correctOptR ? `${q.correct}（${correctOptR.text}）` : '';
-    $('fb-msg').innerHTML = `答對囉～請往下一題，GO~${correctLabelR ? ` ✓ ${correctLabelR}` : ''}`;
+    $('fb-msg').textContent = '答對囉～請往下一題，GO~';
   } else {
     fb.className='feedback fb-wrong show';
     $('fb-icon').textContent='❌';
-    const correctOpt = q.options.find(o => o.letter === q.correct);
-    const correctLabel = correctOpt ? `【正確答案：${q.correct}（${correctOpt.text}）】` : '';
-    const explText = q.explanation || '答錯了，請繼續加油！';
-    $('fb-msg').innerHTML = `<span>${explText}</span>${correctLabel ? `<br><strong style="margin-top:4px;display:block">${correctLabel}</strong>` : ''}`;
+    $('fb-msg').textContent = q.explanation || '答錯了，請繼續加油！';
   }
 }
 
