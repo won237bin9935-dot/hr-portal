@@ -169,6 +169,8 @@ nav { flex: 1; overflow-y: auto; padding: 12px 0; }
   border-bottom: 1px solid var(--border);
   padding: 0 32px;
   height: 60px;
+  width: calc(100vw - var(--sidebar-width));
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -240,6 +242,7 @@ nav { flex: 1; overflow-y: auto; padding: 12px 0; }
   #sidebar.open { transform: translateX(0); box-shadow: 4px 0 20px rgba(0,0,0,.15); }
   #sidebar-close { display: block !important; }
   #main { margin-left: 0; }
+  .topbar { width: 100vw; }
   .menu-toggle { display: block; }
 }
 
