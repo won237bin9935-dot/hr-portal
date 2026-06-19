@@ -290,6 +290,7 @@
       .three-col .panel:last-child { grid-column: auto; }
       .panel-header { flex-wrap: nowrap; gap: 8px; padding: 12px 14px; }
       .panel-header a { font-size: 12px; white-space: nowrap; flex-shrink: 0; }
+      .topbar-brand { font-size: 16px !important; }
     }
   
     .welcome-banner {
@@ -325,7 +326,8 @@
       z-index: 2;
     }
     .welcome-text .greet {
-      font-size: 15px;
+      font-size: 17px;
+      font-weight: 700;
       color: #3d4449;
       margin-bottom: 4px;
       font-weight: 500;
@@ -395,6 +397,7 @@
     <div class="topbar-left">
       <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
     </div>
+    <div class="topbar-brand" style="position:absolute;left:50%;transform:translateX(-50%);font-size:28px;font-weight:700;color:#3d4449;white-space:nowrap;">華美光學 人力資源系統</div>
     <div class="topbar-avatar">HR</div>
   </header>
 
@@ -408,9 +411,7 @@
         <div class="greet">歡迎您的到訪 </div>
         <p>期盼每位夥伴都能找到所需資源</p>
       </div>
-      <div class="welcome-center">
-        <h2>華美光學 人力資源系統</h2>
-      </div>
+
       <div class="flip-clock" id="flip-clock"></div>
     </div>
 
