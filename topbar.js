@@ -21,7 +21,7 @@
 
   // 產生粒子
   const container = document.getElementById('topbar-particles');
-  for (let i = 0; i < 18; i++) {
+  for (let i = 0; i < 35; i++) {
     const p = document.createElement('div');
     p.className = 'topbar-particle';
     p.style.left = Math.random() * 100 + '%';
