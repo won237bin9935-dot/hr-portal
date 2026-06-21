@@ -64,29 +64,49 @@
     .coming-soon h2 { font-size:18px; font-weight:700; color:var(--text-mid); margin-bottom:8px; }
     .coming-soon p { font-size:14px; line-height:1.7; }
 
-    /* Links grid (for future use) */
-    .links-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+    /* Links grid */
+    .links-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
     .link-card {
-      background: var(--card-bg);
+      background: #ffffff;
       border-radius: 14px;
-      border: 1px solid var(--border);
-      padding: 24px;
+      border: 1px solid var(--lc-border, #ddd6fe);
+      border-left: 4px solid var(--lc-primary, #7c3aed);
+      padding: 22px;
+      width: 85%;
+      transition: all .2s;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
       text-decoration: none;
       color: inherit;
-      transition: all .2s;
       display: flex;
-      align-items: center;
-      gap: 16px;
+      flex-direction: column;
+      gap: 12px;
+      cursor: pointer;
     }
-    .link-card:hover { box-shadow:0 6px 20px rgba(0,0,0,.09); transform:translateY(-2px); }
-    .link-icon { width:48px; height:48px; border-radius:12px; background:#f0f1f5; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
-    .link-info h3 { font-size:15px; font-weight:700; margin-bottom:4px; }
-    .link-info p { font-size:12px; color:var(--text-light); }
-    .link-arrow { margin-left:auto; color:var(--text-light); font-size:18px; }
+    .link-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--lc-primary, #7c3aed);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform .25s;
+    }
+    .link-card:hover { box-shadow:0 6px 20px rgba(0,0,0,.12); transform:translateY(-2px); }
+    .link-card:hover::before { transform:scaleX(1); }
+    .link-card.disabled { opacity:.5; pointer-events:none; }
+    .link-card-top { display:flex; align-items:flex-start; justify-content:space-between; }
+    .link-card-icon { width:46px; height:46px; background:var(--lc-light, #f3eeff); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:22px; box-shadow:0 2px 8px rgba(0,0,0,.1); }
+    .link-card-status { padding:4px 10px; border-radius:20px; font-size:11px; font-weight:700; background:#dcfce7; color:#16a34a; border:1px solid #bbf7d0; }
+    .link-card h3 { font-size:17px; font-weight:800; margin-bottom:4px; line-height:1.3; color:var(--text-dark); }
+    .link-card p { font-size:12px; color:var(--text-light); }
+    @media (max-width:1100px) { .links-grid { grid-template-columns:repeat(2,1fr); } }
 
     
 
-    @media (max-width:900px) { #sidebar{transform:translateX(-100%)} #sidebar.open{transform:translateX(0)} #sidebar-close{display:block!important} #main{margin-left:0} .menu-toggle{display:block} .links-grid{grid-template-columns:1fr} }
+    @media (max-width:900px) { #sidebar{transform:translateX(-100%)} #sidebar.open{transform:translateX(0)} #sidebar-close{display:block!important} #main{margin-left:0} .menu-toggle{display:block} .links-grid{grid-template-columns:1fr} .link-card{width:100%;} }
     @media (max-width:560px) { .content{padding:20px 16px} .hero-icon{display:none} .links-hero{padding:24px} .coming-soon{padding:40px 20px} }
   
     .page-hero {
@@ -152,8 +172,8 @@
       <div class="page-hero-bg" style="background-image:url('https://lh3.googleusercontent.com/d/11mMlTi73o8ImtFI8u7EP9Smbyj8To2eP')"></div>
       <div class="page-hero-overlay"></div>
       <div class="page-hero-content">
-        <div class="page-hero-title" id="hero-title">🔗 相關系統連結</div>
-        <div class="page-hero-desc">整合各部門常用系統與工具，一站式快速存取所有內部資源。</div>
+        <div class="page-hero-title">📊 各項統計分析</div>
+        <div class="page-hero-desc">各項人資統計分析工具，輸入密碼後即可開啟使用。</div>
       </div>
     </div>
 
@@ -198,21 +218,22 @@
 const SHEET_ID = (typeof HRCONFIG !== 'undefined' && HRCONFIG.SHEETS_ID)
   ? HRCONFIG.SHEETS_ID
   : '1b4xq2XxSCbuIF6SZU-x0Jz4Du_n-YRAJCSQrkm2ze3U';
-
 const SHEET_TAB = '各項統計分析';
 
-// 讀取 URL 參數取得連結名稱
-const linkName = new URLSearchParams(location.search).get('name') || '';
-
-// 顯示連結名稱在驗證頁
-if (linkName) {
-  document.addEventListener('DOMContentLoaded', () => {
-    const h2 = document.querySelector('#auth-screen h2');
-    if (h2) h2.textContent = linkName;
-  });
-}
-
-let sheetData = null;
+const LINK_COLORS = [
+  { primary: '#2980b9', light: '#e8f3fb', border: '#bee3f8' },
+  { primary: '#26c067', light: '#e8faf0', border: '#b2f0d0' },
+  { primary: '#ff7512', light: '#fff0e0', border: '#ffd5a0' },
+  { primary: '#9b59b6', light: '#f5eeff', border: '#ddb8f5' },
+  { primary: '#f56a6a', light: '#fff0f0', border: '#ffc0c0' },
+  { primary: '#16acd0', light: '#e0f7fc', border: '#a0e4f5' },
+  { primary: '#f0a500', light: '#fff7e0', border: '#ffd980' },
+  { primary: '#e74c3c', light: '#fdecea', border: '#f5b8b8' },
+  { primary: '#1a3a6e', light: '#e8eef8', border: '#b0c4e8' },
+  { primary: '#11734b', light: '#e0f5ec', border: '#90dab8' },
+  { primary: '#8e44ad', light: '#f3e8fb', border: '#d0a0f0' },
+  { primary: '#7f8c1d', light: '#f4f6e0', border: '#d0d888' },
+];
 
 async function verifyPwd() {
   const input = document.getElementById('pwd-input').value.trim();
@@ -228,23 +249,9 @@ async function verifyPwd() {
     const pwd = json.table.rows[0]?.c[1]?.v?.toString().trim();
 
     if (input === pwd) {
-      sheetData = json;
-      if (linkName) {
-        // 找到對應連結網址並跳轉
-        const rows = json.table.rows.slice(2);
-        const target = rows.find(r => r.c && r.c[0]?.v === linkName);
-        const targetUrl = target?.c[2]?.v || '';
-        if (targetUrl) {
-          window.open(targetUrl, '_blank');
-        } else {
-          alert('此連結尚未設定網址');
-        }
-      } else {
-        // 無 name 參數：顯示連結清單
-        document.getElementById('auth-screen').style.display = 'none';
-        document.getElementById('links-screen').style.display = 'block';
-        loadLinks(json);
-      }
+      document.getElementById('auth-screen').style.display = 'none';
+      document.getElementById('links-screen').style.display = 'block';
+      loadLinks(json);
     } else {
       document.getElementById('pwd-error').style.display = 'block';
       document.getElementById('pwd-input').value = '';
@@ -255,39 +262,44 @@ async function verifyPwd() {
 }
 
 function loadLinks(json) {
-  const rows = json.table.rows.slice(2);
-  const links = rows
+  const rows = json.table.rows.slice(2)
     .filter(r => r.c && r.c[0]?.v)
     .map(r => ({
-      name   : r.c[0]?.v || '',
-      desc   : r.c[1]?.v || '',
-      url    : r.c[2]?.v || '',
-      status : r.c[3]?.v || '',
+      name  : r.c[0]?.v || '',
+      desc  : r.c[1]?.v || '',
+      url   : r.c[2]?.v || '',
+      status: r.c[3]?.v || '',
     }));
 
   document.getElementById('links-loading').style.display = 'none';
 
-  if (links.length === 0) {
+  if (rows.length === 0) {
     document.getElementById('links-empty').style.display = 'block';
     return;
   }
 
   const grid = document.getElementById('links-grid');
   grid.innerHTML = '';
-  links.forEach(l => {
+
+  rows.forEach((l, i) => {
+    const color = LINK_COLORS[i % LINK_COLORS.length];
     const isOpen = l.status !== '已停用';
-    const card = document.createElement('a');
-    card.href = isOpen && l.url ? l.url : '#';
-    card.target = '_blank';
-    card.className = 'link-card';
-    if (!isOpen) card.style.opacity = '0.5';
+    const card = document.createElement('div');
+    card.className = 'link-card' + (isOpen ? '' : ' disabled');
+    card.style.setProperty('--lc-primary', color.primary);
+    card.style.setProperty('--lc-light',   color.light);
+    card.style.setProperty('--lc-border',  color.border);
     card.innerHTML = `
-      <div class="link-icon">📊</div>
-      <div class="link-info">
-        <h3>${l.name}</h3>
-        ${l.desc ? `<p>${l.desc}</p>` : ''}
+      <div class="link-card-top">
+        <div class="link-card-icon">📊</div>
+        <span class="link-card-status">${isOpen ? '開放中' : '已停用'}</span>
       </div>
-      <div class="link-arrow">→</div>`;
+      <h3>${l.name}</h3>
+      ${l.desc ? `<p>${l.desc}</p>` : ''}`;
+    if (isOpen && l.url) {
+      card.style.cursor = 'pointer';
+      card.addEventListener('click', () => window.open(l.url, '_blank'));
+    }
     grid.appendChild(card);
   });
 }
