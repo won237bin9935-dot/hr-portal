@@ -10,6 +10,9 @@
   topbar.innerHTML = `
     <div class="topbar-left">
       <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+      <div class="topbar-tag">
+        <span class="topbar-tag-dot"></span>HR System
+      </div>
     </div>
     <div class="topbar-particles" id="topbar-particles"></div>
     <div class="topbar-brand">
@@ -19,16 +22,14 @@
     <div class="topbar-avatar">HR</div>
   `;
 
-  // 產生粒子：網頁開啟即漂浮，分散各處
   const container = document.getElementById('topbar-particles');
   for (let i = 0; i < 35; i++) {
     const p = document.createElement('div');
     p.className = 'topbar-particle';
     const duration = 4 + Math.random() * 6;
-    const progress = Math.random(); // 0~1 代表動畫進度
+    const progress = Math.random();
     p.style.left = Math.random() * 100 + '%';
     p.style.animationDuration = duration + 's';
-    // 負數 delay = 動畫已經進行了這麼多秒，讓粒子從中途開始
     p.style.animationDelay = '-' + (progress * duration) + 's';
     p.style.opacity = (.3 + Math.random() * .4).toString();
     container.appendChild(p);
