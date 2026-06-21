@@ -101,3 +101,49 @@ function toggleSidebar() {
   if (o) o.style.display = open ? 'block' : 'none';
   if (c) c.style.display = open ? 'block' : 'none';
 }
+
+// ── 滑鼠粒子效果 ──
+(function() {
+  const PARTICLE_COLOR = 'rgba(245,106,106,';
+  const PARTICLE_COUNT = 6;
+  const PARTICLE_SIZE = 4;
+
+  document.addEventListener('mousemove', function(e) {
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      createParticle(e.clientX, e.clientY);
+    }
+  });
+
+  function createParticle(x, y) {
+    const p = document.createElement('div');
+    const size = Math.random() * PARTICLE_SIZE + 2;
+    const opacity = Math.random() * 0.3 + 0.1; // 0.1~0.4 淡一點
+    const angle = Math.random() * Math.PI * 2;
+    const speed = Math.random() * 30 + 10;
+    const life = Math.random() * 400 + 300;
+
+    p.style.cssText = `
+      position: fixed;
+      width: ${size}px;
+      height: ${size}px;
+      border-radius: 50%;
+      background: ${PARTICLE_COLOR}${opacity});
+      left: ${x - size/2}px;
+      top: ${y - size/2}px;
+      pointer-events: none;
+      z-index: 9999;
+      transition: opacity ${life}ms ease;
+    `;
+    document.body.appendChild(p);
+
+    const dx = Math.cos(angle) * speed;
+    const dy = Math.sin(angle) * speed;
+
+    requestAnimationFrame(() => {
+      p.style.transform = `translate(${dx}px, ${dy}px)`;
+      p.style.opacity = '0';
+    });
+
+    setTimeout(() => p.remove(), life);
+  }
+})();
