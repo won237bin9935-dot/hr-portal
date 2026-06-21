@@ -85,7 +85,7 @@ function renderSidebarLinks(rows, placeholder, isLinksPage) {
   rows.forEach(r => {
     const name = r.name;
     const isActive = isLinksPage && location.search.includes(encodeURIComponent(name)) ? 'active' : '';
-    html += `<a class="nav-item ${isActive}" href="links.html?name=${encodeURIComponent(name)}" style="padding-left:32px;font-size:13px;">
+    html += `<a class="nav-item ${isActive}" href="links.html?name=${encodeURIComponent(name)}">
       <span class="icon">📊</span> ${name}
     </a>`;
   });
