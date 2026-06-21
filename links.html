@@ -166,7 +166,7 @@
       <div class="page-hero-bg" style="background-image:url('https://lh3.googleusercontent.com/d/11mMlTi73o8ImtFI8u7EP9Smbyj8To2eP')"></div>
       <div class="page-hero-overlay"></div>
       <div class="page-hero-content">
-        <div class="page-hero-title">🔗 相關系統連結</div>
+        <div class="page-hero-title" id="hero-title">🔗 相關系統連結</div>
         <div class="page-hero-desc">整合各部門常用系統與工具，一站式快速存取所有內部資源。</div>
       </div>
     </div>
@@ -215,12 +215,24 @@ const SHEET_ID = (typeof HRCONFIG !== 'undefined' && HRCONFIG.SHEETS_ID)
 
 const SHEET_TAB = '系統連結';
 
+// 讀取 URL 參數取得連結名稱
+const linkName = new URLSearchParams(location.search).get('name') || '';
+
+// 顯示連結名稱在驗證頁
+if (linkName) {
+  document.addEventListener('DOMContentLoaded', () => {
+    const h2 = document.querySelector('#auth-screen h2');
+    if (h2) h2.textContent = linkName;
+  });
+}
+
+let sheetData = null;
+
 async function verifyPwd() {
   const input = document.getElementById('pwd-input').value.trim();
   document.getElementById('pwd-error').style.display = 'none';
 
   try {
-    // 從試算表讀取密碼（第一列A1）
     const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_TAB)}&headers=0`;
     const res = await fetch(url);
     const text = await res.text();
@@ -230,9 +242,23 @@ async function verifyPwd() {
     const pwd = json.table.rows[0]?.c[1]?.v?.toString().trim();
 
     if (input === pwd) {
-      document.getElementById('auth-screen').style.display = 'none';
-      document.getElementById('links-screen').style.display = 'block';
-      loadLinks(json);
+      sheetData = json;
+      if (linkName) {
+        // 找到對應連結網址並跳轉
+        const rows = json.table.rows.slice(2);
+        const target = rows.find(r => r.c && r.c[0]?.v === linkName);
+        const targetUrl = target?.c[2]?.v || '';
+        if (targetUrl) {
+          window.location.href = targetUrl;
+        } else {
+          alert('此連結尚未設定網址');
+        }
+      } else {
+        // 無 name 參數：顯示連結清單
+        document.getElementById('auth-screen').style.display = 'none';
+        document.getElementById('links-screen').style.display = 'block';
+        loadLinks(json);
+      }
     } else {
       document.getElementById('pwd-error').style.display = 'block';
       document.getElementById('pwd-input').value = '';
@@ -243,7 +269,6 @@ async function verifyPwd() {
 }
 
 function loadLinks(json) {
-  // 第二列是標題，第三列開始是資料
   const rows = json.table.rows.slice(2);
   const links = rows
     .filter(r => r.c && r.c[0]?.v)
@@ -271,7 +296,7 @@ function loadLinks(json) {
     card.className = 'link-card';
     if (!isOpen) card.style.opacity = '0.5';
     card.innerHTML = `
-      <div class="link-icon">🔗</div>
+      <div class="link-icon">📊</div>
       <div class="link-info">
         <h3>${l.name}</h3>
         ${l.desc ? `<p>${l.desc}</p>` : ''}
