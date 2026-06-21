@@ -11,7 +11,7 @@
     <div class="topbar-left">
       <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
       <div class="topbar-tag">
-        <span class="topbar-tag-dot"></span>HR System
+        <span class="topbar-tag-dot"></span>HUMAN RESOURCES SYSTEM
       </div>
     </div>
     <div class="topbar-particles" id="topbar-particles"></div>
