@@ -104,39 +104,50 @@ function toggleSidebar() {
 
 // ── 滑鼠彗星尾巴效果 ──
 (function() {
-  let frameCount = 0;
+  const TRAIL_LENGTH = 20; // 尾巴長度（點數）
+  const trail = [];        // 記錄滑鼠軌跡
+  let animFrame;
 
   document.addEventListener('mousemove', function(e) {
-    frameCount++;
-    if (frameCount % 2 !== 0) return;
-    createParticle(e.clientX, e.clientY);
+    trail.push({ x: e.clientX, y: e.clientY });
+    if (trail.length > TRAIL_LENGTH) trail.shift();
+
+    cancelAnimationFrame(animFrame);
+    animFrame = requestAnimationFrame(drawTrail);
   });
 
-  function createParticle(x, y) {
-    const p = document.createElement('div');
-    const size = Math.random() * 5 + 4; // 4~9px
-    const opacity = Math.random() * 0.3 + 0.5; // 0.5~0.8 明顯
-    const life = Math.random() * 300 + 400; // 400~700ms
+  function drawTrail() {
+    // 移除舊的粒子
+    document.querySelectorAll('.comet-dot').forEach(el => el.remove());
 
-    p.style.cssText = `
-      position: fixed;
-      width: ${size}px;
-      height: ${size}px;
-      border-radius: 50%;
-      background: rgba(80,80,80,${opacity});
-      left: ${x - size/2}px;
-      top: ${y - size/2}px;
-      pointer-events: none;
-      z-index: 9999;
-      transition: opacity ${life}ms ease, transform ${life}ms ease;
-    `;
-    document.body.appendChild(p);
+    trail.forEach((pos, i) => {
+      const ratio = i / TRAIL_LENGTH; // 0=最舊(尾端) 1=最新(頭部)
+      const size = ratio * 8 + 1;    // 尾端1px → 頭部9px
+      const opacity = ratio * 0.6 + 0.1; // 尾端淡 → 頭部明顯
 
-    requestAnimationFrame(() => {
-      p.style.opacity = '0';
-      p.style.transform = 'scale(0.1)';
+      const p = document.createElement('div');
+      p.className = 'comet-dot';
+      p.style.cssText = `
+        position: fixed;
+        width: ${size}px;
+        height: ${size}px;
+        border-radius: 50%;
+        background: rgba(80,80,80,${opacity});
+        left: ${pos.x - size/2}px;
+        top: ${pos.y - size/2}px;
+        pointer-events: none;
+        z-index: 9999;
+      `;
+      document.body.appendChild(p);
     });
 
-    setTimeout(() => p.remove(), life);
+    // 停止移動後淡出
+    setTimeout(() => {
+      document.querySelectorAll('.comet-dot').forEach(el => {
+        el.style.transition = 'opacity 300ms ease';
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 300);
+      });
+    }, 100);
   }
 })();
