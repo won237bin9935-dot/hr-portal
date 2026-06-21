@@ -362,8 +362,9 @@ async function confirmPwd() {
     const pwd = json.table.rows[0]?.c[1]?.v?.toString().trim();
 
     if (input === pwd) {
+      const urlToOpen = pendingUrl;
       closeModal();
-      window.open(pendingUrl, '_blank');
+      window.open(urlToOpen, '_blank');
     } else {
       document.getElementById('pwd-error-msg').style.display = 'block';
       document.getElementById('pwd-input').value = '';
