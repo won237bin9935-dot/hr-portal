@@ -8,7 +8,6 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      
       --accent: #f56a6a;
       --bg: #f8f9fa;
       --card-bg: #ffffff;
@@ -16,53 +15,10 @@
       --text-mid: #666;
       --text-light: #999;
       --border: #e8e8e8;
-      
     }
     body { font-family: 'Segoe UI','Microsoft JhengHei',sans-serif; background: var(--bg); color: var(--text-dark); display: flex; min-height: 100vh; }
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
     .content { padding:32px; flex:1; }
-
-    /* Hero */
-    
-    .links-hero::before { content:''; position:absolute; right:-60px; top:-60px; width:240px; height:240px; border-radius:50%; background:rgba(255,255,255,.06); }
-    
-    
-    
-
-    /* Coming soon */
-    .coming-soon {
-      background: var(--card-bg);
-      border-radius: 16px;
-      border: 2px dashed var(--border);
-      padding: 60px;
-      text-align: center;
-      color: var(--text-light);
-    }
-    .coming-soon .cs-icon { font-size:56px; display:block; margin-bottom:16px; }
-    .coming-soon h2 { font-size:18px; font-weight:700; color:var(--text-mid); margin-bottom:8px; }
-    .coming-soon p { font-size:14px; line-height:1.7; }
 
     /* Links grid */
     .links-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
@@ -96,19 +52,17 @@
     }
     .link-card:hover { box-shadow:0 6px 20px rgba(0,0,0,.12); transform:translateY(-2px); }
     .link-card:hover::before { transform:scaleX(1); }
-    .link-card.disabled { opacity:.5; pointer-events:none; }
+    .link-card.disabled { opacity:.5; pointer-events:none; cursor:default; }
     .link-card-top { display:flex; align-items:flex-start; justify-content:space-between; }
     .link-card-icon { width:46px; height:46px; background:var(--lc-light, #f3eeff); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:22px; box-shadow:0 2px 8px rgba(0,0,0,.1); }
     .link-card-status { padding:4px 10px; border-radius:20px; font-size:11px; font-weight:700; background:#dcfce7; color:#16a34a; border:1px solid #bbf7d0; }
     .link-card h3 { font-size:17px; font-weight:800; margin-bottom:4px; line-height:1.3; color:var(--text-dark); }
     .link-card p { font-size:12px; color:var(--text-light); }
     @media (max-width:1100px) { .links-grid { grid-template-columns:repeat(2,1fr); } }
-
-    
-
     @media (max-width:900px) { #sidebar{transform:translateX(-100%)} #sidebar.open{transform:translateX(0)} #sidebar-close{display:block!important} #main{margin-left:0} .menu-toggle{display:block} .links-grid{grid-template-columns:1fr} .link-card{width:100%;} }
-    @media (max-width:560px) { .content{padding:20px 16px} .hero-icon{display:none} .links-hero{padding:24px} .coming-soon{padding:40px 20px} }
-  
+    @media (max-width:560px) { .content{padding:20px 16px} .hero-icon{display:none} .links-hero{padding:24px} }
+
+    /* Page hero */
     .page-hero {
       position: relative;
       border-radius: 16px;
@@ -152,11 +106,79 @@
       color: #3d4449;
       font-weight: 500;
     }
-  
+
     /* Layout fix */
     body { display:flex; min-height:100vh; }
     #main { margin-left:var(--sidebar-width,260px); flex:1; display:flex; flex-direction:column; min-height:100vh; }
     @media (max-width:900px) { #main { margin-left:0; } }
+
+    /* Password Modal */
+    #pwd-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+    }
+    #pwd-modal-overlay.active {
+      display: flex;
+    }
+    #pwd-modal {
+      background: #fff;
+      border-radius: 16px;
+      padding: 40px;
+      width: 90%;
+      max-width: 380px;
+      text-align: center;
+      box-shadow: 0 8px 40px rgba(0,0,0,.18);
+      position: relative;
+    }
+    #pwd-modal .modal-close {
+      position: absolute;
+      top: 14px; right: 18px;
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--text-light);
+      line-height: 1;
+      border: none;
+      background: none;
+      padding: 0;
+    }
+    #pwd-modal .modal-close:hover { color: var(--text-dark); }
+    #pwd-modal .modal-icon { font-size: 44px; margin-bottom: 14px; }
+    #pwd-modal h2 { font-size: 17px; font-weight: 800; margin-bottom: 6px; color: var(--text-dark); }
+    #pwd-modal .modal-name { font-size: 13px; color: var(--text-mid); margin-bottom: 20px; }
+    #pwd-modal input[type="password"] {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 15px;
+      margin-bottom: 10px;
+      outline: none;
+      font-family: inherit;
+      transition: border-color .2s;
+    }
+    #pwd-modal input[type="password"]:focus { border-color: #f56a6a; }
+    #pwd-error-msg { color: #f56a6a; font-size: 13px; margin-bottom: 10px; display: none; }
+    #pwd-modal button.confirm-btn {
+      width: 100%;
+      background: #f56a6a;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background .2s;
+    }
+    #pwd-modal button.confirm-btn:hover { background: #e05555; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
@@ -173,42 +195,35 @@
       <div class="page-hero-overlay"></div>
       <div class="page-hero-content">
         <div class="page-hero-title">📊 各項統計分析</div>
-        <div class="page-hero-desc">各項人資統計分析工具，輸入密碼後即可開啟使用。</div>
+        <div class="page-hero-desc">點擊卡片後輸入密碼即可開啟使用。</div>
       </div>
     </div>
 
-
-    <!-- 密碼驗證畫面 -->
-    <div id="auth-screen">
-      <div style="max-width:400px;margin:60px auto;background:#fff;border-radius:16px;border:1px solid var(--border);padding:40px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.08);">
-        <div style="font-size:48px;margin-bottom:16px;">🔐</div>
-        <h2 style="font-size:18px;font-weight:800;margin-bottom:8px;color:var(--text-dark);">需要驗證身份</h2>
-        <p style="font-size:13px;color:var(--text-light);margin-bottom:24px;">此頁面僅限授權人員查看</p>
-        <input type="password" id="pwd-input" placeholder="請輸入密碼"
-          style="width:100%;padding:12px 16px;border:1.5px solid var(--border);border-radius:8px;font-size:15px;margin-bottom:12px;outline:none;font-family:inherit;"
-          onkeydown="if(event.key==='Enter')verifyPwd()" />
-        <p id="pwd-error" style="color:#f56a6a;font-size:13px;margin-bottom:12px;display:none;">密碼錯誤，請重試</p>
-        <button onclick="verifyPwd()"
-          style="width:100%;background:#f56a6a;color:#fff;border:none;border-radius:8px;padding:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;">
-          確認
-        </button>
-      </div>
+    <!-- 卡片區 -->
+    <div id="links-loading" style="text-align:center;padding:60px;color:var(--text-light);">
+      <div style="width:32px;height:32px;border:3px solid var(--border);border-top-color:#f56a6a;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;"></div>
+      <p>載入連結中…</p>
     </div>
-
-    <!-- 連結內容（驗證後顯示）-->
-    <div id="links-screen" style="display:none;">
-      <div id="links-loading" style="text-align:center;padding:60px;color:var(--text-light);">
-        <div style="width:32px;height:32px;border:3px solid var(--border);border-top-color:#f56a6a;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;"></div>
-        <p>載入連結中…</p>
-      </div>
-      <div class="links-grid" id="links-grid"></div>
-      <div id="links-empty" style="display:none;text-align:center;padding:60px;color:var(--text-light);">
-        <div style="font-size:48px;margin-bottom:12px;">🔗</div>
-        <p>目前沒有連結</p>
-      </div>
+    <div class="links-grid" id="links-grid"></div>
+    <div id="links-empty" style="display:none;text-align:center;padding:60px;color:var(--text-light);">
+      <div style="font-size:48px;margin-bottom:12px;">🔗</div>
+      <p>目前沒有連結</p>
     </div>
-
   </main>
+</div>
+
+<!-- 密碼 Modal -->
+<div id="pwd-modal-overlay">
+  <div id="pwd-modal">
+    <button class="modal-close" onclick="closeModal()" title="關閉">✕</button>
+    <div class="modal-icon">🔐</div>
+    <h2>請輸入密碼</h2>
+    <div class="modal-name" id="modal-link-name"></div>
+    <input type="password" id="pwd-input" placeholder="請輸入密碼"
+      onkeydown="if(event.key==='Enter')confirmPwd()" />
+    <p id="pwd-error-msg">密碼錯誤，請重試</p>
+    <button class="confirm-btn" onclick="confirmPwd()">確認</button>
+  </div>
 </div>
 
 <script src="sheets-config.js"></script>
@@ -235,10 +250,13 @@ const LINK_COLORS = [
   { primary: '#7f8c1d', light: '#f4f6e0', border: '#d0d888' },
 ];
 
-async function verifyPwd() {
-  const input = document.getElementById('pwd-input').value.trim();
-  document.getElementById('pwd-error').style.display = 'none';
+let correctPwd = '';
+let pendingUrl = '';
 
+// 頁面載入時直接抓資料
+window.addEventListener('DOMContentLoaded', loadLinksData);
+
+async function loadLinksData() {
   try {
     const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_TAB)}&headers=0`;
     const res = await fetch(url);
@@ -246,22 +264,18 @@ async function verifyPwd() {
     const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
     if (!match) throw new Error('無法讀取');
     const json = JSON.parse(match[1]);
-    const pwd = json.table.rows[0]?.c[1]?.v?.toString().trim();
 
-    if (input === pwd) {
-      document.getElementById('auth-screen').style.display = 'none';
-      document.getElementById('links-screen').style.display = 'block';
-      loadLinks(json);
-    } else {
-      document.getElementById('pwd-error').style.display = 'block';
-      document.getElementById('pwd-input').value = '';
-    }
+    // 取出密碼備用（B1）
+    correctPwd = json.table.rows[0]?.c[1]?.v?.toString().trim() || '';
+
+    renderCards(json);
   } catch(e) {
-    alert('驗證失敗，請稍後再試');
+    document.getElementById('links-loading').style.display = 'none';
+    document.getElementById('links-empty').style.display = 'block';
   }
 }
 
-function loadLinks(json) {
+function renderCards(json) {
   const rows = json.table.rows.slice(2)
     .filter(r => r.c && r.c[0]?.v)
     .map(r => ({
@@ -296,12 +310,47 @@ function loadLinks(json) {
       </div>
       <h3>${l.name}</h3>
       ${l.desc ? `<p>${l.desc}</p>` : ''}`;
+
     if (isOpen && l.url) {
-      card.style.cursor = 'pointer';
-      card.addEventListener('click', () => window.open(l.url, '_blank'));
+      card.addEventListener('click', () => openModal(l.name, l.url));
     }
     grid.appendChild(card);
   });
+}
+
+// Modal 開關
+function openModal(name, url) {
+  pendingUrl = url;
+  document.getElementById('modal-link-name').textContent = name;
+  document.getElementById('pwd-input').value = '';
+  document.getElementById('pwd-error-msg').style.display = 'none';
+  document.getElementById('pwd-modal-overlay').classList.add('active');
+  setTimeout(() => document.getElementById('pwd-input').focus(), 100);
+}
+
+function closeModal() {
+  document.getElementById('pwd-modal-overlay').classList.remove('active');
+  pendingUrl = '';
+}
+
+// 點遮罩關閉
+document.getElementById('pwd-modal-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// 密碼確認
+function confirmPwd() {
+  const input = document.getElementById('pwd-input').value.trim();
+  document.getElementById('pwd-error-msg').style.display = 'none';
+
+  if (input === correctPwd) {
+    closeModal();
+    window.open(pendingUrl, '_blank');
+  } else {
+    document.getElementById('pwd-error-msg').style.display = 'block';
+    document.getElementById('pwd-input').value = '';
+    document.getElementById('pwd-input').focus();
+  }
 }
 </script>
 </body>
