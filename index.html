@@ -16,7 +16,7 @@
       --glass: rgba(255,255,255,.05);
       --glass-border: rgba(255,255,255,.1);
     }
-    html, body { height: 100%; font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; background: var(--darker); color: var(--text); overflow: hidden; }
+    html, body { height: 100%; font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; background: var(--darker); color: var(--text); overflow: clip; }
     .bg { position: fixed; inset: 0; background: radial-gradient(ellipse 80% 60% at 70% 40%, rgba(74,144,217,.13) 0%, transparent 60%), radial-gradient(ellipse 60% 50% at 20% 70%, rgba(245,106,106,.10) 0%, transparent 55%), linear-gradient(160deg, #1a1e2e 0%, #12151f 100%); z-index: 0; }
     .grid-overlay { position: fixed; inset: 0; z-index: 1; background-image: linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px); background-size: 48px 48px; mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%); }
     .lens-wrap { position: fixed; right: -80px; top: 50%; transform: translateY(-50%); width: 560px; height: 560px; z-index: 1; opacity: .18; }
