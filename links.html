@@ -348,7 +348,7 @@ document.getElementById('pwd-modal-overlay').addEventListener('click', function(
   if (e.target === this) closeModal();
 });
 
-// ── 密碼確認：點擊時才去 fetch 驗證（與原版邏輯相同）
+// ── 密碼確認：先同步開視窗，驗證成功才載入網址（避免手機封鎖 popup）
 async function confirmPwd() {
   const input = document.getElementById('pwd-input').value.trim();
   document.getElementById('pwd-error-msg').style.display = 'none';
@@ -357,6 +357,9 @@ async function confirmPwd() {
   btn.disabled = true;
   btn.textContent = '驗證中…';
 
+  // 在使用者點擊的同步脈絡內先開空視窗，手機瀏覽器不會封鎖
+  const newWin = window.open('', '_blank');
+
   try {
     const json = await fetchSheetJson();
     const pwd = json.table.rows[0]?.c[1]?.v?.toString().trim();
@@ -364,8 +367,9 @@ async function confirmPwd() {
     if (input === pwd) {
       const urlToOpen = pendingUrl;
       closeModal();
-      window.open(urlToOpen, '_blank');
+      newWin.location.href = urlToOpen; // 驗證成功才跳轉
     } else {
+      newWin.close(); // 密碼錯誤關掉空視窗
       document.getElementById('pwd-error-msg').style.display = 'block';
       document.getElementById('pwd-input').value = '';
       document.getElementById('pwd-input').focus();
@@ -373,6 +377,7 @@ async function confirmPwd() {
       btn.textContent = '確認';
     }
   } catch(e) {
+    newWin.close();
     alert('驗證失敗，請稍後再試');
     btn.disabled = false;
     btn.textContent = '確認';
