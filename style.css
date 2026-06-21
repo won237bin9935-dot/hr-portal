@@ -208,7 +208,7 @@ border-bottom: 1px solid var(--border);
   pointer-events: none;
   z-index: 2;
 }
-.topbar-brand-main { color: #ffffff; }
+.topbar-brand-main { color: #3d4449; }
 .topbar-brand-sub  { color: #f56a6a; }
 
 @media (max-width: 900px) {
@@ -228,10 +228,10 @@ border-bottom: 1px solid var(--border);
 }
 .topbar-particle {
   position: absolute;
-  width: 2px;
-  height: 2px;
+  width: 3px;
+  height: 3px;
   border-radius: 50%;
-  background: rgba(255,255,255,.6);
+  background: rgba(245,106,106,.7);
   bottom: 0;
   animation: topbar-float linear infinite;
 }
@@ -248,7 +248,7 @@ border-bottom: 1px solid var(--border);
   border: none;
   font-size: 22px;
   cursor: pointer;
-  color: #ffffff;
+  color: var(--text-dark);
   position: relative;
   z-index: 2;
 }
