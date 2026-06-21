@@ -98,8 +98,21 @@
       display: flex;
       flex-direction: column;
       box-shadow: 0 2px 12px rgba(0,0,0,.06);
-      transition: box-shadow .2s;
+      transition: all .2s;
+      position: relative;
     }
+    .panel::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--panel-color, #f56a6a);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform .25s;
+    }
+    .panel:hover { box-shadow: 0 6px 20px rgba(0,0,0,.12); transform: translateY(-2px); }
+    .panel:hover::before { transform: scaleX(1); }
     .panel:hover { box-shadow: 0 4px 20px rgba(0,0,0,.1); }
 
     .panel-header {
@@ -116,7 +129,7 @@
       left: 0; top: 10px; bottom: 10px;
       width: 3px;
       border-radius: 0 3px 3px 0;
-      background: var(--accent);
+      background: var(--panel-color, var(--accent));
     }
     .panel-header-left { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 800; }
     .panel-header-icon { font-size: 16px; }
@@ -393,7 +406,7 @@
     <div class="three-col">
 
       <!-- 最新公告 -->
-      <div class="panel">
+      <div class="panel" style="--panel-color:#f56a6a">
         <div class="panel-header">
           <div class="panel-header-left"><span class="panel-header-icon">📢</span>最新公告</div>
           <a href="notice.html">查看全部</a>
@@ -404,7 +417,7 @@
       </div>
 
       <!-- 進行中活動 -->
-      <div class="panel">
+      <div class="panel" style="--panel-color:#2980b9">
         <div class="panel-header">
           <div class="panel-header-left"><span class="panel-header-icon">🎉</span>進行中活動</div>
           <a href="events-list.html">查看全部</a>
@@ -415,7 +428,7 @@
       </div>
 
       <!-- 最新文件 -->
-      <div class="panel">
+      <div class="panel" style="--panel-color:#f0a500">
         <div class="panel-header">
           <div class="panel-header-left"><span class="panel-header-icon">📁</span>最新文件</div>
           <a href="docs.html">查看全部</a>
