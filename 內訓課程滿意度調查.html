@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>課程滿意度報表系統</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --navy:#1B2A4A;--gold:#C9A84C;--gold-lt:#E8C96A;
+  --bg:#F0F3F8;--white:#fff;--muted:#6B7A99;--border:#D8E0EE;--red:#C0392B;
+}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--navy);font-size:14px;}
+
+/* TOPBAR */
+.topbar{background:var(--navy);height:60px;padding:0 40px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 10px rgba(0,0,0,0.2);}
+.tb-brand{display:flex;align-items:center;gap:12px;}
+.tb-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--gold),var(--gold-lt));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;}
+.tb-title{color:#fff;font-size:15px;font-weight:600;letter-spacing:1px;}
+.tb-sub{color:rgba(255,255,255,0.4);font-size:10px;}
+.tb-badge{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.5);font-size:11px;padding:4px 12px;border-radius:20px;}
+
+.page{max-width:860px;margin:0 auto;padding:28px 20px 60px;}
+
+/* CARDS */
+.card{background:var(--white);border-radius:14px;box-shadow:0 4px 16px rgba(27,42,74,0.1);margin-bottom:16px;border:1px solid var(--border);overflow:hidden;}
+.card-head{padding:16px 24px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);background:#F8FAFF;}
+.step-num{width:28px;height:28px;background:var(--navy);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;}
+.card-title{font-size:14px;font-weight:600;color:var(--navy);}
+.card-body{padding:20px 24px;}
+
+.upload-zone{border:2px dashed #C0CEEA;border-radius:10px;padding:30px;text-align:center;cursor:pointer;background:#FAFBFF;transition:all .2s;}
+.upload-zone:hover,.upload-zone.drag-over{border-color:var(--gold);background:#FFFDF5;}
+.upload-zone .icon{font-size:36px;margin-bottom:8px;display:block;}
+.upload-zone p{color:var(--muted);font-size:13px;}
+.upload-zone strong{color:var(--navy);}
+#fileInput{display:none;}
+.file-ok{display:none;align-items:center;gap:10px;background:#F0FBF6;border:1px solid #A8DFC0;border-radius:8px;padding:11px 16px;margin-top:12px;}
+.file-ok .nm{font-weight:600;font-size:13px;color:#1A6640;}
+.file-ok .inf{font-size:12px;color:var(--muted);}
+
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.fg{display:flex;flex-direction:column;gap:5px;}
+.fg.full{grid-column:1/-1;}
+.flabel{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;}
+.finput{border:1.5px solid var(--border);border-radius:7px;padding:10px 13px;font-size:14px;font-family:inherit;color:var(--navy);transition:border-color .2s;}
+.finput:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,.12);}
+.finput::placeholder{color:#B8C4D8;}
+.btn-main{margin-top:16px;width:100%;background:var(--navy);color:#fff;border:none;border-radius:9px;padding:14px;font-size:14px;font-family:inherit;font-weight:600;letter-spacing:2px;cursor:pointer;transition:all .2s;}
+.btn-main:hover:not(:disabled){background:#253d68;}
+.btn-main:disabled{opacity:.35;cursor:not-allowed;}
+.err{display:none;background:#FEF0EE;border:1px solid #F5BFBA;border-radius:7px;padding:10px 14px;color:var(--red);font-size:13px;margin-top:10px;}
+
+/* REPORT */
+#rpt{display:none;}
+.toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.toolbar-label{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+.btn-pdf{display:flex;align-items:center;gap:7px;background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-family:inherit;font-weight:700;cursor:pointer;}
+.btn-pdf:hover{background:var(--gold-lt);}
+
+.rpt-card{background:var(--white);border-radius:14px;box-shadow:0 4px 16px rgba(27,42,74,.1);border:1px solid var(--border);overflow:hidden;}
+
+/* Header */
+.rpt-head{background:var(--navy);padding:18px 24px;display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center;}
+.rpt-label{font-size:10px;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;}
+.rpt-name{font-size:20px;font-weight:700;color:#fff;margin-bottom:4px;line-height:1.2;}
+.rpt-date{font-size:12px;color:rgba(255,255,255,.55);}
+.rpt-right{display:flex;flex-direction:column;gap:8px;align-items:flex-end;}
+.ov-row{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;justify-content:flex-end;}
+.ov-label{font-size:11px;color:rgba(255,255,255,.6);}
+.ov-pct{font-size:22px;font-weight:700;color:#fff;}
+.ov-sep{font-size:11px;color:rgba(255,255,255,.5);}
+.ov-hi{font-size:14px;font-weight:700;color:var(--gold-lt);}
+.stat-boxes{display:flex;gap:8px;}
+.stat-box{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 14px;text-align:center;min-width:72px;}
+.stat-val{font-size:18px;font-weight:700;color:#fff;line-height:1.1;}
+.stat-val.rate{color:var(--gold-lt);font-size:14px;}
+.stat-lbl{font-size:9px;color:rgba(255,255,255,.5);margin-top:1px;white-space:nowrap;}
+
+.rpt-body{padding:16px 24px;}
+.sec-title{background:var(--navy);color:#fff;font-size:11px;font-weight:700;letter-spacing:1px;padding:5px 12px;margin-bottom:10px;border-radius:4px;}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;margin-bottom:16px;border-radius:8px;border:1px solid var(--border);}
+.rtbl{width:100%;min-width:440px;border-collapse:collapse;font-size:12px;}
+.rtbl thead th{background:#EEF2FA;color:var(--navy);padding:7px 8px;text-align:center;font-weight:700;font-size:11px;border-bottom:2px solid var(--border);}
+.rtbl thead th:first-child{text-align:left;padding-left:12px;width:20%;}
+.rtbl tbody td{padding:7px 8px;text-align:center;border-bottom:1px solid #F0F3FA;font-size:12px;}
+.rtbl tbody td:first-child{text-align:left;padding-left:12px;font-weight:600;color:var(--navy);}
+.rtbl tbody tr:nth-child(even) td{background:#F8FAFF;}
+.rtbl tbody tr:last-child td{border-bottom:none;}
+.pct{font-weight:700;color:var(--navy);}
+.pct.hi{color:var(--red);}
+.pct.hi::after{content:' ★';font-size:10px;}
+
+/* CSS BAR CHARTS */
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.chart-wrap{background:#F8FAFF;border:1px solid var(--border);border-radius:8px;padding:12px 12px 8px;}
+
+/* Average chart */
+.avg-chart{display:flex;align-items:flex-end;justify-content:space-around;gap:6px;height:160px;border-bottom:2px solid #CBD5E1;border-left:2px solid #CBD5E1;padding:0 4px;margin-bottom:4px;position:relative;}
+.avg-bar-group{display:flex;flex-direction:column;align-items:center;flex:1;}
+.avg-bar{width:100%;max-width:48px;border-radius:4px 4px 0 0;position:relative;transition:height .3s;}
+.avg-bar-label{font-size:8.5px;color:var(--navy);font-weight:700;position:absolute;top:-16px;left:50%;transform:translateX(-50%);white-space:nowrap;}
+.avg-x-label{font-size:8px;color:var(--navy);text-align:center;margin-top:4px;line-height:1.2;}
+
+/* Distribution chart */
+.dist-chart-area{display:flex;align-items:flex-end;justify-content:space-around;gap:4px;height:160px;border-bottom:2px solid #CBD5E1;border-left:2px solid #CBD5E1;padding:0 4px;margin-bottom:4px;}
+.dist-group{display:flex;align-items:flex-end;gap:1px;flex:1;justify-content:center;}
+.dist-bar{flex:1;max-width:10px;border-radius:2px 2px 0 0;position:relative;}
+.dist-bar-val{font-size:6px;color:#333;position:absolute;top:-10px;left:50%;transform:translateX(-50%);white-space:nowrap;}
+.dist-x-label{font-size:8px;color:var(--navy);text-align:center;margin-top:4px;}
+.dist-legend{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:6px;}
+.dist-legend-item{display:flex;align-items:center;gap:3px;font-size:9px;color:#444;}
+.dist-legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
+
+/* Y-axis labels */
+.chart-y-labels{position:absolute;left:-28px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:space-between;pointer-events:none;}
+.y-label{font-size:7.5px;color:#999;text-align:right;width:26px;}
+
+/* PRINT */
+@media print{
+  @page{size:A4 portrait;margin:8mm;}
+  body{background:white;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .topbar,#uploadSection,#formSection,.toolbar{display:none!important;}
+  .page{max-width:100%;padding:0;margin:0;}
+  #rpt{display:block!important;}
+  .rpt-card{box-shadow:none;border:1px solid #bbb;border-radius:0;}
+  .rpt-head{padding:12px 16px;}
+  .rpt-name{font-size:16px;}
+  .ov-pct{font-size:18px;}
+  .ov-hi{font-size:12px;}
+  .stat-val{font-size:16px;}
+  .stat-val.rate{font-size:13px;}
+  .stat-box{padding:5px 10px;min-width:60px;}
+  .rpt-body{padding:10px 16px;}
+  .sec-title{padding:4px 10px;font-size:10px;margin-bottom:8px;}
+  .tbl-wrap{margin-bottom:12px;}
+  .rtbl thead th,.rtbl tbody td{padding:5px 6px;font-size:10px;}
+  .charts-row{gap:10px;}
+  .chart-wrap{padding:8px 8px 6px;}
+  .avg-chart,.dist-chart-area{height:120px;}
+}
+
+@media(max-width:640px){
+  .rpt-head{grid-template-columns:1fr;}
+  .rpt-right{align-items:flex-start;}
+  .charts-row{grid-template-columns:1fr;}
+  .form-grid{grid-template-columns:1fr;}
+  .fg.full{grid-column:1;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="tb-brand">
+    <div class="tb-icon">📋</div>
+    <div><div class="tb-title">課程滿意度報表系統</div><div class="tb-sub">Training Satisfaction Report Generator</div></div>
+  </div>
+  <div class="tb-badge">HR 專用工具</div>
+</div>
+
+<div class="page">
+  <div class="card" id="uploadSection">
+    <div class="card-head"><div class="step-num">1</div><div class="card-title">上傳 Google 表單回應檔案（Excel）</div></div>
+    <div class="card-body">
+      <div class="upload-zone" id="uploadZone">
+        <span class="icon">📊</span>
+        <p><strong>點擊選擇檔案</strong>，或直接拖曳至此處</p>
+        <p style="margin-top:4px;font-size:12px;color:#B8C4D8;">支援 .xlsx 格式</p>
+      </div>
+      <input type="file" id="fileInput" accept=".xlsx,.xls">
+      <div class="file-ok" id="fileOk">
+        <span style="font-size:20px">✅</span>
+        <div><div class="nm" id="fileName">—</div><div class="inf" id="fileInfo">—</div></div>
+      </div>
+      <div class="err" id="errMsg"></div>
+    </div>
+  </div>
+
+  <div class="card" id="formSection">
+    <div class="card-head"><div class="step-num">2</div><div class="card-title">確認課程基本資訊</div></div>
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="fg full"><label class="flabel">課程名稱</label><input class="finput" id="courseName" placeholder="上傳後自動帶入"></div>
+        <div class="fg"><label class="flabel">上課日期</label><input class="finput" id="courseDate" placeholder="上傳後自動帶入"></div>
+        <div class="fg"><label class="flabel">上課人數</label><input class="finput" type="number" id="totalStudents" placeholder="請輸入實際人數" min="1"></div>
+      </div>
+      <button class="btn-main" id="generateBtn" onclick="generateReport()" disabled>產生滿意度報表</button>
+    </div>
+  </div>
+
+  <div id="rpt">
+    <div class="toolbar">
+      <div class="toolbar-label">📄 報表預覽</div>
+      <button class="btn-pdf" onclick="window.print()">🖨️ 列印 / 儲存為 PDF</button>
+    </div>
+    <div class="rpt-card">
+      <div class="rpt-head">
+        <div>
+          <div class="rpt-label">課程滿意度調查報告</div>
+          <div class="rpt-name" id="rName">—</div>
+          <div class="rpt-date">📅 &nbsp;<span id="rDate">—</span></div>
+        </div>
+        <div class="rpt-right">
+          <div class="ov-row">
+            <span class="ov-label">整體滿意度</span>
+            <span class="ov-pct" id="ovPct">—</span>
+            <span class="ov-sep">｜最高：</span>
+            <span class="ov-hi" id="ovHi">—</span>
+          </div>
+          <div class="stat-boxes">
+            <div class="stat-box"><div class="stat-val" id="rTotal">—</div><div class="stat-lbl">上課人數</div></div>
+            <div class="stat-box"><div class="stat-val" id="rCollected">—</div><div class="stat-lbl">問卷回收</div></div>
+            <div class="stat-box"><div class="stat-val rate" id="rRate">—</div><div class="stat-lbl">回收率</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="rpt-body">
+        <div class="sec-title">各面向評分分析</div>
+        <div class="tbl-wrap">
+          <table class="rtbl">
+            <thead><tr><th>評量面向</th><th>1分</th><th>2分</th><th>3分</th><th>4分</th><th>5分</th><th>平均滿意度</th></tr></thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+        <div class="sec-title">圖表分析</div>
+        <div class="charts-row">
+          <div class="chart-wrap">
+            <div id="avgChart"></div>
+          </div>
+          <div class="chart-wrap">
+            <div id="distChart"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const DIMENSIONS=[
+  {name:'1.課程內容',  short:'課程內容',  qs:['1-1','1-2','1-3','1-4','1-5']},
+  {name:'2.課程進行',  short:'課程進行',  qs:['2-1','2-2','2-3','2-4']},
+  {name:'3.師資專業',  short:'師資專業',  qs:['3-1','3-2','3-3','3-4']},
+  {name:'4.講授純熟度',short:'講授純熟度',qs:['4-1','4-2','4-3','4-4','4-5','4-6']},
+  {name:'5.行政安排',  short:'行政安排',  qs:['5-1','5-2','5-3','5-4','5-5']},
+  {name:'6.學習成效',  short:'學習成效',  qs:['6-1','6-2','6-3']},
+];
+const REVERSE=['2-3'];
+const COLORS=['#4472C4','#ED7D31','#FFC000','#70AD47','#E85E5E','#9B59B6'];
+const SC=['#5B9BD5','#ED7D31','#FFC000','#70AD47','#E85E5E'];
+const SL=['1分','2分','3分','4分','5分'];
+let parsedData=null;
+
+const zone=document.getElementById('uploadZone');
+const fi=document.getElementById('fileInput');
+zone.addEventListener('click',()=>fi.click());
+zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('drag-over');});
+zone.addEventListener('dragleave',()=>zone.classList.remove('drag-over'));
+zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('drag-over');if(e.dataTransfer.files[0])load(e.dataTransfer.files[0]);});
+fi.addEventListener('change',e=>{if(e.target.files[0])load(e.target.files[0]);});
+
+function load(file){
+  const r=new FileReader();
+  r.onload=e=>{
+    try{
+      const wb=XLSX.read(e.target.result,{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const raw=XLSX.utils.sheet_to_json(ws,{defval:''});
+      parsedData=raw.filter(row=>Object.entries(row).some(([k,v])=>/^[1-6]-\d/.test(k)&&parseInt(v)>=1&&parseInt(v)<=5));
+      document.getElementById('fileOk').style.display='flex';
+      document.getElementById('fileName').textContent=file.name;
+      document.getElementById('fileInfo').textContent=`共 ${parsedData.length} 筆有效回應`;
+      document.getElementById('errMsg').style.display='none';
+      document.getElementById('generateBtn').disabled=false;
+      if(parsedData.length>0){
+        const keys=Object.keys(parsedData[0]);
+        const col=keys.find(k=>k==='課程名稱')||keys.find(k=>k.includes('課程名稱'));
+        if(col&&parsedData[0][col]){
+          const raw=String(parsedData[0][col]);
+          const i=raw.indexOf('_');
+          if(i!==-1){document.getElementById('courseName').value=raw.substring(i+1);if(!document.getElementById('courseDate').value)document.getElementById('courseDate').value=raw.substring(0,i);}
+          else document.getElementById('courseName').value=raw;
+        }
+      }
+    }catch(err){showErr('檔案讀取失敗');}
+  };
+  r.readAsArrayBuffer(file);
+}
+function showErr(m){const e=document.getElementById('errMsg');e.textContent=m;e.style.display='block';}
+
+function generateReport(){
+  if(!parsedData)return showErr('請先上傳檔案');
+  const name=document.getElementById('courseName').value.trim();
+  const date=document.getElementById('courseDate').value.trim();
+  const total=parseInt(document.getElementById('totalStudents').value)||0;
+  if(!name)return alert('請輸入課程名稱');
+  if(!date)return alert('請輸入上課日期');
+  if(!total)return alert('請輸入上課人數');
+  const n=parsedData.length;
+  document.getElementById('rName').textContent=name;
+  document.getElementById('rDate').textContent=date;
+  document.getElementById('rTotal').textContent=total;
+  document.getElementById('rCollected').textContent=n;
+  document.getElementById('rRate').textContent=((n/total)*100).toFixed(2)+'%';
+  const hdrs=Object.keys(parsedData[0]);
+  const dims=DIMENSIONS.map(dim=>{
+    const qdata=dim.qs.map(pfx=>{
+      const col=hdrs.find(h=>h.startsWith(pfx));
+      const cnts=[0,0,0,0,0];let valid=0;
+      if(col)parsedData.forEach(row=>{let v=parseInt(row[col]);if(v>=1&&v<=5){if(REVERSE.includes(pfx))v=6-v;cnts[v-1]++;valid++;}});
+      return{cnts,valid};
+    });
+    const nq=qdata.length;
+    const avg=[0,1,2,3,4].map(i=>qdata.reduce((s,q)=>s+q.cnts[i],0)/nq);
+    const vld=qdata.reduce((s,q)=>s+q.valid,0)/nq;
+    const pct=vld>0?(avg.reduce((s,c,i)=>s+c*(i+1),0)/(vld*5)*100):0;
+    return{...dim,avg,pct};
+  });
+  const overall=dims.reduce((s,d)=>s+d.pct,0)/dims.length;
+  const highest=dims.reduce((a,b)=>a.pct>b.pct?a:b);
+  document.getElementById('ovPct').textContent=overall.toFixed(2)+'%';
+  document.getElementById('ovHi').textContent=`${highest.name}　${highest.pct.toFixed(2)}%`;
+  const tbody=document.getElementById('tbody');
+  tbody.innerHTML='';
+  dims.forEach(d=>{
+    const hi=d.name===highest.name;
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${d.name}</td>${d.avg.map(c=>`<td>${c===0?'0':c%1===0?c.toFixed(0):c.toFixed(1)}</td>`).join('')}<td class="pct${hi?' hi':''}">${d.pct.toFixed(2)}%</td>`;
+    tbody.appendChild(tr);
+  });
+  drawAvgChart(dims,highest.name);
+  drawDistChart(dims);
+  document.getElementById('rpt').style.display='block';
+  setTimeout(()=>document.getElementById('rpt').scrollIntoView({behavior:'smooth'}),100);
+}
+
+function drawAvgChart(dims,highestName){
+  const vals=dims.map(d=>d.pct);
+  const minV=Math.max(0,Math.floor(Math.min(...vals))-5);
+  const maxV=Math.min(100,Math.ceil(Math.max(...vals))+2);
+  const range=maxV-minV;
+
+  // Y-axis ticks
+  const ticks=[];
+  const step=range<=10?2:5;
+  for(let t=minV;t<=maxV;t+=step)ticks.push(t);
+
+  let html=`<div style="display:flex;height:180px;gap:0;">`;
+  // Y axis labels
+  html+=`<div style="display:flex;flex-direction:column;justify-content:space-between;padding-bottom:2px;width:32px;flex-shrink:0;">`;
+  [...ticks].reverse().forEach(t=>{html+=`<div style="font-size:7.5px;color:#999;text-align:right;padding-right:4px;">${t}%</div>`;});
+  html+=`</div>`;
+  // Chart area
+  html+=`<div style="flex:1;display:flex;flex-direction:column;">`;
+  html+=`<div style="flex:1;border-left:2px solid #CBD5E1;border-bottom:2px solid #CBD5E1;display:flex;align-items:flex-end;padding:0 4px;gap:4px;position:relative;">`;
+  // Grid lines
+  ticks.slice(1,-1).forEach(t=>{
+    const pct=((t-minV)/range*100).toFixed(1);
+    html+=`<div style="position:absolute;bottom:${pct}%;left:0;right:0;border-top:1px dashed #E8ECF4;"></div>`;
+  });
+  dims.forEach((d,i)=>{
+    const heightPct=((d.pct-minV)/range*100).toFixed(1);
+    const color=d.name===highestName?'#FFC000':COLORS[i];
+    html+=`<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;">`;
+    html+=`<div style="font-size:8px;font-weight:700;color:#1B2A4A;margin-bottom:2px;">${d.pct.toFixed(2)}%</div>`;
+    html+=`<div style="width:80%;height:${heightPct}%;background:${color};border-radius:3px 3px 0 0;"></div>`;
+    html+=`</div>`;
+  });
+  html+=`</div>`;
+  // X labels
+  html+=`<div style="display:flex;gap:4px;padding:0 4px;margin-top:4px;">`;
+  html+=`<div style="width:0;flex-shrink:0;"></div>`;
+  dims.forEach(d=>{html+=`<div style="flex:1;font-size:8px;text-align:center;color:#1B2A4A;line-height:1.2;">${d.short}</div>`;});
+  html+=`</div></div></div>`;
+  document.getElementById('avgChart').innerHTML=html;
+}
+
+function drawDistChart(dims){
+  const allV=dims.flatMap(d=>d.avg);
+  const maxV=Math.ceil(Math.max(...allV))+2;
+  const ticks=[];
+  const step=maxV<=10?2:maxV<=20?5:10;
+  for(let t=0;t<=maxV;t+=step)ticks.push(t);
+
+  let html=`<div style="display:flex;height:180px;gap:0;">`;
+  // Y labels
+  html+=`<div style="display:flex;flex-direction:column;justify-content:space-between;padding-bottom:2px;width:24px;flex-shrink:0;">`;
+  [...ticks].reverse().forEach(t=>{html+=`<div style="font-size:7.5px;color:#999;text-align:right;padding-right:4px;">${t}</div>`;});
+  html+=`</div>`;
+  // Chart
+  html+=`<div style="flex:1;display:flex;flex-direction:column;">`;
+  html+=`<div style="flex:1;border-left:2px solid #CBD5E1;border-bottom:2px solid #CBD5E1;display:flex;align-items:flex-end;padding:0 2px;gap:3px;position:relative;">`;
+  ticks.slice(1,-1).forEach(t=>{
+    const pct=(t/maxV*100).toFixed(1);
+    html+=`<div style="position:absolute;bottom:${pct}%;left:0;right:0;border-top:1px dashed #E8ECF4;"></div>`;
+  });
+  dims.forEach((d,gi)=>{
+    html+=`<div style="flex:1;display:flex;align-items:flex-end;justify-content:center;gap:1px;height:100%;">`;
+    d.avg.forEach((v,si)=>{
+      const h=(v/maxV*100).toFixed(1);
+      html+=`<div style="flex:1;max-width:14px;height:${h}%;background:${SC[si]};border-radius:1px 1px 0 0;position:relative;">`;
+      if(v>=0.3)html+=`<div style="position:absolute;top:-11px;left:50%;transform:translateX(-50%);font-size:6px;color:#333;white-space:nowrap;">${v%1===0?v.toFixed(0):v.toFixed(1)}</div>`;
+      html+=`</div>`;
+    });
+    html+=`</div>`;
+  });
+  html+=`</div>`;
+  // X labels
+  html+=`<div style="display:flex;gap:3px;padding:0 2px;margin-top:4px;">`;
+  html+=`<div style="width:0;flex-shrink:0;"></div>`;
+  dims.forEach(d=>{html+=`<div style="flex:1;font-size:7.5px;text-align:center;color:#1B2A4A;">${d.short}</div>`;});
+  html+=`</div>`;
+  // Legend
+  html+=`<div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:5px;">`;
+  SL.forEach((l,i)=>{html+=`<div style="display:flex;align-items:center;gap:3px;font-size:8.5px;color:#444;"><div style="width:10px;height:10px;border-radius:2px;background:${SC[i]};flex-shrink:0;"></div>${l}</div>`;});
+  html+=`</div></div></div>`;
+  document.getElementById('distChart').innerHTML=html;
+}
+</script>
+</body>
+</html>
