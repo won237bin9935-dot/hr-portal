@@ -69,7 +69,7 @@ async function loadSidebarLinks() {
     rows.filter(r => r.c && r.c[0]?.v && r.c[3]?.v !== '已停用').forEach(r => {
       const name = r.c[0].v;
       const isActive = isLinksPage && location.search.includes(encodeURIComponent(name)) ? 'active' : '';
-      html += `<a class="nav-item ${isActive}" href="links.html?name=${encodeURIComponent(name)}" style="padding-left:32px;font-size:13px;">
+      html += `<a class="nav-item ${isActive}" href="links.html?name=${encodeURIComponent(name)}" target="_blank" style="padding-left:32px;font-size:13px;">
         <span class="icon">📊</span> ${name}
       </a>`;
     });
