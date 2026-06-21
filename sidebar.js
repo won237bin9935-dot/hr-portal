@@ -46,6 +46,19 @@
 
 async function loadSidebarLinks() {
   try {
+    const placeholder = document.getElementById('sidebar-links-placeholder');
+    if (!placeholder) return;
+
+    const currentPage = location.pathname.split('/').pop() || 'home.html';
+    const isLinksPage = currentPage === 'links.html';
+
+    // 先從 sessionStorage 讀取快取，避免閃爍
+    const cached = sessionStorage.getItem('sidebarLinks');
+    if (cached) {
+      renderSidebarLinks(JSON.parse(cached), placeholder, isLinksPage);
+    }
+
+    // 背景更新
     const sheetId = (typeof HRCONFIG !== 'undefined' && HRCONFIG.SHEETS_ID)
       ? HRCONFIG.SHEETS_ID
       : '1b4xq2XxSCbuIF6SZU-x0Jz4Du_n-YRAJCSQrkm2ze3U';
@@ -56,27 +69,27 @@ async function loadSidebarLinks() {
     const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
     if (!match) return;
     const json = JSON.parse(match[1]);
+    const rows = json.table.rows.slice(2)
+      .filter(r => r.c && r.c[0]?.v && r.c[3]?.v !== '已停用')
+      .map(r => ({ name: r.c[0].v }));
 
-    // 第3列開始（rows[2]）是連結資料
-    const rows = json.table.rows.slice(2);
-    const placeholder = document.getElementById('sidebar-links-placeholder');
-    if (!placeholder) return;
-
-    const currentPage = location.pathname.split('/').pop() || 'home.html';
-    const isLinksPage = currentPage === 'links.html';
-
-    let html = '';
-    rows.filter(r => r.c && r.c[0]?.v && r.c[3]?.v !== '已停用').forEach(r => {
-      const name = r.c[0].v;
-      const isActive = isLinksPage && location.search.includes(encodeURIComponent(name)) ? 'active' : '';
-      html += `<a class="nav-item ${isActive}" href="links.html?name=${encodeURIComponent(name)}" target="_blank" style="padding-left:32px;font-size:13px;">
-        <span class="icon">📊</span> ${name}
-      </a>`;
-    });
-    placeholder.innerHTML = html;
+    sessionStorage.setItem('sidebarLinks', JSON.stringify(rows));
+    renderSidebarLinks(rows, placeholder, isLinksPage);
   } catch(e) {
     // 讀取失敗不顯示
   }
+}
+
+function renderSidebarLinks(rows, placeholder, isLinksPage) {
+  let html = '';
+  rows.forEach(r => {
+    const name = r.name;
+    const isActive = isLinksPage && location.search.includes(encodeURIComponent(name)) ? 'active' : '';
+    html += `<a class="nav-item ${isActive}" href="links.html?name=${encodeURIComponent(name)}" style="padding-left:32px;font-size:13px;">
+      <span class="icon">📊</span> ${name}
+    </a>`;
+  });
+  placeholder.innerHTML = html;
 }
 
 // 共用 toggleSidebar 函式
