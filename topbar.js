@@ -19,7 +19,7 @@
       <span class="topbar-brand-main">華美光學</span>
       <span class="topbar-brand-sub"> 人力資源系統</span>
     </div>
-    <div class="topbar-avatar">HR</div>
+    <div class="topbar-avatar">華</div>
   `;
 
   const container = document.getElementById('topbar-particles');
