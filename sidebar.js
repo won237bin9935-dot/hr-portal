@@ -104,31 +104,26 @@ function toggleSidebar() {
 
 // ── 滑鼠彗星尾巴效果 ──
 (function() {
-  let lastX = 0, lastY = 0;
   let frameCount = 0;
 
   document.addEventListener('mousemove', function(e) {
     frameCount++;
-    // 每隔2幀產生一顆，避免太密
     if (frameCount % 2 !== 0) return;
-
     createParticle(e.clientX, e.clientY);
-    lastX = e.clientX;
-    lastY = e.clientY;
   });
 
   function createParticle(x, y) {
     const p = document.createElement('div');
-    const size = Math.random() * 3 + 2; // 2~5px
-    const opacity = Math.random() * 0.25 + 0.1; // 0.1~0.35 淡
-    const life = Math.random() * 300 + 200; // 200~500ms
+    const size = Math.random() * 5 + 4; // 4~9px
+    const opacity = Math.random() * 0.3 + 0.5; // 0.5~0.8 明顯
+    const life = Math.random() * 300 + 400; // 400~700ms
 
     p.style.cssText = `
       position: fixed;
       width: ${size}px;
       height: ${size}px;
       border-radius: 50%;
-      background: rgba(245,106,106,${opacity});
+      background: rgba(80,80,80,${opacity});
       left: ${x - size/2}px;
       top: ${y - size/2}px;
       pointer-events: none;
@@ -139,7 +134,7 @@ function toggleSidebar() {
 
     requestAnimationFrame(() => {
       p.style.opacity = '0';
-      p.style.transform = 'scale(0.2)';
+      p.style.transform = 'scale(0.1)';
     });
 
     setTimeout(() => p.remove(), life);
