@@ -86,7 +86,7 @@ function renderSidebarLinks(rows, placeholder, isLinksPage) {
     const name = r.name;
     const isActive = isLinksPage && location.search.includes(encodeURIComponent(name)) ? 'active' : '';
     html += `<a class="nav-item ${isActive}" href="links.html?name=${encodeURIComponent(name)}">
-      <span class="icon">📊</span> ${name}
+      <span class="icon">🔗</span> ${name}
     </a>`;
   });
   placeholder.innerHTML = html;
