@@ -232,14 +232,14 @@ border-bottom: 1px solid var(--border);
   height: 3px;
   border-radius: 50%;
   background: rgba(245,106,106,.7);
-  bottom: 0;
+  bottom: -10px;
   animation: topbar-float linear infinite;
 }
 @keyframes topbar-float {
-  0%   { transform: translateY(60px); opacity: 0; }
+  0%   { transform: translateY(0px);   opacity: 0; }
   10%  { opacity: 1; }
   90%  { opacity: 1; }
-  100% { transform: translateY(-60px); opacity: 0; }
+  100% { transform: translateY(-80px); opacity: 0; }
 }
 
 .menu-toggle {
