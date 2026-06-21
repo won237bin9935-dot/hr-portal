@@ -165,8 +165,12 @@ nav { flex: 1; overflow-y: auto; padding: 12px 0; }
 
 /* ── Topbar ── */
 .topbar {
-  background: var(--card-bg);
-  border-bottom: 1px solid var(--border);
+  background: #1a1e2e;
+  background-image:
+    linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
   padding: 0 32px;
   height: 60px;
   width: calc(100vw - var(--sidebar-width));
@@ -178,6 +182,7 @@ nav { flex: 1; overflow-y: auto; padding: 12px 0; }
   position: relative;
   top: 0;
   z-index: 50;
+  overflow: hidden;
 }
 
 .topbar-left { display: flex; align-items: center; gap: 12px; }
@@ -203,10 +208,12 @@ nav { flex: 1; overflow-y: auto; padding: 12px 0; }
   transform: translateX(-50%);
   font-size: 20px;
   font-weight: 700;
-  color: #3d4449;
   white-space: nowrap;
   pointer-events: none;
+  z-index: 2;
 }
+.topbar-brand-main { color: #ffffff; }
+.topbar-brand-sub  { color: #f56a6a; }
 
 @media (max-width: 900px) {
   .topbar-brand { font-size: 16px; }
@@ -215,13 +222,39 @@ nav { flex: 1; overflow-y: auto; padding: 12px 0; }
   .topbar-brand { font-size: 14px; }
 }
 
+/* ── Topbar 粒子 ── */
+.topbar-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+.topbar-particle {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.6);
+  bottom: 0;
+  animation: topbar-float linear infinite;
+}
+@keyframes topbar-float {
+  0%   { transform: translateY(60px); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateY(-60px); opacity: 0; }
+}
+
 .menu-toggle {
   display: none;
   background: none;
   border: none;
   font-size: 22px;
   cursor: pointer;
-  color: var(--text-dark);
+  color: #ffffff;
+  position: relative;
+  z-index: 2;
 }
 
 /* ── Content ── */
