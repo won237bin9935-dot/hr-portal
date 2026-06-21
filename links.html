@@ -172,19 +172,114 @@
     </div>
 
 
-    <!-- 目前顯示即將上線，之後填入連結後換成 links-grid -->
-    <div class="coming-soon">
-      <span class="cs-icon">🔧</span>
-      <h2>系統連結整理中</h2>
-      <p>人資部門正在彙整各系統連結，<br>即將上線，敬請期待！</p>
+    <!-- 密碼驗證畫面 -->
+    <div id="auth-screen">
+      <div style="max-width:400px;margin:60px auto;background:#fff;border-radius:16px;border:1px solid var(--border);padding:40px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.08);">
+        <div style="font-size:48px;margin-bottom:16px;">🔐</div>
+        <h2 style="font-size:18px;font-weight:800;margin-bottom:8px;color:var(--text-dark);">需要驗證身份</h2>
+        <p style="font-size:13px;color:var(--text-light);margin-bottom:24px;">此頁面僅限授權人員查看</p>
+        <input type="password" id="pwd-input" placeholder="請輸入密碼"
+          style="width:100%;padding:12px 16px;border:1.5px solid var(--border);border-radius:8px;font-size:15px;margin-bottom:12px;outline:none;font-family:inherit;"
+          onkeydown="if(event.key==='Enter')verifyPwd()" />
+        <p id="pwd-error" style="color:#f56a6a;font-size:13px;margin-bottom:12px;display:none;">密碼錯誤，請重試</p>
+        <button onclick="verifyPwd()"
+          style="width:100%;background:#f56a6a;color:#fff;border:none;border-radius:8px;padding:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;">
+          確認
+        </button>
+      </div>
+    </div>
+
+    <!-- 連結內容（驗證後顯示）-->
+    <div id="links-screen" style="display:none;">
+      <div id="links-loading" style="text-align:center;padding:60px;color:var(--text-light);">
+        <div style="width:32px;height:32px;border:3px solid var(--border);border-top-color:#f56a6a;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;"></div>
+        <p>載入連結中…</p>
+      </div>
+      <div class="links-grid" id="links-grid"></div>
+      <div id="links-empty" style="display:none;text-align:center;padding:60px;color:var(--text-light);">
+        <div style="font-size:48px;margin-bottom:12px;">🔗</div>
+        <p>目前沒有連結</p>
+      </div>
     </div>
 
   </main>
 </div>
 
+<script src="sheets-config.js"></script>
+<script src="sidebar.js"></script>
+<script src="topbar.js"></script>
 <script>
+const SHEET_ID = (typeof HRCONFIG !== 'undefined' && HRCONFIG.SHEETS_ID)
+  ? HRCONFIG.SHEETS_ID
+  : '1b4xq2XxSCbuIF6SZU-x0Jz4Du_n-YRAJCSQrkm2ze3U';
+
+const SHEET_TAB = '系統連結';
+
+async function verifyPwd() {
+  const input = document.getElementById('pwd-input').value.trim();
+  document.getElementById('pwd-error').style.display = 'none';
+
+  try {
+    // 從試算表讀取密碼（第一列A1）
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_TAB)}&headers=0`;
+    const res = await fetch(url);
+    const text = await res.text();
+    const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
+    if (!match) throw new Error('無法讀取');
+    const json = JSON.parse(match[1]);
+    const pwd = json.table.rows[0]?.c[1]?.v?.toString().trim();
+
+    if (input === pwd) {
+      document.getElementById('auth-screen').style.display = 'none';
+      document.getElementById('links-screen').style.display = 'block';
+      loadLinks(json);
+    } else {
+      document.getElementById('pwd-error').style.display = 'block';
+      document.getElementById('pwd-input').value = '';
+    }
+  } catch(e) {
+    alert('驗證失敗，請稍後再試');
+  }
+}
+
+function loadLinks(json) {
+  // 第二列是標題，第三列開始是資料
+  const rows = json.table.rows.slice(2);
+  const links = rows
+    .filter(r => r.c && r.c[0]?.v)
+    .map(r => ({
+      name   : r.c[0]?.v || '',
+      desc   : r.c[1]?.v || '',
+      url    : r.c[2]?.v || '',
+      status : r.c[3]?.v || '',
+    }));
+
+  document.getElementById('links-loading').style.display = 'none';
+
+  if (links.length === 0) {
+    document.getElementById('links-empty').style.display = 'block';
+    return;
+  }
+
+  const grid = document.getElementById('links-grid');
+  grid.innerHTML = '';
+  links.forEach(l => {
+    const isOpen = l.status !== '已停用';
+    const card = document.createElement('a');
+    card.href = isOpen && l.url ? l.url : '#';
+    card.target = '_blank';
+    card.className = 'link-card';
+    if (!isOpen) card.style.opacity = '0.5';
+    card.innerHTML = `
+      <div class="link-icon">🔗</div>
+      <div class="link-info">
+        <h3>${l.name}</h3>
+        ${l.desc ? `<p>${l.desc}</p>` : ''}
+      </div>
+      <div class="link-arrow">→</div>`;
+    grid.appendChild(card);
+  });
+}
 </script>
-  <script src="sidebar.js"></script>
-  <script src="topbar.js"></script>
 </body>
 </html>
