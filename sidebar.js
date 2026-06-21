@@ -50,7 +50,7 @@ async function loadSidebarLinks() {
       ? HRCONFIG.SHEETS_ID
       : '1b4xq2XxSCbuIF6SZU-x0Jz4Du_n-YRAJCSQrkm2ze3U';
 
-    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent('系統連結')}&headers=0`;
+    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent('各項統計分析')}&headers=0`;
     const res = await fetch(url);
     const text = await res.text();
     const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
