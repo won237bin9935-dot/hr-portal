@@ -26,7 +26,7 @@
     p.className = 'topbar-particle';
     p.style.left = Math.random() * 100 + '%';
     p.style.animationDuration = (4 + Math.random() * 6) + 's';
-    p.style.animationDelay = (Math.random() * 6) + 's';
+    p.style.animationDelay = '-' + (Math.random() * 6) + 's';
     p.style.opacity = (.3 + Math.random() * .4).toString();
     container.appendChild(p);
   }
