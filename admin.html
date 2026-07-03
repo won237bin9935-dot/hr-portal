@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>後台管理 — 華美光學人資系統</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .admin-wrap { display: flex; min-height: 100vh; }
+
+    /* 左側選單 */
+    .admin-sidebar {
+      width: 220px;
+      background: #fff;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 100;
+      box-shadow: 2px 0 8px rgba(0,0,0,.06);
+      transition: transform .3s ease;
+    }
+    .admin-sidebar-header {
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .admin-sidebar-header .title { font-size: 15px; font-weight: 800; color: var(--text-dark); }
+    .admin-sidebar-header .subtitle { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+    .admin-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+    .admin-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-mid);
+      cursor: pointer;
+      border-left: 3px solid transparent;
+      transition: all .15s;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      font-family: inherit;
+    }
+    .admin-nav-item:hover { color: var(--accent); background: var(--accent-light); }
+    .admin-nav-item.active {
+      color: var(--accent);
+      background: var(--accent-light);
+      border-left: 3px solid var(--accent);
+      font-weight: 700;
+    }
+    .admin-nav-item .icon { font-size: 17px; width: 22px; text-align: center; flex-shrink: 0; }
+    .admin-sidebar-footer {
+      padding: 14px 20px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text-light);
+    }
+    .admin-logout-btn {
+      margin-top: 8px;
+      width: 100%;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px;
+      font-size: 12px;
+      color: var(--text-mid);
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .15s;
+    }
+    .admin-logout-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* 主內容 */
+    .admin-main {
+      margin-left: 220px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      background: var(--bg);
+    }
+    .admin-topbar {
+      height: 56px;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 28px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      gap: 12px;
+    }
+    .admin-topbar-title { font-size: 16px; font-weight: 800; color: var(--text-dark); }
+    .admin-topbar-back {
+      margin-left: auto;
+      font-size: 13px;
+      color: var(--text-light);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: color .15s;
+    }
+    .admin-topbar-back:hover { color: var(--accent); }
+    .admin-content { padding: 28px 32px; flex: 1; }
+
+    /* 登入畫面 */
+    #login-screen {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    .login-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 48px 40px;
+      width: 90%;
+      max-width: 380px;
+      text-align: center;
+      box-shadow: 0 8px 40px rgba(0,0,0,.10);
+    }
+    .login-card .logo { font-size: 48px; margin-bottom: 16px; }
+    .login-card h2 { font-size: 20px; font-weight: 800; margin-bottom: 6px; color: var(--text-dark); }
+    .login-card p { font-size: 13px; color: var(--text-light); margin-bottom: 24px; }
+    .login-card input[type="password"] {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 15px;
+      margin-bottom: 10px;
+      outline: none;
+      font-family: inherit;
+      transition: border-color .2s;
+    }
+    .login-card input[type="password"]:focus { border-color: var(--accent); }
+    #login-error { color: var(--accent); font-size: 13px; margin-bottom: 10px; display: none; }
+    .login-btn {
+      width: 100%;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 13px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background .2s;
+    }
+    .login-btn:hover { background: var(--accent-hover); }
+
+    /* 面板 */
+    .admin-panel { display: none; }
+    .admin-panel.active { display: block; }
+    .panel-header {
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .panel-header h2 { font-size: 20px; font-weight: 800; color: var(--text-dark); }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background .2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .coming-soon-box {
+      background: #fff;
+      border-radius: 14px;
+      border: 2px dashed var(--border);
+      padding: 60px;
+      text-align: center;
+      color: var(--text-light);
+    }
+    .coming-soon-box .cs-icon { font-size: 48px; margin-bottom: 14px; }
+    .coming-soon-box p { font-size: 14px; }
+
+    /* 手機版 */
+    .admin-menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 22px;
+      cursor: pointer;
+      color: var(--text-dark);
+    }
+    #admin-sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.3);
+      z-index: 99;
+    }
+    @media (max-width: 900px) {
+      .admin-sidebar { transform: translateX(-100%); }
+      .admin-sidebar.open { transform: translateX(0); box-shadow: 4px 0 20px rgba(0,0,0,.15); }
+      .admin-main { margin-left: 0; }
+      .admin-menu-toggle { display: block; }
+      .admin-content { padding: 20px 16px; }
+      .coming-soon-box { padding: 40px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 登入畫面 -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="logo">⚙️</div>
+    <h2>後台管理系統</h2>
+    <p>請輸入後台管理密碼</p>
+    <input type="password" id="login-pwd" placeholder="請輸入密碼"
+      onkeydown="if(event.key==='Enter')adminLogin()" />
+    <p id="login-error"></p>
+    <button class="login-btn" onclick="adminLogin()">確認</button>
+  </div>
+</div>
+
+<!-- 後台主介面 -->
+<div id="admin-app" style="display:none; width:100%;">
+  <div id="admin-sidebar-overlay" onclick="toggleAdminSidebar()"></div>
+  <div class="admin-sidebar" id="admin-sidebar">
+    <div class="admin-sidebar-header">
+      <div class="title">⚙️ 後台管理</div>
+      <div class="subtitle">華美光學人資系統</div>
+    </div>
+    <nav class="admin-nav">
+      <button class="admin-nav-item active" onclick="showPanel('notice', this)">
+        <span class="icon">📢</span> 公告管理
+      </button>
+      <button class="admin-nav-item" onclick="showPanel('events', this)">
+        <span class="icon">📅</span> 活動管理
+      </button>
+      <button class="admin-nav-item" onclick="showPanel('docs', this)">
+        <span class="icon">📄</span> 文件宣導
+      </button>
+      <button class="admin-nav-item" onclick="showPanel('quiz', this)">
+        <span class="icon">📝</span> 測驗管理
+      </button>
+      <button class="admin-nav-item" onclick="showPanel('links', this)">
+        <span class="icon">🔗</span> 統計連結
+      </button>
+    </nav>
+    <div class="admin-sidebar-footer">
+      <button class="admin-logout-btn" onclick="adminLogout()">🚪 登出後台</button>
+    </div>
+  </div>
+
+  <div class="admin-main">
+    <div class="admin-topbar">
+      <button class="admin-menu-toggle" onclick="toggleAdminSidebar()">☰</button>
+      <div class="admin-topbar-title" id="admin-topbar-title">📢 公告管理</div>
+      <a class="admin-topbar-back" href="home.html">← 回到員工網站</a>
+    </div>
+    <div class="admin-content">
+
+      <div class="admin-panel active" id="panel-notice">
+        <div class="panel-header">
+          <h2>📢 公告管理</h2>
+          <button class="btn-primary">＋ 新增公告</button>
+        </div>
+        <div class="coming-soon-box">
+          <div class="cs-icon">🚧</div>
+          <p>公告管理功能開發中，即將上線</p>
+        </div>
+      </div>
+
+      <div class="admin-panel" id="panel-events">
+        <div class="panel-header">
+          <h2>📅 活動管理</h2>
+          <button class="btn-primary">＋ 新增活動</button>
+        </div>
+        <div class="coming-soon-box">
+          <div class="cs-icon">🚧</div>
+          <p>活動管理功能開發中，即將上線</p>
+        </div>
+      </div>
+
+      <div class="admin-panel" id="panel-docs">
+        <div class="panel-header">
+          <h2>📄 文件宣導</h2>
+          <button class="btn-primary">＋ 新增文件</button>
+        </div>
+        <div class="coming-soon-box">
+          <div class="cs-icon">🚧</div>
+          <p>文件宣導功能開發中，即將上線</p>
+        </div>
+      </div>
+
+      <div class="admin-panel" id="panel-quiz">
+        <div class="panel-header">
+          <h2>📝 測驗管理</h2>
+          <button class="btn-primary">＋ 新增測驗</button>
+        </div>
+        <div class="coming-soon-box">
+          <div class="cs-icon">🚧</div>
+          <p>測驗管理功能開發中，即將上線</p>
+        </div>
+      </div>
+
+      <div class="admin-panel" id="panel-links">
+        <div class="panel-header">
+          <h2>🔗 統計連結管理</h2>
+          <button class="btn-primary">＋ 新增連結</button>
+        </div>
+        <div class="coming-soon-box">
+          <div class="cs-icon">🚧</div>
+          <p>統計連結管理功能開發中，即將上線</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="sheets-config.js"></script>
+<script>
+const ADMIN_PWD = '@@69314511@@';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxfo--2xa9vk6tlIzCjNyu3Y76AQIzYj-tM3XcvFQO72QwkWEqYIW_jSl2JRtE2tgql/exec';
+let loginFailCount = 0;
+
+// 頁面載入：檢查是否已登入
+window.addEventListener('DOMContentLoaded', function() {
+  if (sessionStorage.getItem('admin_auth') === 'true') {
+    showApp();
+  }
+});
+
+// 密碼驗證
+function adminLogin() {
+  const input = document.getElementById('login-pwd');
+  const err = document.getElementById('login-error');
+  const pwd = input.value.trim();
+  input.value = '';
+
+  if (pwd === ADMIN_PWD) {
+    loginFailCount = 0;
+    sessionStorage.setItem('admin_auth', 'true');
+    err.style.display = 'none';
+    showApp();
+  } else {
+    loginFailCount++;
+    err.textContent = `密碼錯誤，請重試（第 ${loginFailCount} 次）`;
+    err.style.display = 'block';
+    input.focus();
+
+    if (loginFailCount >= 3) {
+      sendLoginAlert();
+      err.textContent = '密碼錯誤次數過多，已通知管理員';
+      loginFailCount = 0;
+    }
+  }
+}
+
+// 寄通知信
+function sendLoginAlert() {
+  try {
+    fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action   : 'adminLoginAlert',
+        userAgent: navigator.userAgent,
+        time     : new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }),
+      }),
+    });
+  } catch(e) {
+    console.error('通知信發送失敗', e);
+  }
+}
+
+// 顯示後台
+function showApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('admin-app').style.display = 'flex';
+}
+
+// 登出
+function adminLogout() {
+  sessionStorage.removeItem('admin_auth');
+  document.getElementById('admin-app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-pwd').value = '';
+  document.getElementById('login-error').style.display = 'none';
+}
+
+// 切換面板
+const panelTitles = {
+  notice: '📢 公告管理',
+  events: '📅 活動管理',
+  docs  : '📄 文件宣導',
+  quiz  : '📝 測驗管理',
+  links : '🔗 統計連結管理',
+};
+
+function showPanel(name, btn) {
+  document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.admin-nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  document.getElementById('admin-topbar-title').textContent = panelTitles[name];
+  btn.classList.add('active');
+  if (window.innerWidth <= 900) toggleAdminSidebar();
+}
+
+// 手機版側欄開關
+function toggleAdminSidebar() {
+  const s = document.getElementById('admin-sidebar');
+  const o = document.getElementById('admin-sidebar-overlay');
+  const open = s.classList.toggle('open');
+  o.style.display = open ? 'block' : 'none';
+}
+</script>
+</body>
+</html>
