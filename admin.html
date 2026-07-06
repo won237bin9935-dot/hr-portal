@@ -263,6 +263,8 @@
       <button class="admin-nav-item" onclick="showPanel('links', this)">
         <span class="icon">🔗</span> 統計連結
       </button>
+      <div style="margin:12px 20px 4px;border-top:1px solid var(--border);padding-top:12px;font-size:11px;color:var(--text-light);">── 前台選單現況 ──</div>
+      <div id="admin-nav-preview"></div>
     </nav>
     <div class="admin-sidebar-footer">
       <button class="admin-logout-btn" onclick="adminLogout()">🚪 登出後台</button>
@@ -395,6 +397,38 @@ function sendLoginAlert() {
 function showApp() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('admin-app').style.display = 'flex';
+  loadFrontendMenuPreview();
+}
+
+// 讀取前台選單設定，顯示在後台左側供參考
+async function loadFrontendMenuPreview() {
+  try {
+    const SHEET_ID = '1b4xq2XxSCbuIF6SZU-x0Jz4Du_n-YRAJCSQrkm2ze3U';
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent('選單設定')}&headers=1`;
+    const res = await fetch(url);
+    const text = await res.text();
+    const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
+    if (!match) return;
+    const json = JSON.parse(match[1]);
+
+    const rows = json.table.rows
+      .filter(r => r.c && r.c[0]?.v)
+      .map(r => ({
+        name  : r.c[1]?.v || '',
+        icon  : r.c[2]?.v || '',
+        show  : r.c[4]?.v === '是',
+      }));
+
+    const preview = document.getElementById('admin-nav-preview');
+    preview.innerHTML = rows.map(r => `
+      <div style="display:flex;align-items:center;gap:8px;padding:6px 20px;font-size:12px;color:${r.show ? '#3d4449' : '#ccc'};">
+        <span>${r.icon}</span>
+        <span>${r.name}</span>
+        <span style="margin-left:auto;font-size:10px;padding:2px 6px;border-radius:10px;background:${r.show ? '#dcfce7' : '#f3f4f6'};color:${r.show ? '#16a34a' : '#999'};">${r.show ? '顯示' : '隱藏'}</span>
+      </div>`).join('');
+  } catch(e) {
+    console.log('前台選單預覽讀取失敗');
+  }
 }
 
 // 登出

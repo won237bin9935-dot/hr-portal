@@ -1,51 +1,96 @@
 // ============================================
 // 華美光學人資系統 — 共用側邊欄
-// 只需修改這個檔案，所有頁面自動更新
+// 選單從試算表「選單設定」分頁動態讀取
 // ============================================
 
-(function() {
-  const LOGO_URL = 'https://lh3.googleusercontent.com/d/1VFVjgXLuw7v6yEPLi_BnF2zRXEhah8UQ';
+const SHEET_ID = (typeof HRCONFIG !== 'undefined' && HRCONFIG.SHEETS_ID)
+  ? HRCONFIG.SHEETS_ID
+  : '1b4xq2XxSCbuIF6SZU-x0Jz4Du_n-YRAJCSQrkm2ze3U';
+const LOGO_URL = 'https://lh3.googleusercontent.com/d/1VFVjgXLuw7v6yEPLi_BnF2zRXEhah8UQ';
 
-  // 取得目前頁面的檔名
-  const currentPage = location.pathname.split('/').pop() || 'home.html';
+// 取得目前頁面檔名
+const currentPage = location.pathname.split('/').pop() || 'home.html';
 
-  function isActive(href) {
-    return currentPage === href ? 'active' : '';
+// ── 從試算表讀取選單設定
+async function loadSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  if (!sidebar) return;
+
+  try {
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent('選單設定')}&headers=1`;
+    const res = await fetch(url);
+    const text = await res.text();
+    const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
+    if (!match) throw new Error('無法讀取');
+    const json = JSON.parse(match[1]);
+
+    const rows = json.table.rows
+      .filter(r => r.c && r.c[0]?.v && r.c[4]?.v === '是')
+      .map(r => ({
+        category: r.c[0]?.v || '',
+        name    : r.c[1]?.v || '',
+        icon    : r.c[2]?.v || '',
+        href    : r.c[3]?.v || '#',
+      }));
+
+    renderSidebar(sidebar, rows);
+  } catch(e) {
+    // 讀取失敗時用預設選單，避免頁面空白
+    renderSidebar(sidebar, getDefaultMenu());
   }
+}
 
-  const sidebarHTML = `
+// ── 產生側邊欄 HTML
+function renderSidebar(sidebar, rows) {
+  // 依分類分組
+  const groups = {};
+  rows.forEach(r => {
+    if (!groups[r.category]) groups[r.category] = [];
+    groups[r.category].push(r);
+  });
+
+  let navHTML = '';
+  Object.keys(groups).forEach(category => {
+    navHTML += `<div class="nav-section-label">${category}</div>`;
+    groups[category].forEach(item => {
+      const active = (currentPage === item.href || 
+        (item.href !== '#' && currentPage === item.href.split('?')[0])) ? 'active' : '';
+      navHTML += `
+        <a class="nav-item ${active}" href="${item.href}">
+          <span class="icon">${item.icon}</span> ${item.name}
+        </a>`;
+    });
+  });
+
+  sidebar.innerHTML = `
     <div class="sidebar-header">
       <img src="${LOGO_URL}" alt="華美光學">
       <button onclick="toggleSidebar()" id="sidebar-close">✕</button>
     </div>
-    <nav>
-      <div class="nav-section-label">主選單</div>
-      <a class="nav-item ${isActive('home.html')}" href="home.html"><span class="icon">🏠</span> 首頁總覽</a>
-      <div class="nav-section-label">學習與測驗</div>
-      <a class="nav-item ${isActive('quiz.html')}" href="quiz.html"><span class="icon">📝</span> 測驗專區</a>
-      <a class="nav-item" href="#"><span class="icon">🎓</span> 教育訓練</a>
-      <div class="nav-section-label">資料與公告</div>
-      <a class="nav-item ${isActive('docs.html') || isActive('doc-detail.html')}" href="docs.html"><span class="icon">📁</span> 文件宣導</a>
-      <a class="nav-item ${isActive('events-list.html') || isActive('event-detail.html')}" href="events-list.html"><span class="icon">🎉</span> 活動報名</a>
-      <a class="nav-item ${isActive('notice.html')}" href="notice.html"><span class="icon">📢</span> 最新公告</a>
-      <div class="nav-section-label">各項統計分析</div>
-      <a class="nav-item ${isActive('links.html')}" href="links.html"><span class="icon">📊</span> 統計分析入口</a>
-    </nav>
+    <nav>${navHTML}</nav>
     <div class="sidebar-admin-wrap">
       <button class="sidebar-admin-btn" onclick="enterAdmin()">⚙ 後台管理</button>
     </div>
     <div class="sidebar-footer">華美光學 人力營運處</div>
   `;
+}
 
-  // 注入側邊欄
-  const sidebar = document.getElementById('sidebar');
-  if (sidebar) {
-    sidebar.innerHTML = sidebarHTML;
-  }
+// ── 預設選單（讀取失敗時備用）
+function getDefaultMenu() {
+  return [
+    { category: '主選單',    name: '首頁總覽',   icon: '🏠', href: 'home.html' },
+    { category: '學習與測驗', name: '測驗專區',   icon: '📝', href: 'quiz.html' },
+    { category: '資料與公告', name: '文件宣導',   icon: '📁', href: 'docs.html' },
+    { category: '資料與公告', name: '活動報名',   icon: '🎉', href: 'events-list.html' },
+    { category: '資料與公告', name: '最新公告',   icon: '📢', href: 'notice.html' },
+    { category: '各項統計分析', name: '統計分析入口', icon: '📊', href: 'links.html' },
+  ];
+}
 
-})();
+// 頁面載入時執行
+window.addEventListener('DOMContentLoaded', loadSidebar);
 
-// 共用 toggleSidebar 函式
+// ── 共用 toggleSidebar 函式
 function toggleSidebar() {
   const s = document.getElementById('sidebar');
   const o = document.getElementById('sidebar-overlay');
@@ -55,12 +100,11 @@ function toggleSidebar() {
   if (c) c.style.display = open ? 'block' : 'none';
 }
 
-// ── 後台管理入口 ──
+// ── 後台管理入口
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxfo--2xa9vk6tlIzCjNyu3Y76AQIzYj-tM3XcvFQO72QwkWEqYIW_jSl2JRtE2tgql/exec';
 let adminFailCount = 0;
 
 function enterAdmin() {
-  // 建立 Modal
   let modal = document.getElementById('admin-pwd-modal');
   if (!modal) {
     modal = document.createElement('div');
@@ -82,7 +126,6 @@ function enterAdmin() {
         </button>
       </div>`;
     document.body.appendChild(modal);
-    // 點遮罩關閉
     modal.addEventListener('click', function(e) {
       if (e.target === modal) closeAdminModal();
     });
@@ -116,8 +159,6 @@ function confirmAdminPwd() {
     input.focus();
     err.textContent = `密碼錯誤，請重試（第 ${adminFailCount} 次）`;
     err.style.display = 'block';
-
-    // 連續錯誤 3 次 → 寄通知信
     if (adminFailCount >= 3) {
       sendAdminLoginAlert();
       err.textContent = '密碼錯誤次數過多，已通知管理員';
@@ -128,22 +169,20 @@ function confirmAdminPwd() {
 
 function sendAdminLoginAlert() {
   try {
-    const ua = navigator.userAgent;
-    const payload = {
-      action   : 'adminLoginAlert',
-      userAgent: ua,
-      time     : new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }),
-    };
     fetch(APPS_SCRIPT_URL, {
-      method : 'POST',
-      body   : JSON.stringify(payload),
+      method: 'POST',
+      body: JSON.stringify({
+        action   : 'adminLoginAlert',
+        userAgent: navigator.userAgent,
+        time     : new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }),
+      }),
     });
   } catch(e) {
     console.error('通知信發送失敗', e);
   }
 }
 
-// ── 滑鼠彗星尾巴效果 ──
+// ── 滑鼠彗星尾巴效果
 (function() {
   const TRAIL_LENGTH = 20;
   const trail = [];
@@ -165,16 +204,10 @@ function sendAdminLoginAlert() {
       const p = document.createElement('div');
       p.className = 'comet-dot';
       p.style.cssText = `
-        position: fixed;
-        width: ${size}px;
-        height: ${size}px;
-        border-radius: 50%;
-        background: rgba(80,80,80,${opacity});
-        left: ${pos.x - size/2}px;
-        top: ${pos.y - size/2}px;
-        pointer-events: none;
-        z-index: 9999;
-      `;
+        position:fixed;width:${size}px;height:${size}px;border-radius:50%;
+        background:rgba(80,80,80,${opacity});
+        left:${pos.x - size/2}px;top:${pos.y - size/2}px;
+        pointer-events:none;z-index:9999;`;
       document.body.appendChild(p);
     });
     setTimeout(() => {
