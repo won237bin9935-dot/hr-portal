@@ -3,94 +3,88 @@
 // 選單從試算表「選單設定」分頁動態讀取
 // ============================================
 
-const SHEET_ID = (typeof HRCONFIG !== 'undefined' && HRCONFIG.SHEETS_ID)
-  ? HRCONFIG.SHEETS_ID
-  : '1b4xq2XxSCbuIF6SZU-x0Jz4Du_n-YRAJCSQrkm2ze3U';
-const LOGO_URL = 'https://lh3.googleusercontent.com/d/1VFVjgXLuw7v6yEPLi_BnF2zRXEhah8UQ';
+(function() {
+  // ── 內部變數（IIFE 包住，不污染全域）
+  const _SIDEBAR_SHEET_ID = (typeof HRCONFIG !== 'undefined' && HRCONFIG.SHEETS_ID)
+    ? HRCONFIG.SHEETS_ID
+    : '1b4xq2XxSCbuIF6SZU-x0Jz4Du_n-YRAJCSQrkm2ze3U';
+  const _LOGO_URL = 'https://lh3.googleusercontent.com/d/1VFVjgXLuw7v6yEPLi_BnF2zRXEhah8UQ';
+  const _currentPage = location.pathname.split('/').pop() || 'home.html';
 
-// 取得目前頁面檔名
-const currentPage = location.pathname.split('/').pop() || 'home.html';
-
-// ── 從試算表讀取選單設定
-async function loadSidebar() {
-  const sidebar = document.getElementById('sidebar');
-  if (!sidebar) return;
-
-  try {
-    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent('選單設定')}&headers=1`;
-    const res = await fetch(url);
-    const text = await res.text();
-    const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
-    if (!match) throw new Error('無法讀取');
-    const json = JSON.parse(match[1]);
-
-    const rows = json.table.rows
-      .filter(r => r.c && r.c[0]?.v && r.c[4]?.v === '是')
-      .map(r => ({
-        category: r.c[0]?.v || '',
-        name    : r.c[1]?.v || '',
-        icon    : r.c[2]?.v || '',
-        href    : r.c[3]?.v || '#',
-      }));
-
-    renderSidebar(sidebar, rows);
-  } catch(e) {
-    // 讀取失敗時用預設選單，避免頁面空白
-    renderSidebar(sidebar, getDefaultMenu());
+  // ── 從試算表讀取選單設定
+  async function loadSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+    try {
+      const url = `https://docs.google.com/spreadsheets/d/${_SIDEBAR_SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent('選單設定')}&headers=1`;
+      const res = await fetch(url);
+      const text = await res.text();
+      const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
+      if (!match) throw new Error('無法讀取');
+      const json = JSON.parse(match[1]);
+      const rows = json.table.rows
+        .filter(r => r.c && r.c[0]?.v && r.c[4]?.v === '是')
+        .map(r => ({
+          category: r.c[0]?.v || '',
+          name    : r.c[1]?.v || '',
+          icon    : r.c[2]?.v || '',
+          href    : r.c[3]?.v || '#',
+        }));
+      renderSidebar(sidebar, rows);
+    } catch(e) {
+      renderSidebar(sidebar, getDefaultMenu());
+    }
   }
-}
 
-// ── 產生側邊欄 HTML
-function renderSidebar(sidebar, rows) {
-  // 依分類分組
-  const groups = {};
-  rows.forEach(r => {
-    if (!groups[r.category]) groups[r.category] = [];
-    groups[r.category].push(r);
-  });
-
-  let navHTML = '';
-  Object.keys(groups).forEach(category => {
-    navHTML += `<div class="nav-section-label">${category}</div>`;
-    groups[category].forEach(item => {
-      const active = (currentPage === item.href || 
-        (item.href !== '#' && currentPage === item.href.split('?')[0])) ? 'active' : '';
-      navHTML += `
-        <a class="nav-item ${active}" href="${item.href}">
-          <span class="icon">${item.icon}</span> ${item.name}
-        </a>`;
+  // ── 產生側邊欄 HTML
+  function renderSidebar(sidebar, rows) {
+    const groups = {};
+    rows.forEach(r => {
+      if (!groups[r.category]) groups[r.category] = [];
+      groups[r.category].push(r);
     });
-  });
+    let navHTML = '';
+    Object.keys(groups).forEach(category => {
+      navHTML += `<div class="nav-section-label">${category}</div>`;
+      groups[category].forEach(item => {
+        const active = (_currentPage === item.href ||
+          (item.href !== '#' && _currentPage === item.href.split('?')[0])) ? 'active' : '';
+        navHTML += `
+          <a class="nav-item ${active}" href="${item.href}">
+            <span class="icon">${item.icon}</span> ${item.name}
+          </a>`;
+      });
+    });
+    sidebar.innerHTML = `
+      <div class="sidebar-header">
+        <img src="${_LOGO_URL}" alt="華美光學">
+        <button onclick="toggleSidebar()" id="sidebar-close">✕</button>
+      </div>
+      <nav>${navHTML}</nav>
+      <div class="sidebar-admin-wrap">
+        <button class="sidebar-admin-btn" onclick="enterAdmin()">⚙ 後台管理</button>
+      </div>
+      <div class="sidebar-footer">華美光學 人力營運處</div>
+    `;
+  }
 
-  sidebar.innerHTML = `
-    <div class="sidebar-header">
-      <img src="${LOGO_URL}" alt="華美光學">
-      <button onclick="toggleSidebar()" id="sidebar-close">✕</button>
-    </div>
-    <nav>${navHTML}</nav>
-    <div class="sidebar-admin-wrap">
-      <button class="sidebar-admin-btn" onclick="enterAdmin()">⚙ 後台管理</button>
-    </div>
-    <div class="sidebar-footer">華美光學 人力營運處</div>
-  `;
-}
+  // ── 預設選單（讀取失敗時備用）
+  function getDefaultMenu() {
+    return [
+      { category: '主選單',     name: '首頁總覽',     icon: '🏠', href: 'home.html' },
+      { category: '學習與測驗', name: '測驗專區',     icon: '📝', href: 'quiz.html' },
+      { category: '資料與公告', name: '文件宣導',     icon: '📁', href: 'docs.html' },
+      { category: '資料與公告', name: '活動報名',     icon: '🎉', href: 'events-list.html' },
+      { category: '資料與公告', name: '最新公告',     icon: '📢', href: 'notice.html' },
+      { category: '各項統計分析', name: '統計分析入口', icon: '📊', href: 'links.html' },
+    ];
+  }
 
-// ── 預設選單（讀取失敗時備用）
-function getDefaultMenu() {
-  return [
-    { category: '主選單',    name: '首頁總覽',   icon: '🏠', href: 'home.html' },
-    { category: '學習與測驗', name: '測驗專區',   icon: '📝', href: 'quiz.html' },
-    { category: '資料與公告', name: '文件宣導',   icon: '📁', href: 'docs.html' },
-    { category: '資料與公告', name: '活動報名',   icon: '🎉', href: 'events-list.html' },
-    { category: '資料與公告', name: '最新公告',   icon: '📢', href: 'notice.html' },
-    { category: '各項統計分析', name: '統計分析入口', icon: '📊', href: 'links.html' },
-  ];
-}
+  // 頁面載入時執行
+  window.addEventListener('DOMContentLoaded', loadSidebar);
+})();
 
-// 頁面載入時執行
-window.addEventListener('DOMContentLoaded', loadSidebar);
-
-// ── 共用 toggleSidebar 函式
+// ── 共用 toggleSidebar 函式（全域，各頁面需要呼叫）
 function toggleSidebar() {
   const s = document.getElementById('sidebar');
   const o = document.getElementById('sidebar-overlay');
@@ -100,101 +94,101 @@ function toggleSidebar() {
   if (c) c.style.display = open ? 'block' : 'none';
 }
 
-// ── 後台管理入口
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxfo--2xa9vk6tlIzCjNyu3Y76AQIzYj-tM3XcvFQO72QwkWEqYIW_jSl2JRtE2tgql/exec';
-let adminFailCount = 0;
+// ── 後台管理入口（全域，sidebar 按鈕呼叫）
+(function() {
+  const _ADMIN_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxfo--2xa9vk6tlIzCjNyu3Y76AQIzYj-tM3XcvFQO72QwkWEqYIW_jSl2JRtE2tgql/exec';
+  const _ADMIN_PWD = '@@69314511@@';
+  let _adminFailCount = 0;
 
-function enterAdmin() {
-  let modal = document.getElementById('admin-pwd-modal');
-  if (!modal) {
-    modal = document.createElement('div');
-    modal.id = 'admin-pwd-modal';
-    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center;';
-    modal.innerHTML = `
-      <div style="background:#fff;border-radius:16px;padding:40px;width:90%;max-width:360px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.18);position:relative;">
-        <button onclick="closeAdminModal()" style="position:absolute;top:14px;right:18px;background:none;border:none;font-size:20px;cursor:pointer;color:#999;">✕</button>
-        <div style="font-size:44px;margin-bottom:14px;">⚙️</div>
-        <h2 style="font-size:17px;font-weight:800;margin-bottom:6px;color:#3d4449;">後台管理</h2>
-        <p style="font-size:13px;color:#999;margin-bottom:20px;">請輸入後台管理密碼</p>
-        <input type="password" id="admin-pwd-input" placeholder="請輸入密碼"
-          style="width:100%;padding:12px 16px;border:1.5px solid #e8e8e8;border-radius:8px;font-size:15px;margin-bottom:10px;outline:none;font-family:inherit;"
-          onkeydown="if(event.key==='Enter')confirmAdminPwd()" />
-        <p id="admin-pwd-error" style="color:#f56a6a;font-size:13px;margin-bottom:10px;display:none;"></p>
-        <button onclick="confirmAdminPwd()"
-          style="width:100%;background:#f56a6a;color:#fff;border:none;border-radius:8px;padding:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;">
-          確認
-        </button>
-      </div>`;
-    document.body.appendChild(modal);
-    modal.addEventListener('click', function(e) {
-      if (e.target === modal) closeAdminModal();
-    });
-  }
-  modal.style.display = 'flex';
-  setTimeout(() => document.getElementById('admin-pwd-input').focus(), 100);
-}
+  window.enterAdmin = function() {
+    let modal = document.getElementById('admin-pwd-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'admin-pwd-modal';
+      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center;';
+      modal.innerHTML = `
+        <div style="background:#fff;border-radius:16px;padding:40px;width:90%;max-width:360px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.18);position:relative;">
+          <button onclick="closeAdminModal()" style="position:absolute;top:14px;right:18px;background:none;border:none;font-size:20px;cursor:pointer;color:#999;">✕</button>
+          <div style="font-size:44px;margin-bottom:14px;">⚙️</div>
+          <h2 style="font-size:17px;font-weight:800;margin-bottom:6px;color:#3d4449;">後台管理</h2>
+          <p style="font-size:13px;color:#999;margin-bottom:20px;">請輸入後台管理密碼</p>
+          <input type="password" id="admin-pwd-input" placeholder="請輸入密碼"
+            style="width:100%;padding:12px 16px;border:1.5px solid #e8e8e8;border-radius:8px;font-size:15px;margin-bottom:10px;outline:none;font-family:inherit;"
+            onkeydown="if(event.key==='Enter')confirmAdminPwd()" />
+          <p id="admin-pwd-error" style="color:#f56a6a;font-size:13px;margin-bottom:10px;display:none;"></p>
+          <button onclick="confirmAdminPwd()"
+            style="width:100%;background:#f56a6a;color:#fff;border:none;border-radius:8px;padding:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;">
+            確認
+          </button>
+        </div>`;
+      document.body.appendChild(modal);
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) closeAdminModal();
+      });
+    }
+    modal.style.display = 'flex';
+    setTimeout(() => document.getElementById('admin-pwd-input').focus(), 100);
+  };
 
-function closeAdminModal() {
-  const modal = document.getElementById('admin-pwd-modal');
-  if (modal) modal.style.display = 'none';
-  const input = document.getElementById('admin-pwd-input');
-  if (input) input.value = '';
-  const err = document.getElementById('admin-pwd-error');
-  if (err) err.style.display = 'none';
-}
+  window.closeAdminModal = function() {
+    const modal = document.getElementById('admin-pwd-modal');
+    if (modal) modal.style.display = 'none';
+    const input = document.getElementById('admin-pwd-input');
+    if (input) input.value = '';
+    const err = document.getElementById('admin-pwd-error');
+    if (err) err.style.display = 'none';
+  };
 
-function confirmAdminPwd() {
-  const input = document.getElementById('admin-pwd-input');
-  const err = document.getElementById('admin-pwd-error');
-  const pwd = input.value.trim();
+  window.confirmAdminPwd = function() {
+    const input = document.getElementById('admin-pwd-input');
+    const err = document.getElementById('admin-pwd-error');
+    const pwd = input.value.trim();
+    if (pwd === _ADMIN_PWD) {
+      _adminFailCount = 0;
+      sessionStorage.setItem('admin_auth', 'true');
+      closeAdminModal();
+      window.location.href = 'admin.html';
+    } else {
+      _adminFailCount++;
+      input.value = '';
+      input.focus();
+      err.textContent = `密碼錯誤，請重試（第 ${_adminFailCount} 次）`;
+      err.style.display = 'block';
+      if (_adminFailCount >= 3) {
+        _sendAdminLoginAlert();
+        err.textContent = '密碼錯誤次數過多，已通知管理員';
+        _adminFailCount = 0;
+      }
+    }
+  };
 
-  if (pwd === '@@69314511@@') {
-    adminFailCount = 0;
-    sessionStorage.setItem('admin_auth', 'true');
-    closeAdminModal();
-    window.location.href = 'admin.html';
-  } else {
-    adminFailCount++;
-    input.value = '';
-    input.focus();
-    err.textContent = `密碼錯誤，請重試（第 ${adminFailCount} 次）`;
-    err.style.display = 'block';
-    if (adminFailCount >= 3) {
-      sendAdminLoginAlert();
-      err.textContent = '密碼錯誤次數過多，已通知管理員';
-      adminFailCount = 0;
+  function _sendAdminLoginAlert() {
+    try {
+      fetch(_ADMIN_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action   : 'adminLoginAlert',
+          userAgent: navigator.userAgent,
+          time     : new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }),
+        }),
+      });
+    } catch(e) {
+      console.error('通知信發送失敗', e);
     }
   }
-}
-
-function sendAdminLoginAlert() {
-  try {
-    fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      body: JSON.stringify({
-        action   : 'adminLoginAlert',
-        userAgent: navigator.userAgent,
-        time     : new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }),
-      }),
-    });
-  } catch(e) {
-    console.error('通知信發送失敗', e);
-  }
-}
+})();
 
 // ── 滑鼠彗星尾巴效果
 (function() {
   const TRAIL_LENGTH = 20;
   const trail = [];
   let animFrame;
-
   document.addEventListener('mousemove', function(e) {
     trail.push({ x: e.clientX, y: e.clientY });
     if (trail.length > TRAIL_LENGTH) trail.shift();
     cancelAnimationFrame(animFrame);
     animFrame = requestAnimationFrame(drawTrail);
   });
-
   function drawTrail() {
     document.querySelectorAll('.comet-dot').forEach(el => el.remove());
     trail.forEach((pos, i) => {
@@ -203,11 +197,7 @@ function sendAdminLoginAlert() {
       const opacity = ratio * 0.6 + 0.1;
       const p = document.createElement('div');
       p.className = 'comet-dot';
-      p.style.cssText = `
-        position:fixed;width:${size}px;height:${size}px;border-radius:50%;
-        background:rgba(80,80,80,${opacity});
-        left:${pos.x - size/2}px;top:${pos.y - size/2}px;
-        pointer-events:none;z-index:9999;`;
+      p.style.cssText = `position:fixed;width:${size}px;height:${size}px;border-radius:50%;background:rgba(80,80,80,${opacity});left:${pos.x - size/2}px;top:${pos.y - size/2}px;pointer-events:none;z-index:9999;`;
       document.body.appendChild(p);
     });
     setTimeout(() => {

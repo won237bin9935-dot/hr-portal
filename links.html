@@ -239,7 +239,7 @@
 <script src="sidebar.js"></script>
 <script src="topbar.js"></script>
 <script>
-const SHEET_ID = (typeof HRCONFIG !== 'undefined' && HRCONFIG.SHEETS_ID)
+const LINKS_SHEET_ID = (typeof HRCONFIG !== 'undefined' && HRCONFIG.SHEETS_ID)
   ? HRCONFIG.SHEETS_ID
   : '1b4xq2XxSCbuIF6SZU-x0Jz4Du_n-YRAJCSQrkm2ze3U';
 const SHEET_TAB = '各項統計分析';
@@ -265,7 +265,7 @@ let pendingUrl = '';
 window.addEventListener('DOMContentLoaded', loadLinksData);
 
 async function fetchSheetJson() {
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_TAB)}&headers=0`;
+  const url = `https://docs.google.com/spreadsheets/d/${LINKS_SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_TAB)}&headers=0`;
   const res = await fetch(url);
   const text = await res.text();
   const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);

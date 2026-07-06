@@ -399,7 +399,7 @@
 
 <script src="sheets-config.js"></script>
 <script>
-const ADMIN_PWD = '@@69314511@@';
+const ADMIN_LOGIN_PWD = '@@69314511@@';
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxfo--2xa9vk6tlIzCjNyu3Y76AQIzYj-tM3XcvFQO72QwkWEqYIW_jSl2JRtE2tgql/exec';
 let loginFailCount = 0;
 
@@ -417,7 +417,7 @@ function adminLogin() {
   const pwd = input.value.trim();
   input.value = '';
 
-  if (pwd === ADMIN_PWD) {
+  if (pwd === ADMIN_LOGIN_PWD) {
     loginFailCount = 0;
     sessionStorage.setItem('admin_auth', 'true');
     err.style.display = 'none';
@@ -462,8 +462,8 @@ function showApp() {
 // 讀取前台選單設定，顯示在後台左側供參考
 async function loadFrontendMenuPreview() {
   try {
-    const SHEET_ID = '1b4xq2XxSCbuIF6SZU-x0Jz4Du_n-YRAJCSQrkm2ze3U';
-    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent('選單設定')}&headers=1`;
+    const PREVIEW_SHEET_ID = '1b4xq2XxSCbuIF6SZU-x0Jz4Du_n-YRAJCSQrkm2ze3U';
+    const url = `https://docs.google.com/spreadsheets/d/${PREVIEW_SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent('選單設定')}&headers=1`;
     const res = await fetch(url);
     const text = await res.text();
     const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
@@ -520,7 +520,7 @@ function showPanel(name, btn) {
 
 // ── 統計連結管理 ──────────────────────────────
 const LINKS_SHEET = '各項統計分析';
-const SHEET_ID = '1b4xq2XxSCbuIF6SZU-x0Jz4Du_n-YRAJCSQrkm2ze3U';
+const ADMIN_SHEET_ID = '1b4xq2XxSCbuIF6SZU-x0Jz4Du_n-YRAJCSQrkm2ze3U';
 let linksData = [];
 let editingRow = null;
 
@@ -528,7 +528,7 @@ async function loadLinksAdmin() {
   document.getElementById('links-loading-admin').style.display = 'block';
   document.getElementById('links-table-wrap').style.display = 'none';
   try {
-    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(LINKS_SHEET)}&headers=0`;
+    const url = `https://docs.google.com/spreadsheets/d/${ADMIN_SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(LINKS_SHEET)}&headers=0`;
     const res = await fetch(url);
     const text = await res.text();
     const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
