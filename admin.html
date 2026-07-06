@@ -515,20 +515,14 @@ function showPanel(name, btn) {
   document.getElementById('admin-topbar-title').textContent = panelTitles[name];
   btn.classList.add('active');
   if (window.innerWidth <= 900) toggleAdminSidebar();
+  if (name === 'links') loadLinksAdmin();
 }
 
 // ── 統計連結管理 ──────────────────────────────
 const LINKS_SHEET = '各項統計分析';
 const SHEET_ID = '1b4xq2XxSCbuIF6SZU-x0Jz4Du_n-YRAJCSQrkm2ze3U';
-let linksData = []; // { row, name, desc, url, status }
-let editingRow = null; // null=新增, number=編輯列號(1-based, 資料從第3列起)
-
-// 切換到統計連結面板時自動載入
-const _origShowPanel = showPanel;
-function showPanel(name, btn) {
-  _origShowPanel(name, btn);
-  if (name === 'links') loadLinksAdmin();
-}
+let linksData = [];
+let editingRow = null;
 
 async function loadLinksAdmin() {
   document.getElementById('links-loading-admin').style.display = 'block';
