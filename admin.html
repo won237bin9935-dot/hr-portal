@@ -326,11 +326,70 @@
       <div class="admin-panel" id="panel-links">
         <div class="panel-header">
           <h2>🔗 統計連結管理</h2>
-          <button class="btn-primary">＋ 新增連結</button>
+          <button class="btn-primary" onclick="openLinkForm()">＋ 新增連結</button>
         </div>
-        <div class="coming-soon-box">
-          <div class="cs-icon">🚧</div>
-          <p>統計連結管理功能開發中，即將上線</p>
+
+        <!-- 列表 -->
+        <div id="links-loading-admin" style="text-align:center;padding:40px;color:var(--text-light);">
+          <div style="width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:admin-spin .8s linear infinite;margin:0 auto 10px;"></div>
+          <p style="font-size:13px;">載入中…</p>
+        </div>
+        <div id="links-table-wrap" style="display:none;">
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06);">
+              <thead>
+                <tr style="background:#f8f9fa;border-bottom:2px solid var(--border);">
+                  <th style="padding:12px 16px;text-align:left;font-size:13px;color:var(--text-mid);font-weight:700;">連結名稱</th>
+                  <th style="padding:12px 16px;text-align:left;font-size:13px;color:var(--text-mid);font-weight:700;">說明</th>
+                  <th style="padding:12px 16px;text-align:left;font-size:13px;color:var(--text-mid);font-weight:700;">連結網址</th>
+                  <th style="padding:12px 16px;text-align:center;font-size:13px;color:var(--text-mid);font-weight:700;">狀態</th>
+                  <th style="padding:12px 16px;text-align:center;font-size:13px;color:var(--text-mid);font-weight:700;">操作</th>
+                </tr>
+              </thead>
+              <tbody id="links-tbody"></tbody>
+            </table>
+          </div>
+          <div id="links-empty-admin" style="display:none;text-align:center;padding:40px;color:var(--text-light);">
+            <div style="font-size:40px;margin-bottom:10px;">🔗</div>
+            <p style="font-size:13px;">目前沒有連結，點擊上方「＋ 新增連結」新增</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 新增/編輯 Modal -->
+      <div id="link-form-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:16px;padding:36px;width:90%;max-width:480px;box-shadow:0 8px 40px rgba(0,0,0,.18);position:relative;max-height:90vh;overflow-y:auto;">
+          <button onclick="closeLinkForm()" style="position:absolute;top:14px;right:18px;background:none;border:none;font-size:20px;cursor:pointer;color:#999;">✕</button>
+          <h3 id="link-form-title" style="font-size:18px;font-weight:800;margin-bottom:24px;color:var(--text-dark);">＋ 新增連結</h3>
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            <div>
+              <label style="font-size:13px;font-weight:700;color:var(--text-mid);display:block;margin-bottom:6px;">連結名稱 *</label>
+              <input type="text" id="lf-name" placeholder="例：內訓課程滿意度調查"
+                style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;outline:none;font-family:inherit;" />
+            </div>
+            <div>
+              <label style="font-size:13px;font-weight:700;color:var(--text-mid);display:block;margin-bottom:6px;">說明</label>
+              <input type="text" id="lf-desc" placeholder="選填，簡短說明用途"
+                style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;outline:none;font-family:inherit;" />
+            </div>
+            <div>
+              <label style="font-size:13px;font-weight:700;color:var(--text-mid);display:block;margin-bottom:6px;">連結網址 *</label>
+              <input type="url" id="lf-url" placeholder="https://..."
+                style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;outline:none;font-family:inherit;" />
+            </div>
+            <div>
+              <label style="font-size:13px;font-weight:700;color:var(--text-mid);display:block;margin-bottom:6px;">狀態</label>
+              <select id="lf-status" style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;outline:none;font-family:inherit;background:#fff;">
+                <option value="開放中">開放中</option>
+                <option value="已停用">已停用</option>
+              </select>
+            </div>
+          </div>
+          <p id="lf-error" style="color:var(--accent);font-size:13px;margin-top:12px;display:none;"></p>
+          <div style="display:flex;gap:10px;margin-top:24px;">
+            <button onclick="closeLinkForm()" style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;background:#fff;font-family:inherit;color:var(--text-mid);">取消</button>
+            <button id="lf-submit" onclick="submitLinkForm()" style="flex:2;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">儲存</button>
+          </div>
         </div>
       </div>
 
@@ -458,6 +517,187 @@ function showPanel(name, btn) {
   if (window.innerWidth <= 900) toggleAdminSidebar();
 }
 
+// ── 統計連結管理 ──────────────────────────────
+const LINKS_SHEET = '各項統計分析';
+const SHEET_ID = '1b4xq2XxSCbuIF6SZU-x0Jz4Du_n-YRAJCSQrkm2ze3U';
+let linksData = []; // { row, name, desc, url, status }
+let editingRow = null; // null=新增, number=編輯列號(1-based, 資料從第3列起)
+
+// 切換到統計連結面板時自動載入
+const _origShowPanel = showPanel;
+function showPanel(name, btn) {
+  _origShowPanel(name, btn);
+  if (name === 'links') loadLinksAdmin();
+}
+
+async function loadLinksAdmin() {
+  document.getElementById('links-loading-admin').style.display = 'block';
+  document.getElementById('links-table-wrap').style.display = 'none';
+  try {
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(LINKS_SHEET)}&headers=0`;
+    const res = await fetch(url);
+    const text = await res.text();
+    const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
+    if (!match) throw new Error('無法讀取');
+    const json = JSON.parse(match[1]);
+
+    linksData = json.table.rows.slice(2)
+      .map((r, i) => ({
+        row   : i + 3, // 試算表實際列號（第3列起）
+        name  : r.c?.[0]?.v || '',
+        desc  : r.c?.[1]?.v || '',
+        url   : r.c?.[2]?.v || '',
+        status: r.c?.[3]?.v || '開放中',
+      }))
+      .filter(r => r.name);
+
+    renderLinksTable();
+  } catch(e) {
+    alert('載入連結資料失敗，請稍後再試');
+  }
+  document.getElementById('links-loading-admin').style.display = 'none';
+  document.getElementById('links-table-wrap').style.display = 'block';
+}
+
+function renderLinksTable() {
+  const tbody = document.getElementById('links-tbody');
+  const empty = document.getElementById('links-empty-admin');
+  tbody.innerHTML = '';
+
+  if (linksData.length === 0) {
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  linksData.forEach(l => {
+    const isOpen = l.status === '開放中';
+    const tr = document.createElement('tr');
+    tr.style.borderBottom = '1px solid var(--border)';
+    tr.innerHTML = `
+      <td style="padding:12px 16px;font-size:14px;font-weight:700;color:var(--text-dark);">${l.name}</td>
+      <td style="padding:12px 16px;font-size:13px;color:var(--text-mid);">${l.desc || '—'}</td>
+      <td style="padding:12px 16px;font-size:12px;color:#2980b9;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+        <a href="${l.url}" target="_blank" style="color:#2980b9;">${l.url || '—'}</a>
+      </td>
+      <td style="padding:12px 16px;text-align:center;">
+        <span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;
+          background:${isOpen ? '#dcfce7' : '#f1f5f9'};
+          color:${isOpen ? '#16a34a' : '#94a3b8'};
+          border:1px solid ${isOpen ? '#bbf7d0' : '#e2e8f0'};">
+          ${l.status}
+        </span>
+      </td>
+      <td style="padding:12px 16px;text-align:center;">
+        <div style="display:flex;gap:6px;justify-content:center;">
+          <button onclick="openLinkForm(${l.row})"
+            style="padding:5px 12px;border:1.5px solid #2980b9;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;background:#fff;color:#2980b9;font-family:inherit;">
+            編輯
+          </button>
+          <button onclick="deleteLink(${l.row},'${l.name.replace(/'/g, "\\'")}')"
+            style="padding:5px 12px;border:1.5px solid var(--accent);border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;background:#fff;color:var(--accent);font-family:inherit;">
+            刪除
+          </button>
+        </div>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// 開啟表單（新增 or 編輯）
+function openLinkForm(row) {
+  editingRow = row || null;
+  const overlay = document.getElementById('link-form-overlay');
+  document.getElementById('lf-error').style.display = 'none';
+
+  if (editingRow) {
+    const l = linksData.find(x => x.row === row);
+    document.getElementById('link-form-title').textContent = '✏️ 編輯連結';
+    document.getElementById('lf-name').value = l.name;
+    document.getElementById('lf-desc').value = l.desc;
+    document.getElementById('lf-url').value = l.url;
+    document.getElementById('lf-status').value = l.status;
+  } else {
+    document.getElementById('link-form-title').textContent = '＋ 新增連結';
+    document.getElementById('lf-name').value = '';
+    document.getElementById('lf-desc').value = '';
+    document.getElementById('lf-url').value = '';
+    document.getElementById('lf-status').value = '開放中';
+  }
+
+  overlay.style.display = 'flex';
+  setTimeout(() => document.getElementById('lf-name').focus(), 100);
+}
+
+function closeLinkForm() {
+  document.getElementById('link-form-overlay').style.display = 'none';
+}
+
+// 點遮罩關閉
+document.getElementById('link-form-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeLinkForm();
+});
+
+async function submitLinkForm() {
+  const name   = document.getElementById('lf-name').value.trim();
+  const desc   = document.getElementById('lf-desc').value.trim();
+  const url    = document.getElementById('lf-url').value.trim();
+  const status = document.getElementById('lf-status').value;
+  const err    = document.getElementById('lf-error');
+  const btn    = document.getElementById('lf-submit');
+
+  if (!name) { err.textContent = '請填寫連結名稱'; err.style.display = 'block'; return; }
+  if (!url)  { err.textContent = '請填寫連結網址'; err.style.display = 'block'; return; }
+  err.style.display = 'none';
+
+  btn.disabled = true;
+  btn.textContent = '儲存中…';
+
+  try {
+    const payload = {
+      action: 'manageLinks',
+      type  : editingRow ? 'edit' : 'add',
+      row   : editingRow,
+      name, desc, url, status,
+    };
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body  : JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (data.success) {
+      closeLinkForm();
+      await loadLinksAdmin();
+    } else {
+      throw new Error(data.error || '儲存失敗');
+    }
+  } catch(e) {
+    err.textContent = '儲存失敗：' + e.message;
+    err.style.display = 'block';
+  }
+
+  btn.disabled = false;
+  btn.textContent = '儲存';
+}
+
+async function deleteLink(row, name) {
+  if (!confirm(`確定要刪除「${name}」嗎？`)) return;
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body  : JSON.stringify({ action: 'manageLinks', type: 'delete', row }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      await loadLinksAdmin();
+    } else {
+      throw new Error(data.error || '刪除失敗');
+    }
+  } catch(e) {
+    alert('刪除失敗：' + e.message);
+  }
+}
+
 // 手機版側欄開關
 function toggleAdminSidebar() {
   const s = document.getElementById('admin-sidebar');
@@ -465,6 +705,11 @@ function toggleAdminSidebar() {
   const open = s.classList.toggle('open');
   o.style.display = open ? 'block' : 'none';
 }
+
+// spin 動畫
+const adminStyle = document.createElement('style');
+adminStyle.textContent = '@keyframes admin-spin { to { transform: rotate(360deg); } }';
+document.head.appendChild(adminStyle);
 </script>
 </body>
 </html>
