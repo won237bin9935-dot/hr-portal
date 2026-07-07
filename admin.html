@@ -541,6 +541,8 @@ function sendLoginAlert() {
   try {
     fetch(APPS_SCRIPT_URL, {
       method: 'POST',
+      redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({
         action   : 'adminLoginAlert',
         userAgent: navigator.userAgent,
@@ -1154,16 +1156,28 @@ async function handleFileUpload(input, targetId) {
       reader.readAsDataURL(file);
     });
 
-    const res = await fetch(MGMT_SCRIPT_URL, {
-      method: 'POST',
-      body: JSON.stringify({
-        action  : 'uploadFile',
-        fileName: file.name,
-        mimeType: file.type,
-        base64  : base64,
-      }),
+    // 大檔案改用 multipart 分段，避免 base64 太長
+    // 使用 text/plain 確保 Apps Script 能正確接收 POST body
+    const payload = JSON.stringify({
+      action  : 'uploadFile',
+      fileName: file.name,
+      mimeType: file.type,
+      base64  : base64,
     });
-    const result = await res.json();
+
+    const res = await fetch(MGMT_SCRIPT_URL, {
+      method     : 'POST',
+      redirect   : 'follow',
+      headers    : { 'Content-Type': 'text/plain' },
+      body       : payload,
+    });
+    const text = await res.text();
+    let result;
+    try {
+      result = JSON.parse(text);
+    } catch(parseErr) {
+      throw new Error('回應格式錯誤：' + text.substring(0, 100));
+    }
 
     if (result.success) {
       // 填入主要網址（封面圖 or 一般網址）
@@ -1227,6 +1241,8 @@ async function submitFormModal() {
   try {
     const res = await fetch(MGMT_SCRIPT_URL, {
       method: 'POST',
+      redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({
         action: cfg.action,
         type  : _currentRow ? 'edit' : 'add',
@@ -1257,6 +1273,8 @@ async function deleteMgmtRow(module, row, name) {
   try {
     const res = await fetch(MGMT_SCRIPT_URL, {
       method: 'POST',
+      redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ action: cfg.action, type: 'delete', row }),
     });
     const result = await res.json();
