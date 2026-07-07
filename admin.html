@@ -280,6 +280,13 @@
     .form-actions .btn-save:disabled { background:#f5a0a0; cursor:default; }
     @media (max-width:560px) { .form-row { grid-template-columns:1fr; } .admin-modal { padding:24px 20px; } }
   </style>
+  <!-- PDF.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    if (typeof pdfjsLib !== 'undefined') {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+  </script>
 </head>
 <body>
 
@@ -1129,6 +1136,44 @@ document.getElementById('admin-form-modal').addEventListener('click', function(e
 
 
 // ── 檔案上傳到 Google Drive
+// ── 上傳檔案到 Drive（base64）
+async function uploadBase64ToDrive(fileName, mimeType, base64) {
+  const payload = JSON.stringify({
+    action  : 'uploadFile',
+    fileName: fileName,
+    mimeType: mimeType,
+    base64  : base64,
+  });
+  const res = await fetch(MGMT_SCRIPT_URL, {
+    method : 'POST',
+    redirect: 'follow',
+    headers: { 'Content-Type': 'text/plain' },
+    body   : payload,
+  });
+  const text = await res.text();
+  try {
+    return JSON.parse(text);
+  } catch(e) {
+    throw new Error('回應格式錯誤：' + text.substring(0, 100));
+  }
+}
+
+// ── PDF.js 產生封面圖（PNG base64）
+async function generatePdfCover(file) {
+  if (typeof pdfjsLib === 'undefined') throw new Error('PDF.js 未載入');
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  const page = await pdf.getPage(1);
+  const viewport = page.getViewport({ scale: 1.5 });
+  const canvas = document.createElement('canvas');
+  canvas.width  = viewport.width;
+  canvas.height = viewport.height;
+  const ctx = canvas.getContext('2d');
+  await page.render({ canvasContext: ctx, viewport }).promise;
+  // 轉成 base64 PNG（去掉 data:image/png;base64, 前綴）
+  return canvas.toDataURL('image/png').split(',')[1];
+}
+
 async function handleFileUpload(input, targetId) {
   const file = input.files[0];
   if (!file) return;
@@ -1148,64 +1193,73 @@ async function handleFileUpload(input, targetId) {
   }
 
   try {
-    // 轉 base64
-    const base64 = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result.split(',')[1]);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
+    const isPdf = file.type === 'application/pdf';
 
-    // 大檔案改用 multipart 分段，避免 base64 太長
-    // 使用 text/plain 確保 Apps Script 能正確接收 POST body
-    const payload = JSON.stringify({
-      action  : 'uploadFile',
-      fileName: file.name,
-      mimeType: file.type,
-      base64  : base64,
-    });
+    if (isPdf) {
+      // ── PDF：前端產生封面圖 + 上傳兩個檔案
+      statusEl.textContent = '正在產生封面圖…';
 
-    const res = await fetch(MGMT_SCRIPT_URL, {
-      method     : 'POST',
-      redirect   : 'follow',
-      headers    : { 'Content-Type': 'text/plain' },
-      body       : payload,
-    });
-    const text = await res.text();
-    let result;
-    try {
-      result = JSON.parse(text);
-    } catch(parseErr) {
-      throw new Error('回應格式錯誤：' + text.substring(0, 100));
-    }
-
-    if (result.success) {
-      // 填入主要網址（封面圖 or 一般網址）
-      if (result.url) {
-        document.getElementById(targetId).value = result.url;
+      // 1. 產生封面圖 PNG
+      let coverBase64 = null;
+      try {
+        coverBase64 = await generatePdfCover(file);
+      } catch(coverErr) {
+        console.warn('封面圖產生失敗:', coverErr);
       }
 
-      // PDF 時：額外填入 PDF 預覽網址到 pdf_url 欄位（如果存在）
-      if (result.isPdf && result.pdfUrl) {
-        const pdfField = document.getElementById('field-PDF預覽網址');
-        if (pdfField) pdfField.value = result.pdfUrl;
+      // 2. 上傳原始 PDF
+      statusEl.textContent = '上傳 PDF 中…';
+      const pdfBase64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      const pdfResult = await uploadBase64ToDrive(file.name, file.type, pdfBase64);
+      if (!pdfResult.success) throw new Error(pdfResult.error || 'PDF 上傳失敗');
+      const pdfUrl = `https://drive.google.com/file/d/${pdfResult.fileId}/preview`;
 
-        if (result.url) {
+      // 3. 填入 PDF 預覽網址
+      const pdfField = document.getElementById('field-PDF預覽網址');
+      if (pdfField) pdfField.value = pdfUrl;
+
+      // 4. 上傳封面圖（如果有）
+      if (coverBase64) {
+        statusEl.textContent = '上傳封面圖中…';
+        const coverName = file.name.replace('.pdf', '_cover.png');
+        const coverResult = await uploadBase64ToDrive(coverName, 'image/png', coverBase64);
+        if (coverResult.success && coverResult.url) {
+          document.getElementById(targetId).value = coverResult.url;
           statusEl.style.color = '#16a34a';
-          statusEl.textContent = '✅ 上傳成功！封面圖已自動填入，PDF 預覽網址也已填入';
+          statusEl.textContent = '✅ 上傳成功！封面圖及 PDF 預覽網址已自動填入';
         } else {
-          // 封面轉換失敗，只有 PDF 網址
-          document.getElementById(targetId).value = result.pdfUrl;
+          // 封面上傳失敗，填入 PDF 網址
+          document.getElementById(targetId).value = pdfUrl;
           statusEl.style.color = '#d97706';
-          statusEl.textContent = '⚠️ 封面圖轉換失敗，已填入 PDF 預覽網址，前台將顯示 📄 圖示';
+          statusEl.textContent = '⚠️ 封面圖上傳失敗，已填入 PDF 預覽網址，前台將顯示 📄 圖示';
         }
       } else {
-        statusEl.style.color = '#16a34a';
-        statusEl.textContent = '✅ 上傳成功，網址已自動填入';
+        // 封面產生失敗，填入 PDF 網址
+        document.getElementById(targetId).value = pdfUrl;
+        statusEl.style.color = '#d97706';
+        statusEl.textContent = '⚠️ 封面圖產生失敗，已填入 PDF 預覽網址，前台將顯示 📄 圖示';
       }
+
     } else {
-      throw new Error(result.error || '上傳失敗');
+      // ── 圖片或其他格式：直接上傳
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      const result = await uploadBase64ToDrive(file.name, file.type, base64);
+      if (!result.success) throw new Error(result.error || '上傳失敗');
+      document.getElementById(targetId).value = result.url;
+      statusEl.style.color = '#16a34a';
+      statusEl.textContent = '✅ 上傳成功，網址已自動填入';
     }
+
   } catch(e) {
     statusEl.style.color = 'var(--accent)';
     statusEl.textContent = '❌ 上傳失敗：' + e.message;
