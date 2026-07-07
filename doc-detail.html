@@ -237,46 +237,27 @@
         </div>`;
     } else if (isPDF) {
       // 從網址提取 fileId
-      function extractFileId(url) {
-        const m = url.match(/\/d\/([a-zA-Z0-9_-]{25,})/);
-        return m ? m[1] : '';
-      }
-
-      // PDF 預覽網址（優先用 PDF預覽網址 欄位）
-      const pdfFileId = extractFileId(pdfUrl || fileUrl);
-      const embedUrl = pdfFileId
-        ? `https://drive.google.com/file/d/${pdfFileId}/preview`
-        : '';
+      const pdfSource = pdfUrl || fileUrl;
+      const pdfIdMatch = pdfSource.match(/\/d\/([a-zA-Z0-9_-]{25,})/);
+      const pdfFileId = pdfIdMatch ? pdfIdMatch[1] : '';
       const openUrl = pdfFileId
         ? `https://drive.google.com/file/d/${pdfFileId}/view`
-        : (pdfUrl || fileUrl);
+        : pdfSource;
 
       // 封面圖（檔案連結欄位，lh3 網址）
       const hasCover = coverUrl && coverUrl.includes('lh3.googleusercontent.com');
       const coverHTML = hasCover ? `
-        <div class="doc-img-area" style="margin-bottom:0;border-bottom:1px solid #eee;">
-          <img src="${coverUrl}" alt="${docName} 封面" style="max-height:300px;"
+        <div class="doc-img-area" style="border-bottom:1px solid #eee;">
+          <img src="${coverUrl}" alt="${docName} 封面" style="max-height:400px;"
             onerror="this.parentElement.style.display='none'">
         </div>` : '';
 
       display.innerHTML = coverHTML + `
-        <div class="doc-pdf-area">
-          ${embedUrl
-            ? `<iframe src="${embedUrl}" allowfullscreen></iframe>`
-            : `<div style="text-align:center;padding:40px;"><p style="color:#999;margin-bottom:12px;">PDF 無法預覽</p></div>`
-          }
-        </div>
-        <div class="doc-pdf-fallback" id="pdf-fallback">
-          <span class="fi">📄</span>
-          <p>PDF 無法在此裝置預覽</p>
-          <a href="${openUrl}" target="_blank" class="btn-open-pdf">⬇ 開啟 PDF</a>
+        <div style="text-align:center;padding:32px 20px;background:#fafafa;">
+          <div style="font-size:48px;margin-bottom:12px;">📄</div>
+          <p style="font-size:14px;color:#666;margin-bottom:20px;">點擊下方按鈕在新分頁開啟完整 PDF</p>
+          <a href="${openUrl}" target="_blank" class="btn-open-pdf">📖 開啟 PDF 閱覽</a>
         </div>`;
-
-      // 10秒後若 iframe 還在載入，顯示備援按鈕
-      setTimeout(() => {
-        const fallback = document.getElementById('pdf-fallback');
-        if (fallback) fallback.style.display = 'block';
-      }, 10000);
     } else if (fileUrl) {
       display.innerHTML = `
         <div class="doc-img-area">
@@ -292,8 +273,10 @@
 
     // 只有需要簽名的文件才顯示前往簽名按鈕
     if (!needSign) {
-      document.getElementById('btn-sign').style.display = 'none';
-      document.getElementById('sign-note').style.display = 'none';
+      const btnSign = document.getElementById('btn-sign');
+      const signNote = document.getElementById('sign-note');
+      if (btnSign) btnSign.style.display = 'none';
+      if (signNote) signNote.style.display = 'none';
     }
 
     document.getElementById('loading').style.display = 'none';
