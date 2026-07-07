@@ -892,13 +892,13 @@ const MGMT_CONFIG = {
     fields: [
       { key:'活動名稱',   label:'活動名稱', type:'text',     required:true },
       { key:'類別',       label:'類別',     type:'text',     required:false },
-      { key:'日期',       label:'日期',     type:'text',     required:false },
+      { key:'日期',       label:'日期',     type:'date',     required:false },
       { key:'時間',       label:'時間',     type:'text',     required:false },
       { key:'地點',       label:'地點',     type:'text',     required:false },
       { key:'參加對象',   label:'參加對象', type:'text',     required:false },
-      { key:'報名截止日', label:'報名截止日',type:'text',    required:false },
+      { key:'報名截止日', label:'報名截止日',type:'date',    required:false },
       { key:'狀態',       label:'狀態',     type:'select',   required:false, options:['報名中','即將開始','已截止','已結束'] },
-      { key:'預設主題',   label:'預設主題', type:'text',     required:false },
+      { key:'預設主題',   label:'預設主題', type:'select',   required:false, options:'COLOR_THEMES' },
       { key:'自訂色碼',   label:'自訂色碼', type:'text',     required:false },
       { key:'海報連結',   label:'海報連結', type:'url',      required:false, upload:true },
       { key:'表單連結',   label:'表單連結', type:'url',      required:false },
@@ -917,7 +917,7 @@ const MGMT_CONFIG = {
       { key:'適用對象', label:'適用對象', type:'text',   required:false },
       { key:'題數',     label:'題數',     type:'number', required:false },
       { key:'預估時間', label:'預估時間（分鐘）',type:'number',required:false },
-      { key:'截止日期', label:'截止日期', type:'text',   required:false },
+      { key:'截止日期', label:'截止日期', type:'date',   required:false },
       { key:'狀態',     label:'狀態',     type:'select', required:false, options:['開放中','即將開始','已截止'] },
       { key:'表單連結', label:'表單連結', type:'url',    required:false },
       { key:'備註',     label:'備註',     type:'text',   required:false },
@@ -1105,7 +1105,10 @@ function buildField(f, val, requiredMark) {
   if (f.type === 'textarea') {
     input = `<textarea id="${id}" class="form-control" rows="3" placeholder="${f.label}">${val}</textarea>`;
   } else if (f.type === 'select') {
-    const opts = f.options.map(o => `<option value="${o}" ${val === o ? 'selected' : ''}>${o}</option>`).join('');
+    const optList = f.options === 'COLOR_THEMES'
+      ? Object.keys(HRCONFIG.COLOR_THEMES)
+      : f.options;
+    const opts = optList.map(o => `<option value="${o}" ${val === o ? 'selected' : ''}>${o}</option>`).join('');
     input = `<select id="${id}" class="form-control">${opts}</select>`;
   } else {
     input = `<input type="${f.type}" id="${id}" class="form-control" value="${String(val).replace(/"/g,'&quot;')}" placeholder="${f.label}" />`;
