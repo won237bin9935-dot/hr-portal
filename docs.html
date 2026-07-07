@@ -274,9 +274,14 @@
     const card = document.createElement('div');
     card.className = 'doc-card';
 
-    const previewHTML = isImg && d['檔案連結']
+    // PDF 有封面圖（lh3格式）時顯示封面圖，否則顯示圖示
+    const hasCover = d['檔案連結'] && d['檔案連結'].includes('lh3.googleusercontent.com');
+    const showImg = isImg && d['檔案連結'] || (fmt === 'PDF' && hasCover);
+    const imgUrl = showImg ? d['檔案連結'] : '';
+
+    const previewHTML = showImg
       ? `<div class="doc-preview">
-           <img src="${d['檔案連結']}" alt="${d['文件名稱']}" onerror="this.parentElement.classList.add('no-img');this.remove()">
+           <img src="${imgUrl}" alt="${d['文件名稱']}" onerror="this.parentElement.classList.add('no-img');this.innerHTML='<span class=doc-preview-icon>📄</span>'">
            <span class="doc-format-badge ${fmtClass}">${fmt}</span>
          </div>`
       : `<div class="doc-preview no-img">
@@ -297,7 +302,7 @@
       <div class="doc-card-body" style="padding-top:10px;">
         ${d['說明'] ? `<div class="doc-desc">${d['說明']}</div>` : ''}
         <div class="doc-meta">
-          <span class="doc-date">${d['上傳日期'] ? '📅 ' + d['上傳日期'] : ''}</span>
+          <span class="doc-date">${d['上傳日期'] ? '📅 ' + formatSheetDate(d['上傳日期']) : ''}</span>
           <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
             <a href="doc-detail.html?doc=${encodeURIComponent(d['文件名稱'])}" class="btn-doc">📖 開啟閱覽</a>
           </div>
