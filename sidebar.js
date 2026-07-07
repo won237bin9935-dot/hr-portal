@@ -257,11 +257,11 @@ function toggleSidebar() {
     document.body.appendChild(win);
 
     // 綁定事件
-    btn.addEventListener('click', toggleChat);
-    document.getElementById('chat-close-btn').addEventListener('click', closeChat);
-    document.getElementById('chat-send-btn').addEventListener('click', sendMessage);
+    btn.addEventListener('click', function() { window.toggleChat && window.toggleChat(); });
+    document.getElementById('chat-close-btn').addEventListener('click', function() { window.closeChat && window.closeChat(); });
+    document.getElementById('chat-send-btn').addEventListener('click', function() { window.sendMessage && window.sendMessage(); });
     document.getElementById('chat-input').addEventListener('keydown', e => {
-      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); window.sendMessage && window.sendMessage(); }
     });
     document.getElementById('chat-input').addEventListener('input', function() {
       this.style.height = 'auto';
