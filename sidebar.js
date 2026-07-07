@@ -209,3 +209,257 @@ function toggleSidebar() {
     }, 100);
   }
 })();
+
+// ══════════════════════════════════════════════
+// HR 小幫手聊天機器人
+// ══════════════════════════════════════════════
+(function() {
+  const OWL_IMG    = 'https://lh3.googleusercontent.com/d/1F7IH0yKHIT8zUJUbcCWfXyT8MFwuFExw';
+  const CHAT_URL   = 'https://script.google.com/macros/s/AKfycbxfo--2xa9vk6tlIzCjNyu3Y76AQIzYj-tM3XcvFQO72QwkWEqYIW_jSl2JRtE2tgql/exec';
+
+  // 不在後台頁面顯示
+  if (location.pathname.includes('admin.html')) return;
+
+  let isOpen       = false;
+  let isDragging   = false;
+  let isHidden     = false;
+  let chatHistory  = [];
+
+  // ── 建立 UI
+  function initChat() {
+    // 貓頭鷹按鈕
+    const btn = document.createElement('button');
+    btn.id = 'hr-owl-btn';
+    btn.title = 'HR 小幫手';
+    btn.innerHTML = `<img src="${OWL_IMG}" alt="HR小幫手"><div class="owl-badge"></div>`;
+    document.body.appendChild(btn);
+
+    // 對話視窗
+    const win = document.createElement('div');
+    win.id = 'hr-chat-window';
+    win.innerHTML = `
+      <div class="chat-header">
+        <img src="${OWL_IMG}" alt="HR小幫手">
+        <div class="chat-header-info">
+          <div class="chat-header-title">HR 小幫手</div>
+          <div class="chat-header-sub">人資制度問答小助理</div>
+        </div>
+        <div class="chat-header-actions">
+          <button class="chat-header-btn" id="chat-hide-btn" title="隱藏">－</button>
+          <button class="chat-header-btn" id="chat-close-btn" title="關閉">✕</button>
+        </div>
+      </div>
+      <div class="chat-messages" id="chat-messages"></div>
+      <div class="chat-input-area">
+        <textarea class="chat-input" id="chat-input" placeholder="輸入問題…" rows="1"></textarea>
+        <button class="chat-send-btn" id="chat-send-btn">➤</button>
+      </div>
+      <div class="chat-close-hint">
+        <button onclick="showOwlBtn()">已隱藏？點此重新開啟 HR 小幫手</button>
+      </div>`;
+    document.body.appendChild(win);
+
+    // 綁定事件
+    btn.addEventListener('click', toggleChat);
+    document.getElementById('chat-close-btn').addEventListener('click', closeChat);
+    document.getElementById('chat-hide-btn').addEventListener('click', hideOwl);
+    document.getElementById('chat-send-btn').addEventListener('click', sendMessage);
+    document.getElementById('chat-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    });
+    document.getElementById('chat-input').addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 80) + 'px';
+    });
+
+    // 拖曳功能
+    initDrag(btn);
+
+    // 載入知識庫
+    // 知識庫由 Apps Script 處理
+
+    // 檢查是否被隱藏
+    if (localStorage.getItem('hr_owl_hidden') === 'true') {
+      btn.style.display = 'none';
+      isHidden = true;
+    }
+  }
+
+  // ── 拖曳
+  function initDrag(btn) {
+    let startX, startY, startLeft, startBottom;
+    btn.addEventListener('mousedown', e => {
+      isDragging = false;
+      startX = e.clientX; startY = e.clientY;
+      const rect = btn.getBoundingClientRect();
+      startLeft   = rect.left;
+      startBottom = window.innerHeight - rect.bottom;
+      btn.style.cursor = 'grabbing';
+
+      function onMove(e) {
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        if (Math.abs(dx) > 5 || Math.abs(dy) > 5) isDragging = true;
+        const newLeft   = Math.max(0, Math.min(window.innerWidth - 64,  startLeft   + dx));
+        const newBottom = Math.max(0, Math.min(window.innerHeight - 64, startBottom - dy));
+        btn.style.left   = newLeft + 'px';
+        btn.style.right  = 'auto';
+        btn.style.bottom = newBottom + 'px';
+        // 視窗跟著移動
+        const chatWin = document.getElementById('hr-chat-window');
+        chatWin.style.right  = 'auto';
+        chatWin.style.left   = Math.max(0, Math.min(window.innerWidth - 360, newLeft - 360 + 64)) + 'px';
+        chatWin.style.bottom = (newBottom + 72) + 'px';
+      }
+      function onUp() {
+        btn.style.cursor = 'grab';
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+      }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+
+    // 手機拖曳
+    btn.addEventListener('touchstart', e => {
+      isDragging = false;
+      const t = e.touches[0];
+      startX = t.clientX; startY = t.clientY;
+      const rect = btn.getBoundingClientRect();
+      startLeft   = rect.left;
+      startBottom = window.innerHeight - rect.bottom;
+    }, { passive: true });
+    btn.addEventListener('touchmove', e => {
+      const t = e.touches[0];
+      const dx = t.clientX - startX;
+      const dy = t.clientY - startY;
+      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) isDragging = true;
+      const newLeft   = Math.max(0, Math.min(window.innerWidth - 64,  startLeft   + dx));
+      const newBottom = Math.max(0, Math.min(window.innerHeight - 64, startBottom - dy));
+      btn.style.left   = newLeft + 'px';
+      btn.style.right  = 'auto';
+      btn.style.bottom = newBottom + 'px';
+      e.preventDefault();
+    }, { passive: false });
+  }
+
+  // ── 開關對話視窗
+  function toggleChat() {
+    if (isDragging) return;
+    isOpen ? closeChat() : openChat();
+  }
+
+  function openChat() {
+    isOpen = true;
+    document.getElementById('hr-chat-window').classList.add('open');
+    document.getElementById('hr-owl-btn').classList.remove('has-msg');
+    if (chatHistory.length === 0) addBotMsg('你好！我是 HR 小幫手 🦉\n有任何人資制度相關問題，都可以問我喔！');
+    setTimeout(() => document.getElementById('chat-input').focus(), 200);
+  }
+
+  function closeChat() {
+    isOpen = false;
+    document.getElementById('hr-chat-window').classList.remove('open');
+  }
+
+  function hideOwl() {
+    closeChat();
+    document.getElementById('hr-owl-btn').style.display = 'none';
+    isHidden = true;
+    localStorage.setItem('hr_owl_hidden', 'true');
+  }
+
+  window.showOwlBtn = function() {
+    document.getElementById('hr-owl-btn').style.display = 'block';
+    isHidden = false;
+    localStorage.removeItem('hr_owl_hidden');
+  };
+
+  // 知識庫由 Apps Script 處理，前端不需載入
+
+  // ── 新增訊息
+  function addBotMsg(text) {
+    const msgs = document.getElementById('chat-messages');
+    const div = document.createElement('div');
+    div.className = 'chat-msg bot';
+    div.innerHTML = `
+      <div class="chat-msg-avatar"><img src="${OWL_IMG}" alt="HR"></div>
+      <div class="chat-bubble">${text.replace(/\n/g, '<br>')}</div>`;
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function addUserMsg(text) {
+    const msgs = document.getElementById('chat-messages');
+    const div = document.createElement('div');
+    div.className = 'chat-msg user';
+    div.innerHTML = `
+      <div class="chat-msg-avatar">我</div>
+      <div class="chat-bubble">${text.replace(/\n/g, '<br>')}</div>`;
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function addTyping() {
+    const msgs = document.getElementById('chat-messages');
+    const div = document.createElement('div');
+    div.className = 'chat-msg bot';
+    div.id = 'chat-typing';
+    div.innerHTML = `
+      <div class="chat-msg-avatar"><img src="${OWL_IMG}" alt="HR"></div>
+      <div class="chat-typing"><span></span><span></span><span></span></div>`;
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function removeTyping() {
+    const t = document.getElementById('chat-typing');
+    if (t) t.remove();
+  }
+
+  // ── 送出訊息
+  async function sendMessage() {
+    const input = document.getElementById('chat-input');
+    const btn   = document.getElementById('chat-send-btn');
+    const text  = input.value.trim();
+    if (!text) return;
+
+    input.value = '';
+    input.style.height = 'auto';
+    btn.disabled = true;
+    addUserMsg(text);
+    chatHistory.push({ role: 'user', parts: [{ text }] });
+    addTyping();
+
+    try {
+      const res = await fetch(CHAT_URL, {
+        method  : 'POST',
+        redirect: 'follow',
+        headers : { 'Content-Type': 'text/plain' },
+        body    : JSON.stringify({
+          action : 'hrChat',
+          question: text,
+          history : chatHistory.slice(-6), // 最近3輪對話
+        }),
+      });
+      const result = await res.json();
+      removeTyping();
+
+      if (result.success && result.reply) {
+        chatHistory.push({ role: 'model', parts: [{ text: result.reply }] });
+        addBotMsg(result.reply);
+      } else {
+        addBotMsg('抱歉，目前無法回答，請稍後再試或洽詢人力營運處。');
+      }
+    } catch(e) {
+      removeTyping();
+      addBotMsg('連線發生錯誤，請稍後再試。');
+    }
+
+    btn.disabled = false;
+    if (!isOpen) document.getElementById('hr-owl-btn').classList.add('has-msg');
+  }
+
+  // 頁面載入後初始化
+  window.addEventListener('DOMContentLoaded', initChat);
+})();
