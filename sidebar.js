@@ -245,7 +245,6 @@ function toggleSidebar() {
           <div class="chat-header-sub">人資制度問答小助理</div>
         </div>
         <div class="chat-header-actions">
-          <button class="chat-header-btn" id="chat-hide-btn" title="隱藏">－</button>
           <button class="chat-header-btn" id="chat-close-btn" title="關閉">✕</button>
         </div>
       </div>
