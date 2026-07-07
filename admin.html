@@ -28,6 +28,30 @@
     .admin-sidebar-header .title { font-size: 15px; font-weight: 800; color: var(--text-dark); }
     .admin-sidebar-header .subtitle { font-size: 11px; color: var(--text-light); margin-top: 2px; }
     .admin-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+
+    /* ── 上傳按鈕 ── */
+    .btn-upload {
+      padding: 10px 14px;
+      background: var(--accent-light);
+      color: var(--accent);
+      border: 1.5px solid var(--accent);
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all .2s;
+      flex-shrink: 0;
+    }
+    .btn-upload:hover { background: var(--accent); color: #fff; }
+    /* ── 後台側邊欄分類標題 ── */
+    .admin-nav-label {
+      color: #b05050;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 16px 20px 4px;
+      letter-spacing: .02em;
+    }
     .admin-nav-item {
       display: flex;
       align-items: center;
@@ -281,20 +305,23 @@
       <div class="subtitle">華美光學人資系統</div>
     </div>
     <nav class="admin-nav">
-      <button class="admin-nav-item active" onclick="showPanel('notice', this)">
-        <span class="icon">📢</span> 公告管理
+      <div class="admin-nav-label">學習與測驗</div>
+      <button class="admin-nav-item" onclick="showPanel('quiz', this)">
+        <span class="icon">📝</span> 測驗專區管理
+      </button>
+      <div class="admin-nav-label">資料與公告</div>
+      <button class="admin-nav-item" onclick="showPanel('docs', this)">
+        <span class="icon">📁</span> 文件宣導管理
       </button>
       <button class="admin-nav-item" onclick="showPanel('events', this)">
-        <span class="icon">📅</span> 活動管理
+        <span class="icon">🎉</span> 活動報名管理
       </button>
-      <button class="admin-nav-item" onclick="showPanel('docs', this)">
-        <span class="icon">📄</span> 文件宣導
+      <button class="admin-nav-item active" onclick="showPanel('notice', this)">
+        <span class="icon">📢</span> 最新公告管理
       </button>
-      <button class="admin-nav-item" onclick="showPanel('quiz', this)">
-        <span class="icon">📝</span> 測驗管理
-      </button>
+      <div class="admin-nav-label">各項統計分析</div>
       <button class="admin-nav-item" onclick="showPanel('links', this)">
-        <span class="icon">🔗</span> 統計連結
+        <span class="icon">📊</span> 統計分析管理
       </button>
       <div style="margin:12px 20px 4px;border-top:1px solid var(--border);padding-top:12px;font-size:11px;color:var(--text-light);">── 前台選單現況 ──</div>
       <div id="admin-nav-preview"></div>
@@ -307,7 +334,7 @@
   <div class="admin-main">
     <div class="admin-topbar">
       <button class="admin-menu-toggle" onclick="toggleAdminSidebar()">☰</button>
-      <div class="admin-topbar-title" id="admin-topbar-title">📢 公告管理</div>
+      <div class="admin-topbar-title" id="admin-topbar-title">📢 最新公告管理</div>
       <a class="admin-topbar-back" href="home.html">← 回到員工網站</a>
     </div>
     <div class="admin-content">
@@ -574,18 +601,22 @@ function adminLogout() {
 
 // 切換面板
 const panelTitles = {
-  notice: '📢 公告管理',
-  events: '📅 活動管理',
-  docs  : '📄 文件宣導',
-  quiz  : '📝 測驗管理',
-  links : '🔗 統計連結管理',
+  notice: '📢 最新公告管理　　對應前台：最新公告',
+  events: '🎉 活動報名管理　　對應前台：活動報名',
+  docs  : '📁 文件宣導管理　　對應前台：文件宣導',
+  quiz  : '📝 測驗專區管理　　對應前台：測驗專區',
+  links : '📊 統計分析管理　　對應前台：統計分析入口',
 };
 
 function showPanel(name, btn) {
   document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.admin-nav-item').forEach(b => b.classList.remove('active'));
   document.getElementById('panel-' + name).classList.add('active');
-  document.getElementById('admin-topbar-title').textContent = panelTitles[name];
+  const titleParts = panelTitles[name].split('　　');
+  const mainTitle = titleParts[0] || panelTitles[name];
+  const subTitle  = titleParts[1] || '';
+  document.getElementById('admin-topbar-title').innerHTML =
+    mainTitle + (subTitle ? `<span style="font-size:11px;font-weight:400;color:var(--text-light);margin-left:10px;">${subTitle}</span>` : '');
   btn.classList.add('active');
   if (window.innerWidth <= 900) toggleAdminSidebar();
   if (name === 'links') loadLinksAdmin();
@@ -827,7 +858,7 @@ const MGMT_CONFIG = {
       { key:'發布日期', label:'發布日期', type:'date',     required:false },
       { key:'重要程度', label:'重要程度', type:'select',   required:false, options:['一般','重要','緊急'] },
       { key:'公告內容', label:'公告內容', type:'textarea', required:false },
-      { key:'附件連結', label:'附件連結', type:'url',      required:false },
+      { key:'附件連結', label:'附件連結', type:'url',      required:false, upload:true },
       { key:'備註',     label:'備註',     type:'text',     required:false },
     ],
   },
@@ -840,7 +871,7 @@ const MGMT_CONFIG = {
       { key:'說明',           label:'說明',         type:'textarea',required:false },
       { key:'檔案格式',       label:'檔案格式',     type:'select', required:false, options:['JPG','PNG','PDF','DOCX','其他'] },
       { key:'上傳日期',       label:'上傳日期',     type:'date',   required:false },
-      { key:'檔案連結',       label:'檔案連結',     type:'url',    required:false },
+      { key:'檔案連結',       label:'檔案連結',     type:'url',    required:false, upload:true },
       { key:'備註',           label:'備註',         type:'text',   required:false },
       { key:'是否須回傳簽名', label:'是否須回傳簽名',type:'select',required:false, options:['否','是'] },
     ],
@@ -859,7 +890,7 @@ const MGMT_CONFIG = {
       { key:'狀態',       label:'狀態',     type:'select',   required:false, options:['報名中','即將開始','已截止','已結束'] },
       { key:'預設主題',   label:'預設主題', type:'text',     required:false },
       { key:'自訂色碼',   label:'自訂色碼', type:'text',     required:false },
-      { key:'海報連結',   label:'海報連結', type:'url',      required:false },
+      { key:'海報連結',   label:'海報連結', type:'url',      required:false, upload:true },
       { key:'表單連結',   label:'表單連結', type:'url',      required:false },
       { key:'活動頁連結', label:'活動頁連結',type:'url',     required:false },
       { key:'副標題',     label:'副標題',   type:'text',     required:false },
@@ -1069,6 +1100,19 @@ function buildField(f, val, requiredMark) {
   } else {
     input = `<input type="${f.type}" id="${id}" class="form-control" value="${String(val).replace(/"/g,'&quot;')}" placeholder="${f.label}" />`;
   }
+
+  // 上傳按鈕
+  if (f.upload) {
+    const uploadId = `upload-${f.key}`;
+    input = `
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input type="url" id="${id}" class="form-control" value="${String(val).replace(/"/g,'&quot;')}" placeholder="網址（或點右側上傳）" style="flex:1;" />
+        <label for="${uploadId}" class="btn-upload" title="上傳檔案">📎 上傳</label>
+        <input type="file" id="${uploadId}" style="display:none;" onchange="handleFileUpload(this, '${id}')" />
+      </div>
+      <div id="upload-status-${f.key}" style="font-size:12px;color:var(--text-mid);margin-top:4px;display:none;"></div>`;
+  }
+
   return `<label for="${id}">${f.label}${requiredMark}</label>${input}`;
 }
 
@@ -1079,6 +1123,60 @@ function closeFormModal() {
 document.getElementById('admin-form-modal').addEventListener('click', function(e) {
   if (e.target === this) closeFormModal();
 });
+
+
+// ── 檔案上傳到 Google Drive
+async function handleFileUpload(input, targetId) {
+  const file = input.files[0];
+  if (!file) return;
+
+  const key = targetId.replace('field-', '');
+  const statusEl = document.getElementById(`upload-status-${key}`);
+  statusEl.style.display = 'block';
+  statusEl.style.color = 'var(--text-mid)';
+  statusEl.textContent = '上傳中，請稍候…';
+
+  // 限制檔案大小 10MB
+  if (file.size > 10 * 1024 * 1024) {
+    statusEl.style.color = 'var(--accent)';
+    statusEl.textContent = '檔案超過 10MB，請壓縮後再上傳';
+    input.value = '';
+    return;
+  }
+
+  try {
+    // 轉 base64
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    const res = await fetch(MGMT_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action  : 'uploadFile',
+        fileName: file.name,
+        mimeType: file.type,
+        base64  : base64,
+      }),
+    });
+    const result = await res.json();
+
+    if (result.success) {
+      document.getElementById(targetId).value = result.url;
+      statusEl.style.color = '#16a34a';
+      statusEl.textContent = '✅ 上傳成功，網址已自動填入';
+    } else {
+      throw new Error(result.error || '上傳失敗');
+    }
+  } catch(e) {
+    statusEl.style.color = 'var(--accent)';
+    statusEl.textContent = '❌ 上傳失敗：' + e.message;
+  }
+  input.value = '';
+}
 
 // ── 送出表單
 async function submitFormModal() {
