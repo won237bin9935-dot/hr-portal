@@ -871,7 +871,8 @@ const MGMT_CONFIG = {
       { key:'說明',           label:'說明',         type:'textarea',required:false },
       { key:'檔案格式',       label:'檔案格式',     type:'select', required:false, options:['JPG','PNG','PDF','DOCX','其他'] },
       { key:'上傳日期',       label:'上傳日期',     type:'date',   required:false },
-      { key:'檔案連結',       label:'檔案連結',     type:'url',    required:false, upload:true },
+      { key:'檔案連結',       label:'檔案連結（封面圖）',type:'url',required:false, upload:true },
+      { key:'PDF預覽網址',    label:'PDF預覽網址',  type:'url',    required:false },
       { key:'備註',           label:'備註',         type:'text',   required:false },
       { key:'是否須回傳簽名', label:'是否須回傳簽名',type:'select',required:false, options:['否','是'] },
     ],
@@ -1165,9 +1166,29 @@ async function handleFileUpload(input, targetId) {
     const result = await res.json();
 
     if (result.success) {
-      document.getElementById(targetId).value = result.url;
-      statusEl.style.color = '#16a34a';
-      statusEl.textContent = '✅ 上傳成功，網址已自動填入';
+      // 填入主要網址（封面圖 or 一般網址）
+      if (result.url) {
+        document.getElementById(targetId).value = result.url;
+      }
+
+      // PDF 時：額外填入 PDF 預覽網址到 pdf_url 欄位（如果存在）
+      if (result.isPdf && result.pdfUrl) {
+        const pdfField = document.getElementById('field-PDF預覽網址');
+        if (pdfField) pdfField.value = result.pdfUrl;
+
+        if (result.url) {
+          statusEl.style.color = '#16a34a';
+          statusEl.textContent = '✅ 上傳成功！封面圖已自動填入，PDF 預覽網址也已填入';
+        } else {
+          // 封面轉換失敗，只有 PDF 網址
+          document.getElementById(targetId).value = result.pdfUrl;
+          statusEl.style.color = '#d97706';
+          statusEl.textContent = '⚠️ 封面圖轉換失敗，已填入 PDF 預覽網址，前台將顯示 📄 圖示';
+        }
+      } else {
+        statusEl.style.color = '#16a34a';
+        statusEl.textContent = '✅ 上傳成功，網址已自動填入';
+      }
     } else {
       throw new Error(result.error || '上傳失敗');
     }

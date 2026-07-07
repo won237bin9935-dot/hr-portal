@@ -226,24 +226,38 @@
     const display = document.getElementById('doc-display');
     const isImg = ['JPG','JPEG','PNG','GIF'].includes(fmt);
     const isPDF = fmt === 'PDF';
-    const fileUrl = d['檔案連結'] || '';
+    const fileUrl    = d['檔案連結'] || '';       // 圖片封面 or 一般檔案連結
+    const pdfUrl     = d['PDF預覽網址'] || '';    // PDF 專用預覽網址
+    const coverUrl   = fileUrl;                   // 封面圖（圖片格式）
 
     if (isImg && fileUrl) {
       display.innerHTML = `
         <div class="doc-img-area">
           <img src="${fileUrl}" alt="${docName}" onerror="this.src='';this.alt='圖片載入失敗'">
         </div>`;
-    } else if (isPDF && fileUrl) {
-      // Convert drive link to embed
-      const embedUrl = fileUrl.replace('/view', '/preview').replace('?usp=drive_link','').replace('?usp=sharing','');
-      display.innerHTML = `
+    } else if (isPDF) {
+      // 優先用 PDF預覽網址，沒有的話嘗試用 檔案連結 轉換
+      const embedUrl = pdfUrl
+        ? pdfUrl
+        : fileUrl.replace('/view', '/preview').replace('?usp=drive_link','').replace('?usp=sharing','');
+      const openUrl = pdfUrl
+        ? pdfUrl.replace('/preview', '/view')
+        : fileUrl;
+
+      // 如果有封面圖，先顯示封面圖
+      const coverHTML = coverUrl && !pdfUrl ? '' : (coverUrl ? `
+        <div class="doc-img-area" style="margin-bottom:12px;">
+          <img src="${coverUrl}" alt="${docName} 封面" style="max-height:200px;" onerror="this.parentElement.style.display='none'">
+        </div>` : '');
+
+      display.innerHTML = coverHTML + `
         <div class="doc-pdf-area">
           <iframe src="${embedUrl}" allowfullscreen></iframe>
         </div>
         <div class="doc-pdf-fallback" id="pdf-fallback">
           <span class="fi">📄</span>
           <p>PDF 無法在此裝置預覽</p>
-          <a href="${fileUrl}" target="_blank" class="btn-open-pdf">⬇ 開啟 PDF</a>
+          <a href="${openUrl}" target="_blank" class="btn-open-pdf">⬇ 開啟 PDF</a>
         </div>`;
       // Detect if iframe fails on mobile
       setTimeout(() => {
