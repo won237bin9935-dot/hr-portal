@@ -236,46 +236,47 @@
           <img src="${fileUrl}" alt="${docName}" onerror="this.src='';this.alt='圖片載入失敗'">
         </div>`;
     } else if (isPDF) {
-      // 從 PDF預覽網址 或 檔案連結 取得 fileId
+      // 從網址提取 fileId
       function extractFileId(url) {
-        const m = url.match(/[-\w]{25,}/);
-        return m ? m[0] : '';
+        const m = url.match(/\/d\/([a-zA-Z0-9_-]{25,})/);
+        return m ? m[1] : '';
       }
-      const sourceUrl = pdfUrl || fileUrl;
-      const fileId = extractFileId(sourceUrl);
-      // 用 Google Docs Viewer 嵌入，不需登入即可預覽
-      const embedUrl = fileId
-        ? `https://docs.google.com/viewer?url=https://drive.google.com/uc?id=${fileId}&embedded=true`
-        : sourceUrl;
-      const openUrl = fileId
-        ? `https://drive.google.com/file/d/${fileId}/view`
-        : fileUrl;
 
-      // 如果有封面圖，先顯示封面圖
-      const coverHTML = coverUrl && !pdfUrl ? '' : (coverUrl ? `
-        <div class="doc-img-area" style="margin-bottom:12px;">
-          <img src="${coverUrl}" alt="${docName} 封面" style="max-height:200px;" onerror="this.parentElement.style.display='none'">
-        </div>` : '');
+      // PDF 預覽網址（優先用 PDF預覽網址 欄位）
+      const pdfFileId = extractFileId(pdfUrl || fileUrl);
+      const embedUrl = pdfFileId
+        ? `https://drive.google.com/file/d/${pdfFileId}/preview`
+        : '';
+      const openUrl = pdfFileId
+        ? `https://drive.google.com/file/d/${pdfFileId}/view`
+        : (pdfUrl || fileUrl);
+
+      // 封面圖（檔案連結欄位，lh3 網址）
+      const hasCover = coverUrl && coverUrl.includes('lh3.googleusercontent.com');
+      const coverHTML = hasCover ? `
+        <div class="doc-img-area" style="margin-bottom:0;border-bottom:1px solid #eee;">
+          <img src="${coverUrl}" alt="${docName} 封面" style="max-height:300px;"
+            onerror="this.parentElement.style.display='none'">
+        </div>` : '';
 
       display.innerHTML = coverHTML + `
         <div class="doc-pdf-area">
-          <iframe src="${embedUrl}" allowfullscreen></iframe>
+          ${embedUrl
+            ? `<iframe src="${embedUrl}" allowfullscreen></iframe>`
+            : `<div style="text-align:center;padding:40px;"><p style="color:#999;margin-bottom:12px;">PDF 無法預覽</p></div>`
+          }
         </div>
         <div class="doc-pdf-fallback" id="pdf-fallback">
           <span class="fi">📄</span>
           <p>PDF 無法在此裝置預覽</p>
           <a href="${openUrl}" target="_blank" class="btn-open-pdf">⬇ 開啟 PDF</a>
         </div>`;
-      // Detect if iframe fails on mobile
+
+      // 10秒後若 iframe 還在載入，顯示備援按鈕
       setTimeout(() => {
-        const iframe = display.querySelector('iframe');
-        if (iframe) {
-          iframe.onerror = () => {
-            document.getElementById('pdf-fallback').style.display = 'block';
-            iframe.parentElement.style.display = 'none';
-          };
-        }
-      }, 2000);
+        const fallback = document.getElementById('pdf-fallback');
+        if (fallback) fallback.style.display = 'block';
+      }, 10000);
     } else if (fileUrl) {
       display.innerHTML = `
         <div class="doc-img-area">
