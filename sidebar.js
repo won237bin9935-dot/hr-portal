@@ -251,10 +251,27 @@ function hrInitChat() {
     '</div>' +
     '<div class="chat-messages" id="chat-messages"></div>' +
     '<div class="chat-input-area">' +
-      '<textarea class="chat-input" id="chat-input" placeholder="輸入問題…" rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();hrSendMessage();}"></textarea>' +
+      '<textarea class="chat-input" id="chat-input" placeholder="輸入問題…" rows="1"></textarea>' +
       '<button class="chat-send-btn" onclick="hrSendMessage()">➤</button>' +
     '</div>';
   document.body.appendChild(win);
+
+  // 綁定輸入框 Enter 鍵
+  setTimeout(function() {
+    var textarea = document.getElementById('chat-input');
+    if (textarea) {
+      textarea.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          hrSendMessage();
+        }
+      });
+      textarea.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 80) + 'px';
+      });
+    }
+  }, 100);
 
   // 拖曳
   hrInitDrag(btn);
