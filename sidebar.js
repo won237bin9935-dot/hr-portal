@@ -253,9 +253,7 @@ function toggleSidebar() {
         <textarea class="chat-input" id="chat-input" placeholder="輸入問題…" rows="1"></textarea>
         <button class="chat-send-btn" id="chat-send-btn">➤</button>
       </div>
-      <div class="chat-close-hint">
-        <button onclick="showOwlBtn()">已隱藏？點此重新開啟 HR 小幫手</button>
-      </div>`;
+`;
     document.body.appendChild(win);
 
     // 綁定事件
