@@ -373,7 +373,7 @@ async function hrSendMessage() {
       hrChatHistory.push({ role: 'model', parts: [{ text: result.reply }] });
       hrAddBotMsg(result.reply);
     } else {
-      hrAddBotMsg('抱歉，目前無法回答，請稍後再試或洽詢人力營運處。');
+      hrAddBotMsg('抱歉，目前無法回答。\n錯誤：' + (result.error || '未知錯誤'));
     }
   } catch(e) {
     hrRemoveTyping();
