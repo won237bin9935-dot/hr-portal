@@ -236,12 +236,19 @@
           <img src="${fileUrl}" alt="${docName}" onerror="this.src='';this.alt='圖片載入失敗'">
         </div>`;
     } else if (isPDF) {
-      // 優先用 PDF預覽網址，沒有的話嘗試用 檔案連結 轉換
-      const embedUrl = pdfUrl
-        ? pdfUrl
-        : fileUrl.replace('/view', '/preview').replace('?usp=drive_link','').replace('?usp=sharing','');
-      const openUrl = pdfUrl
-        ? pdfUrl.replace('/preview', '/view')
+      // 從 PDF預覽網址 或 檔案連結 取得 fileId
+      function extractFileId(url) {
+        const m = url.match(/[-\w]{25,}/);
+        return m ? m[0] : '';
+      }
+      const sourceUrl = pdfUrl || fileUrl;
+      const fileId = extractFileId(sourceUrl);
+      // 用 Google Docs Viewer 嵌入，不需登入即可預覽
+      const embedUrl = fileId
+        ? `https://docs.google.com/viewer?url=https://drive.google.com/uc?id=${fileId}&embedded=true`
+        : sourceUrl;
+      const openUrl = fileId
+        ? `https://drive.google.com/file/d/${fileId}/view`
         : fileUrl;
 
       // 如果有封面圖，先顯示封面圖
