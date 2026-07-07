@@ -282,44 +282,84 @@
       <div class="admin-panel active" id="panel-notice">
         <div class="panel-header">
           <h2>📢 公告管理</h2>
-          <button class="btn-primary">＋ 新增公告</button>
+          <button class="btn-primary" onclick="openFormModal('notice')">＋ 新增公告</button>
         </div>
-        <div class="coming-soon-box">
-          <div class="cs-icon">🚧</div>
-          <p>公告管理功能開發中，即將上線</p>
+        <div id="notice-loading-admin" class="admin-loading"><div class="admin-spinner"></div><p>載入中…</p></div>
+        <div id="notice-table-wrap" style="display:none;">
+          <div style="overflow-x:auto;">
+            <table class="admin-table">
+              <thead><tr>
+                <th>公告標題</th><th>發布單位</th><th>發布日期</th><th>重要程度</th><th style="text-align:center;">操作</th>
+              </tr></thead>
+              <tbody id="notice-tbody"></tbody>
+            </table>
+          </div>
+          <div id="notice-empty-admin" class="admin-empty" style="display:none;">
+            <div>📢</div><p>目前沒有公告</p>
+          </div>
         </div>
       </div>
 
       <div class="admin-panel" id="panel-events">
         <div class="panel-header">
           <h2>📅 活動管理</h2>
-          <button class="btn-primary">＋ 新增活動</button>
+          <button class="btn-primary" onclick="openFormModal('events')">＋ 新增活動</button>
         </div>
-        <div class="coming-soon-box">
-          <div class="cs-icon">🚧</div>
-          <p>活動管理功能開發中，即將上線</p>
+        <div id="events-loading-admin" class="admin-loading"><div class="admin-spinner"></div><p>載入中…</p></div>
+        <div id="events-table-wrap" style="display:none;">
+          <div style="overflow-x:auto;">
+            <table class="admin-table">
+              <thead><tr>
+                <th>活動名稱</th><th>類別</th><th>日期</th><th>狀態</th><th style="text-align:center;">操作</th>
+              </tr></thead>
+              <tbody id="events-tbody"></tbody>
+            </table>
+          </div>
+          <div id="events-empty-admin" class="admin-empty" style="display:none;">
+            <div>📅</div><p>目前沒有活動</p>
+          </div>
         </div>
       </div>
 
       <div class="admin-panel" id="panel-docs">
         <div class="panel-header">
           <h2>📄 文件宣導</h2>
-          <button class="btn-primary">＋ 新增文件</button>
+          <button class="btn-primary" onclick="openFormModal('docs')">＋ 新增文件</button>
         </div>
-        <div class="coming-soon-box">
-          <div class="cs-icon">🚧</div>
-          <p>文件宣導功能開發中，即將上線</p>
+        <div id="docs-loading-admin" class="admin-loading"><div class="admin-spinner"></div><p>載入中…</p></div>
+        <div id="docs-table-wrap" style="display:none;">
+          <div style="overflow-x:auto;">
+            <table class="admin-table">
+              <thead><tr>
+                <th>文件名稱</th><th>分類</th><th>檔案格式</th><th>上傳日期</th><th>須簽名</th><th style="text-align:center;">操作</th>
+              </tr></thead>
+              <tbody id="docs-tbody"></tbody>
+            </table>
+          </div>
+          <div id="docs-empty-admin" class="admin-empty" style="display:none;">
+            <div>📄</div><p>目前沒有文件</p>
+          </div>
         </div>
       </div>
 
       <div class="admin-panel" id="panel-quiz">
         <div class="panel-header">
           <h2>📝 測驗管理</h2>
-          <button class="btn-primary">＋ 新增測驗</button>
+          <button class="btn-primary" onclick="openFormModal('quiz')">＋ 新增測驗</button>
         </div>
-        <div class="coming-soon-box">
-          <div class="cs-icon">🚧</div>
-          <p>測驗管理功能開發中，即將上線</p>
+        <div id="quiz-loading-admin" class="admin-loading"><div class="admin-spinner"></div><p>載入中…</p></div>
+        <div id="quiz-table-wrap" style="display:none;">
+          <div style="overflow-x:auto;">
+            <table class="admin-table">
+              <thead><tr>
+                <th>測驗名稱</th><th>適用對象</th><th>截止日期</th><th>狀態</th><th>計時</th><th style="text-align:center;">操作</th>
+              </tr></thead>
+              <tbody id="quiz-tbody"></tbody>
+            </table>
+          </div>
+          <div id="quiz-empty-admin" class="admin-empty" style="display:none;">
+            <div>📝</div><p>目前沒有測驗</p>
+          </div>
         </div>
       </div>
 
@@ -704,6 +744,363 @@ function toggleAdminSidebar() {
 const adminStyle = document.createElement('style');
 adminStyle.textContent = '@keyframes admin-spin { to { transform: rotate(360deg); } }';
 document.head.appendChild(adminStyle);
+</script>
+
+<!-- 通用管理 Modal -->
+<div class="admin-modal-overlay" id="admin-form-modal">
+  <div class="admin-modal">
+    <button class="close-btn" onclick="closeFormModal()">✕</button>
+    <h3 id="form-modal-title">新增</h3>
+    <div id="form-modal-body"></div>
+    <p class="form-error" id="form-modal-error"></p>
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closeFormModal()">取消</button>
+      <button class="btn-save" id="form-modal-save" onclick="submitFormModal()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+// 後台管理 — 公告、文件宣導、活動、測驗
+// ══════════════════════════════════════════════
+
+const MGMT_SHEET_ID = '1b4xq2XxSCbuIF6SZU-x0Jz4Du_n-YRAJCSQrkm2ze3U';
+const MGMT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxfo--2xa9vk6tlIzCjNyu3Y76AQIzYj-tM3XcvFQO72QwkWEqYIW_jSl2JRtE2tgql/exec';
+
+// 各功能設定
+const MGMT_CONFIG = {
+  notice: {
+    sheet : '最新公告',
+    action: 'manageNotice',
+    fields: [
+      { key:'公告標題', label:'公告標題', type:'text',     required:true },
+      { key:'發布單位', label:'發布單位', type:'text',     required:false },
+      { key:'發布日期', label:'發布日期', type:'date',     required:false },
+      { key:'重要程度', label:'重要程度', type:'select',   required:false, options:['一般','重要','緊急'] },
+      { key:'公告內容', label:'公告內容', type:'textarea', required:false },
+      { key:'附件連結', label:'附件連結', type:'url',      required:false },
+      { key:'備註',     label:'備註',     type:'text',     required:false },
+    ],
+  },
+  docs: {
+    sheet : '文件宣導',
+    action: 'manageDocs',
+    fields: [
+      { key:'文件名稱',       label:'文件名稱',     type:'text',   required:true },
+      { key:'分類',           label:'分類',         type:'text',   required:false },
+      { key:'說明',           label:'說明',         type:'textarea',required:false },
+      { key:'檔案格式',       label:'檔案格式',     type:'select', required:false, options:['JPG','PNG','PDF','DOCX','其他'] },
+      { key:'上傳日期',       label:'上傳日期',     type:'date',   required:false },
+      { key:'檔案連結',       label:'檔案連結',     type:'url',    required:false },
+      { key:'備註',           label:'備註',         type:'text',   required:false },
+      { key:'是否須回傳簽名', label:'是否須回傳簽名',type:'select',required:false, options:['否','是'] },
+    ],
+  },
+  events: {
+    sheet : '活動列表',
+    action: 'manageEvents',
+    fields: [
+      { key:'活動名稱',   label:'活動名稱', type:'text',     required:true },
+      { key:'類別',       label:'類別',     type:'text',     required:false },
+      { key:'日期',       label:'日期',     type:'text',     required:false },
+      { key:'時間',       label:'時間',     type:'text',     required:false },
+      { key:'地點',       label:'地點',     type:'text',     required:false },
+      { key:'參加對象',   label:'參加對象', type:'text',     required:false },
+      { key:'報名截止日', label:'報名截止日',type:'text',    required:false },
+      { key:'狀態',       label:'狀態',     type:'select',   required:false, options:['報名中','即將開始','已截止','已結束'] },
+      { key:'預設主題',   label:'預設主題', type:'text',     required:false },
+      { key:'自訂色碼',   label:'自訂色碼', type:'text',     required:false },
+      { key:'海報連結',   label:'海報連結', type:'url',      required:false },
+      { key:'表單連結',   label:'表單連結', type:'url',      required:false },
+      { key:'活動頁連結', label:'活動頁連結',type:'url',     required:false },
+      { key:'副標題',     label:'副標題',   type:'text',     required:false },
+      { key:'活動內容',   label:'活動內容', type:'textarea', required:false },
+      { key:'注意事項',   label:'注意事項', type:'textarea', required:false },
+      { key:'備註',       label:'備註',     type:'text',     required:false },
+    ],
+  },
+  quiz: {
+    sheet : '測驗列表',
+    action: 'manageQuiz',
+    fields: [
+      { key:'測驗名稱', label:'測驗名稱', type:'text',   required:true },
+      { key:'適用對象', label:'適用對象', type:'text',   required:false },
+      { key:'題數',     label:'題數',     type:'number', required:false },
+      { key:'預估時間', label:'預估時間（分鐘）',type:'number',required:false },
+      { key:'截止日期', label:'截止日期', type:'text',   required:false },
+      { key:'狀態',     label:'狀態',     type:'select', required:false, options:['開放中','即將開始','已截止'] },
+      { key:'表單連結', label:'表單連結', type:'url',    required:false },
+      { key:'備註',     label:'備註',     type:'text',   required:false },
+      { key:'計時',     label:'計時',     type:'select', required:false, options:['否','是'] },
+      { key:'限時分鐘', label:'限時分鐘', type:'number', required:false },
+    ],
+  },
+};
+
+// 目前操作狀態
+let _currentModule = '';
+let _currentRow    = null;
+let _tableData     = {};
+
+// ── 切換面板時自動載入
+['notice','docs','events','quiz'].forEach(name => {
+  const orig = window['showPanel'];
+});
+
+// 覆寫 showPanel 加入自動載入（直接在此處理，不覆蓋函數）
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.admin-nav-item').forEach(btn => {
+    const onclick = btn.getAttribute('onclick') || '';
+    const match = onclick.match(/showPanel\('(\w+)'/);
+    if (match && ['notice','docs','events','quiz'].includes(match[1])) {
+      btn.addEventListener('click', () => loadMgmtData(match[1]));
+    }
+  });
+});
+
+// ── 讀取試算表資料
+async function loadMgmtData(module) {
+  const cfg = MGMT_CONFIG[module];
+  if (!cfg) return;
+  _currentModule = module;
+
+  const loadingEl = document.getElementById(`${module}-loading-admin`);
+  const tableEl   = document.getElementById(`${module}-table-wrap`);
+  if (loadingEl) loadingEl.style.display = 'block';
+  if (tableEl)   tableEl.style.display   = 'none';
+
+  try {
+    const url = `https://docs.google.com/spreadsheets/d/${MGMT_SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(cfg.sheet)}&headers=1`;
+    const res  = await fetch(url);
+    const text = await res.text();
+    const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
+    if (!match) throw new Error('無法讀取');
+    const json = JSON.parse(match[1]);
+
+    // 取得標題列
+    const headers = json.table.cols.map(c => c.label || '');
+
+    // 轉成物件陣列
+    const rows = json.table.rows.map((r, i) => {
+      const obj = { _row: i + 2 }; // 試算表實際列號（有標題列，從第2列起）
+      headers.forEach((h, hi) => {
+        obj[h] = r.c?.[hi]?.v ?? '';
+      });
+      return obj;
+    }).filter(r => r[cfg.fields[0].key]); // 過濾空列
+
+    _tableData[module] = rows;
+    renderMgmtTable(module, rows, headers);
+  } catch(e) {
+    alert(`載入${module}資料失敗，請稍後再試`);
+  }
+
+  if (loadingEl) loadingEl.style.display = 'none';
+  if (tableEl)   tableEl.style.display   = 'block';
+}
+
+// ── 產生列表
+function renderMgmtTable(module, rows, headers) {
+  const tbody   = document.getElementById(`${module}-tbody`);
+  const emptyEl = document.getElementById(`${module}-empty-admin`);
+  tbody.innerHTML = '';
+
+  if (rows.length === 0) {
+    emptyEl.style.display = 'block';
+    return;
+  }
+  emptyEl.style.display = 'none';
+
+  rows.forEach(r => {
+    const tr = document.createElement('tr');
+    // 依各模組顯示不同欄位
+    let cells = '';
+    if (module === 'notice') {
+      const levelColor = r['重要程度'] === '緊急' ? '#ef4444' : r['重要程度'] === '重要' ? '#d97706' : '#2563eb';
+      const levelBg    = r['重要程度'] === '緊急' ? '#fee2e2' : r['重要程度'] === '重要' ? '#fef3c7' : '#dbeafe';
+      cells = `
+        <td style="font-weight:700;">${r['公告標題'] || ''}</td>
+        <td>${r['發布單位'] || '—'}</td>
+        <td>${r['發布日期'] || '—'}</td>
+        <td><span class="admin-badge" style="background:${levelBg};color:${levelColor};">${r['重要程度'] || '一般'}</span></td>`;
+    } else if (module === 'docs') {
+      const signBg = r['是否須回傳簽名'] === '是' ? '#dcfce7' : '#f1f5f9';
+      const signColor = r['是否須回傳簽名'] === '是' ? '#16a34a' : '#94a3b8';
+      cells = `
+        <td style="font-weight:700;">${r['文件名稱'] || ''}</td>
+        <td>${r['分類'] || '—'}</td>
+        <td>${r['檔案格式'] || '—'}</td>
+        <td>${r['上傳日期'] || '—'}</td>
+        <td><span class="admin-badge" style="background:${signBg};color:${signColor};">${r['是否須回傳簽名'] || '否'}</span></td>`;
+    } else if (module === 'events') {
+      const statusColor = r['狀態'] === '報名中' ? '#16a34a' : r['狀態'] === '即將開始' ? '#d97706' : '#94a3b8';
+      const statusBg    = r['狀態'] === '報名中' ? '#dcfce7' : r['狀態'] === '即將開始' ? '#fef3c7' : '#f1f5f9';
+      cells = `
+        <td style="font-weight:700;">${r['活動名稱'] || ''}</td>
+        <td>${r['類別'] || '—'}</td>
+        <td>${r['日期'] || '—'}</td>
+        <td><span class="admin-badge" style="background:${statusBg};color:${statusColor};">${r['狀態'] || '—'}</span></td>`;
+    } else if (module === 'quiz') {
+      const statusColor = r['狀態'] === '開放中' ? '#16a34a' : r['狀態'] === '即將開始' ? '#d97706' : '#94a3b8';
+      const statusBg    = r['狀態'] === '開放中' ? '#dcfce7' : r['狀態'] === '即將開始' ? '#fef3c7' : '#f1f5f9';
+      cells = `
+        <td style="font-weight:700;">${r['測驗名稱'] || ''}</td>
+        <td>${r['適用對象'] || '—'}</td>
+        <td>${r['截止日期'] || '—'}</td>
+        <td><span class="admin-badge" style="background:${statusBg};color:${statusColor};">${r['狀態'] || '—'}</span></td>
+        <td>${r['計時'] || '否'}</td>`;
+    }
+    tr.innerHTML = cells + `
+      <td style="text-align:center;">
+        <div style="display:flex;gap:6px;justify-content:center;">
+          <button class="btn-edit" onclick="openFormModal('${module}', ${r._row})">編輯</button>
+          <button class="btn-delete" onclick="deleteMgmtRow('${module}', ${r._row}, '${String(r[Object.keys(r).find(k => k !== '_row' && r[k])] || '').replace(/'/g,"\'")}')">刪除</button>
+        </div>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// ── 開啟表單 Modal
+function openFormModal(module, row) {
+  _currentModule = module;
+  _currentRow    = row || null;
+  const cfg      = MGMT_CONFIG[module];
+  const names    = { notice:'公告', docs:'文件', events:'活動', quiz:'測驗' };
+  const title    = _currentRow ? `✏️ 編輯${names[module]}` : `＋ 新增${names[module]}`;
+
+  document.getElementById('form-modal-title').textContent = title;
+  document.getElementById('form-modal-error').style.display = 'none';
+  document.getElementById('form-modal-save').disabled = false;
+  document.getElementById('form-modal-save').textContent = '儲存';
+
+  // 找到編輯的資料
+  const existing = _currentRow
+    ? (_tableData[module] || []).find(r => r._row === _currentRow)
+    : null;
+
+  // 動態產生表單
+  let formHTML = '';
+  let i = 0;
+  while (i < cfg.fields.length) {
+    const f = cfg.fields[i];
+    const val = existing ? (existing[f.key] ?? '') : '';
+    const requiredMark = f.required ? '<span class="required"> *</span>' : '';
+
+    // 兩欄並排（text/number/url/date 且非最後一個）
+    const canPair = ['text','number','url','date'].includes(f.type) && i + 1 < cfg.fields.length && ['text','number','url','date'].includes(cfg.fields[i+1].type);
+
+    if (canPair) {
+      const f2  = cfg.fields[i + 1];
+      const val2 = existing ? (existing[f2.key] ?? '') : '';
+      formHTML += `<div class="form-row">
+        <div class="form-group">${buildField(f, val, requiredMark)}</div>
+        <div class="form-group">${buildField(f2, val2, f2.required ? '<span class="required"> *</span>' : '')}</div>
+      </div>`;
+      i += 2;
+    } else {
+      formHTML += `<div class="form-group">${buildField(f, val, requiredMark)}</div>`;
+      i += 1;
+    }
+  }
+
+  document.getElementById('form-modal-body').innerHTML = formHTML;
+  document.getElementById('admin-form-modal').classList.add('active');
+}
+
+function buildField(f, val, requiredMark) {
+  const id = `field-${f.key}`;
+  let input = '';
+  if (f.type === 'textarea') {
+    input = `<textarea id="${id}" class="form-control" rows="3" placeholder="${f.label}">${val}</textarea>`;
+  } else if (f.type === 'select') {
+    const opts = f.options.map(o => `<option value="${o}" ${val === o ? 'selected' : ''}>${o}</option>`).join('');
+    input = `<select id="${id}" class="form-control">${opts}</select>`;
+  } else {
+    input = `<input type="${f.type}" id="${id}" class="form-control" value="${String(val).replace(/"/g,'&quot;')}" placeholder="${f.label}" />`;
+  }
+  return `<label for="${id}">${f.label}${requiredMark}</label>${input}`;
+}
+
+function closeFormModal() {
+  document.getElementById('admin-form-modal').classList.remove('active');
+}
+
+document.getElementById('admin-form-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeFormModal();
+});
+
+// ── 送出表單
+async function submitFormModal() {
+  const cfg = MGMT_CONFIG[_currentModule];
+  const err = document.getElementById('form-modal-error');
+  const btn = document.getElementById('form-modal-save');
+  err.style.display = 'none';
+
+  // 收集資料
+  const formData = {};
+  for (const f of cfg.fields) {
+    const el = document.getElementById(`field-${f.key}`);
+    if (!el) continue;
+    const v = el.value.trim();
+    if (f.required && !v) {
+      err.textContent = `請填寫「${f.label}」`;
+      err.style.display = 'block';
+      el.focus();
+      return;
+    }
+    formData[f.key] = v;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '儲存中…';
+
+  try {
+    const res = await fetch(MGMT_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: cfg.action,
+        type  : _currentRow ? 'edit' : 'add',
+        row   : _currentRow,
+        data  : formData,
+      }),
+    });
+    const result = await res.json();
+    if (result.success) {
+      closeFormModal();
+      await loadMgmtData(_currentModule);
+    } else {
+      throw new Error(result.error || '儲存失敗');
+    }
+  } catch(e) {
+    err.textContent = '儲存失敗：' + e.message;
+    err.style.display = 'block';
+  }
+
+  btn.disabled = false;
+  btn.textContent = '儲存';
+}
+
+// ── 刪除
+async function deleteMgmtRow(module, row, name) {
+  if (!confirm(`確定要刪除「${name}」嗎？`)) return;
+  const cfg = MGMT_CONFIG[module];
+  try {
+    const res = await fetch(MGMT_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: cfg.action, type: 'delete', row }),
+    });
+    const result = await res.json();
+    if (result.success) {
+      await loadMgmtData(module);
+    } else {
+      throw new Error(result.error || '刪除失敗');
+    }
+  } catch(e) {
+    alert('刪除失敗：' + e.message);
+  }
+}
 </script>
 </body>
 </html>
