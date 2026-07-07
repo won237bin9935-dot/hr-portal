@@ -214,7 +214,7 @@ function toggleSidebar() {
 // HR 小幫手聊天機器人
 // ══════════════════════════════════════════════
 (function() {
-  const OWL_IMG    = 'https://lh3.googleusercontent.com/d/1F7IH0yKHIT8zUJUbcCWfXyT8MFwuFExw';
+  const OWL_IMG    = 'https://lh3.googleusercontent.com/d/1rXDTTYj3XdSFJa5rRu0eWsr-BApzrHmC';
   const CHAT_URL   = 'https://script.google.com/macros/s/AKfycbxfo--2xa9vk6tlIzCjNyu3Y76AQIzYj-tM3XcvFQO72QwkWEqYIW_jSl2JRtE2tgql/exec';
 
   // 不在後台頁面顯示
