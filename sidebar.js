@@ -340,7 +340,7 @@ function toggleSidebar() {
   }
 
   // ── 開關對話視窗
-  function toggleChat() {
+  window.toggleChat = function() {
     if (isDragging) return;
     isOpen ? closeChat() : openChat();
   }
@@ -353,7 +353,7 @@ function toggleSidebar() {
     setTimeout(() => document.getElementById('chat-input').focus(), 200);
   }
 
-  function closeChat() {
+   window.closeChat = function() {
     isOpen = false;
     document.getElementById('hr-chat-window').classList.remove('open');
   }
@@ -414,7 +414,7 @@ function toggleSidebar() {
   }
 
   // ── 送出訊息
-  async function sendMessage() {
+  window.sendMessage = async function() {
     const input = document.getElementById('chat-input');
     const btn   = document.getElementById('chat-send-btn');
     const text  = input.value.trim();
