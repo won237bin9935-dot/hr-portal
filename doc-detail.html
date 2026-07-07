@@ -276,13 +276,13 @@
     // 一律顯示已閱讀勾選區
     document.getElementById('sign-section').style.display = 'block';
 
-    // 只有需要簽名的文件才顯示前往簽名按鈕
-    if (!needSign) {
-      const btnSign = document.getElementById('btn-sign');
-      const signNote = document.getElementById('sign-note');
-      if (btnSign) btnSign.style.display = 'none';
-      if (signNote) signNote.style.display = 'none';
-    }
+    if (needSign) {
+  document.getElementById('sign-section').style.display = 'block';
+  document.getElementById('no-sign-box').style.display = 'none';
+} else {
+  document.getElementById('sign-section').style.display = 'none';
+  document.getElementById('no-sign-box').style.display = 'block';
+}
 
     document.getElementById('loading').style.display = 'none';
     document.getElementById('doc-content').style.display = 'block';
