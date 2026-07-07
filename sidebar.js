@@ -261,7 +261,6 @@ function toggleSidebar() {
     // 綁定事件
     btn.addEventListener('click', toggleChat);
     document.getElementById('chat-close-btn').addEventListener('click', closeChat);
-    document.getElementById('chat-hide-btn').addEventListener('click', hideOwl);
     document.getElementById('chat-send-btn').addEventListener('click', sendMessage);
     document.getElementById('chat-input').addEventListener('keydown', e => {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
