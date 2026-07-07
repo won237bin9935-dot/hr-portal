@@ -212,6 +212,11 @@
     docName = d['文件名稱'];
     needSign = (d['是否須回傳簽名'] || '').trim() === '是';
 
+    // ── DEBUG：顯示所有欄位（確認後刪除）
+    console.log('文件資料:', JSON.stringify(d));
+    console.log('檔案連結:', d['檔案連結']);
+    console.log('PDF預覽網址:', d['PDF預覽網址']);
+
     document.title = docName + ' — 華美光學';
     const topbarTitle = document.getElementById('topbar-title');
     if(topbarTitle) topbarTitle.textContent = docName;
