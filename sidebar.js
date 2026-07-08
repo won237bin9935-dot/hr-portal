@@ -303,16 +303,15 @@ function hrToggleExpand() {
   var btn = document.getElementById('chat-expand-btn');
   if (!win) return;
   hrChatExpanded = !hrChatExpanded;
+  var isMobile = window.innerWidth <= 560;
   if (hrChatExpanded) {
-    win.style.height = '80vh';
-    win.style.width = '480px';
-    if (btn) btn.textContent = '⤡';
-    btn.title = '收合';
+    win.style.height = isMobile ? (window.innerHeight - 90) + 'px' : '80vh';
+    win.style.width = isMobile ? '' : '480px';
+    if (btn) { btn.textContent = '⤡'; btn.title = '收合'; }
   } else {
     win.style.height = '';
     win.style.width = '';
-    if (btn) btn.textContent = '⤢';
-    btn.title = '展開';
+    if (btn) { btn.textContent = '⤢'; btn.title = '展開'; }
   }
 }
 
