@@ -558,6 +558,6 @@ border-bottom: 1px solid var(--border);
 }
 
 @media (max-width: 560px) {
-  #hr-chat-window { right: 8px; bottom: 90px; width: calc(100vw - 16px); }
+  #hr-chat-window { right: 8px; bottom: 0; width: calc(100vw - 16px); max-height: 60vh; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
   #hr-owl-btn { bottom: 16px; right: 16px; width: 56px; height: 56px; background: transparent; box-shadow: none; }
 }
