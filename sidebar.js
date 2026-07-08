@@ -250,6 +250,7 @@ function hrInitChat() {
       '</div>' +
     '</div>' +
     '<div class="chat-messages" id="chat-messages"></div>' +
+    '<div class="chat-hint">💡 小提醒：我每次只能針對當下的問題回答，無法記住之前的對話喔！如您的問題跟前面有關聯，記得把完整情況一起說給我聽，這樣我才能盡量給您最完整的答覆 😊</div>' +
     '<div class="chat-input-area">' +
       '<textarea class="chat-input" id="chat-input" placeholder="輸入問題…" rows="1"></textarea>' +
       '<button class="chat-send-btn" onclick="hrSendMessage()">➤</button>' +
