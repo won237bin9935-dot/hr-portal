@@ -388,6 +388,7 @@ border-bottom: 1px solid var(--border);
   max-width: calc(100vw - 32px);
   height: 520px;
   max-height: calc(100vh - 120px);
+  min-height: 300px;
   background: #fff;
   border-radius: 20px;
   box-shadow: 0 8px 40px rgba(0,0,0,.18);
@@ -395,7 +396,24 @@ border-bottom: 1px solid var(--border);
   flex-direction: column;
   z-index: 8887;
   overflow: hidden;
-  transition: opacity .2s, transform .2s;
+  transition: height .25s, width .25s;
+  resize: vertical;
+}
+/* 電腦版才允許拖曳 resize */
+@media (min-width: 561px) {
+  #hr-chat-window {
+    overflow: auto;
+    resize: vertical;
+  }
+  #hr-chat-window .chat-messages {
+    overflow-y: auto;
+  }
+}
+/* 手機版不顯示 resize */
+@media (max-width: 560px) {
+  #hr-chat-window {
+    resize: none;
+  }
 }
 #hr-chat-window.open { display: flex; }
 

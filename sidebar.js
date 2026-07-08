@@ -246,6 +246,7 @@ function hrInitChat() {
         '<div class="chat-header-sub">人資制度問答小助理</div>' +
       '</div>' +
       '<div class="chat-header-actions">' +
+        '<button class="chat-header-btn" id="chat-expand-btn" onclick="hrToggleExpand()" title="展開">⤢</button>' +
         '<button class="chat-header-btn" onclick="hrCloseChat()" title="關閉">✕</button>' +
       '</div>' +
     '</div>' +
@@ -292,6 +293,27 @@ function hrOpenChat() {
     var input = document.getElementById('chat-input');
     if (input) input.focus();
   }, 200);
+}
+
+
+// ── 展開/收合對話視窗
+var hrChatExpanded = false;
+function hrToggleExpand() {
+  var win = document.getElementById('hr-chat-window');
+  var btn = document.getElementById('chat-expand-btn');
+  if (!win) return;
+  hrChatExpanded = !hrChatExpanded;
+  if (hrChatExpanded) {
+    win.style.height = '80vh';
+    win.style.width = '480px';
+    if (btn) btn.textContent = '⤡';
+    btn.title = '收合';
+  } else {
+    win.style.height = '';
+    win.style.width = '';
+    if (btn) btn.textContent = '⤢';
+    btn.title = '展開';
+  }
 }
 
 function hrCloseChat() {
