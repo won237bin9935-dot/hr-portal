@@ -307,10 +307,14 @@ function hrToggleExpand() {
   if (hrChatExpanded) {
     win.style.height = isMobile ? (window.innerHeight - 90) + 'px' : '80vh';
     win.style.width = isMobile ? '' : '480px';
+    win.style.maxHeight = 'none';
+    win.style.overflow = 'hidden';
     if (btn) { btn.textContent = '⤡'; btn.title = '收合'; }
   } else {
     win.style.height = '';
     win.style.width = '';
+    win.style.maxHeight = '';
+    win.style.overflow = '';
     if (btn) { btn.textContent = '⤢'; btn.title = '展開'; }
   }
 }
