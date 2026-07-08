@@ -469,4 +469,15 @@ function hrInitDrag(btn) {
   }, { passive: false });
 }
 
+// 手機版鍵盤彈出時調整對話視窗
+window.addEventListener('resize', function() {
+  if (window.innerWidth > 560) return;
+  var win = document.getElementById('hr-chat-window');
+  if (!win || !hrChatOpen) return;
+  var vh = window.innerHeight;
+  win.style.height = (vh - 90) + 'px';
+  win.style.top = '10px';
+  win.style.bottom = 'auto';
+});
+
 window.addEventListener('DOMContentLoaded', hrInitChat);
