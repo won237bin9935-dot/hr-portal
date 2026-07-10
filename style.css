@@ -342,22 +342,42 @@ border-bottom: 1px solid var(--border);
 }
 
 /* ── HR 小幫手貓頭鷹聊天機器人 ── */
-#hr-owl-btn {
+/*
+   v2 重點：#hr-chat-widget 是唯一固定定位外層。
+   #hr-chat-window 與 #hr-owl-btn 都放在 widget 裡，永遠維持固定間距。
+*/
+#hr-chat-widget {
   position: fixed;
-  bottom: 24px;
   right: 24px;
+  bottom: 24px;
+  z-index: 8888;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+  max-width: calc(100vw - 24px);
+  max-height: calc(100vh - 24px);
+  pointer-events: none;
+}
+#hr-chat-widget > * {
+  pointer-events: auto;
+}
+
+#hr-owl-btn {
+  position: relative;
   width: 64px;
   height: 64px;
   border-radius: 50%;
   background: transparent;
   border: none;
   cursor: grab;
-  z-index: 8888;
+  z-index: 2;
   box-shadow: none;
   padding: 0;
   overflow: visible;
   transition: transform .2s;
   user-select: none;
+  flex: 0 0 auto;
 }
 #hr-owl-btn:hover { transform: scale(1.12); }
 #hr-owl-btn img {
@@ -381,39 +401,21 @@ border-bottom: 1px solid var(--border);
 
 /* 對話視窗 */
 #hr-chat-window {
-  position: fixed;
-  bottom: 100px;
-  right: 24px;
-  width: min(360px, calc(100vw - 48px));
-  max-width: calc(100vw - 32px);
+  position: relative;
+  width: min(360px, calc(100vw - 24px));
+  max-width: calc(100vw - 24px);
   height: 520px;
-  max-height: calc(100vh - 120px);
+  max-height: calc(100vh - 100px);
   min-height: 300px;
   background: #fff;
   border-radius: 20px;
   box-shadow: 0 8px 40px rgba(0,0,0,.18);
   display: none;
   flex-direction: column;
-  z-index: 8887;
+  z-index: 1;
   overflow: hidden;
   transition: height .25s, width .25s;
   resize: none;
-}
-/* 聊天視窗外層固定由 JS 拖曳，內容捲動交給 .chat-messages */
-@media (min-width: 561px) {
-  #hr-chat-window {
-    overflow: hidden;
-    resize: none;
-  }
-  #hr-chat-window .chat-messages {
-    overflow-y: auto;
-  }
-}
-@media (max-width: 560px) {
-  #hr-chat-window {
-    resize: none;
-    overflow: hidden;
-  }
 }
 #hr-chat-window.open { display: flex; }
 
@@ -424,6 +426,7 @@ border-bottom: 1px solid var(--border);
   align-items: center;
   gap: 10px;
   flex-shrink: 0;
+  cursor: grab;
 }
 .chat-header img { width: 36px; height: 36px; border-radius: 50%; border: 2px solid rgba(255,255,255,.5); }
 .chat-header-info { flex: 1; }
@@ -558,44 +561,36 @@ border-bottom: 1px solid var(--border);
   font-size: 11px; cursor: pointer; font-family: inherit;
 }
 
+/* ── 拖曳狀態 ── */
+#hr-chat-widget.is-dragging,
+#hr-chat-widget.is-dragging * {
+  cursor: grabbing !important;
+  user-select: none;
+}
+#hr-chat-widget.is-dragging input,
+#hr-chat-widget.is-dragging textarea,
+#hr-chat-widget.is-dragging button {
+  user-select: auto;
+}
+
 @media (max-width: 560px) {
+  #hr-chat-widget {
+    right: 16px;
+    bottom: 16px;
+    gap: 10px;
+    max-width: calc(100vw - 16px);
+    max-height: calc(100vh - 16px);
+  }
   #hr-chat-window {
-    right: 8px;
-    bottom: 90px;
     width: calc(100vw - 16px);
-    max-width: calc(100vw - 16px) !important;
-    max-height: calc(100vh - 24px) !important;
+    max-width: calc(100vw - 16px);
+    height: 500px;
+    max-height: calc(100vh - 90px);
   }
   #hr-owl-btn {
-    bottom: 16px;
-    right: 16px;
     width: 56px;
     height: 56px;
     background: transparent;
     box-shadow: none;
   }
-}
-
-/* ── 拖曳狀態 ── */
-#hr-chat-window.is-dragging,
-#hr-owl-btn.is-dragging {
-  cursor: grabbing !important;
-  user-select: none;
-}
-#hr-chat-window.is-dragging * {
-  cursor: grabbing !important;
-  user-select: none;
-}
-.chat-header {
-  cursor: grab;
-  touch-action: none;
-}
-#hr-owl-btn {
-  touch-action: none;
-}
-
-/* ── 視窗邊界安全 ── */
-#hr-chat-window {
-  max-width: calc(100vw - 24px) !important;
-  max-height: calc(100vh - 24px) !important;
 }
