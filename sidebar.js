@@ -275,30 +275,8 @@ function hrInitChat() {
     }
   }, 100);
 
-  // 機器人圖示拖曳
-  hrInitDrag(btn);
-
-  // 聊天視窗標題列也可以拖曳
-  setTimeout(function() {
-    var chatHeader = document.querySelector('#hr-chat-window .chat-header');
-    if (chatHeader) {
-      chatHeader.style.cursor = 'grab';
-      chatHeader.addEventListener('pointerdown', function(e) {
-        var win = document.getElementById('hr-chat-window');
-        if (!win) return;
-        hrDragActive = true;
-        hrSetFixedPos(win);
-        var rect     = win.getBoundingClientRect();
-        hrDragStartX = e.clientX;
-        hrDragStartY = e.clientY;
-        hrDragStartL = rect.left;
-        hrDragStartT = rect.top;
-        win.classList.add('is-dragging');
-        if (e.target.setPointerCapture) e.target.setPointerCapture(e.pointerId);
-        e.preventDefault();
-      });
-    }
-  }, 100);
+  // 統一拖曳：機器人圖示與聊天視窗使用同一套 pointer drag
+  hrBindChatDrag(btn, win);
 }
 
 function hrToggleChat() {
@@ -352,6 +330,11 @@ function hrToggleExpand() {
     win.style.overflow = '';
     if (btn) { btn.textContent = '⤢'; btn.title = '展開'; }
   }
+
+  // 展開/收合後尺寸會改變，必須重新拉回可視範圍
+  setTimeout(function() {
+    if (window.clampHrChatWidget) window.clampHrChatWidget();
+  }, 80);
 }
 
 function hrCloseChat() {
@@ -450,15 +433,31 @@ async function hrSendMessage() {
 
 
 // ── 聊天視窗拖曳與邊界控制
+// 重點：移除舊版 mouse/touch 拖曳，統一使用 pointer event，避免 left/top 與 bottom/right 打架
 var HR_CHAT_MARGIN = 12;
-var hrDragActive   = false;
-var hrDragStartX   = 0;
-var hrDragStartY   = 0;
-var hrDragStartL   = 0;
-var hrDragStartT   = 0;
+var HR_CHAT_DRAG_THRESHOLD = 5;
+
+var hrDragActive = false;
+var hrDragMoved  = false;
+var hrDragTarget = null;
+var hrDragLinkedWin = null;
+
+var hrDragStartX = 0;
+var hrDragStartY = 0;
+var hrDragStartL = 0;
+var hrDragStartT = 0;
+var hrDragLinkedStartL = 0;
+var hrDragLinkedStartT = 0;
 
 function hrIsInteractiveEl(el) {
-  return !!el.closest('input, textarea, button, a, select, .chat-send-btn, .quick-reply');
+  if (!el || !el.closest) return false;
+
+  return !!el.closest(
+    'input, textarea, button, a, select, option, label,' +
+    ' .chat-header-actions, .chat-input-area, .chat-send-btn,' +
+    ' .chat-messages, .chat-msg, .chat-bubble,' +
+    ' .quick-reply, .quick-button, .no-drag'
+  );
 }
 
 function hrGetWin() {
@@ -470,6 +469,7 @@ function hrGetBtn() {
 }
 
 function hrSetFixedPos(el) {
+  if (!el) return;
   var rect = el.getBoundingClientRect();
   el.style.position = 'fixed';
   el.style.left     = rect.left + 'px';
@@ -480,15 +480,24 @@ function hrSetFixedPos(el) {
 
 function clampEl(el) {
   if (!el) return;
-  var vw   = window.innerWidth;
-  var vh   = window.innerHeight;
+
+  var vw = window.innerWidth || document.documentElement.clientWidth;
+  var vh = window.innerHeight || document.documentElement.clientHeight;
   var rect = el.getBoundingClientRect();
+
   var left = rect.left;
   var top  = rect.top;
-  var maxL = Math.max(HR_CHAT_MARGIN, vw - rect.width  - HR_CHAT_MARGIN);
-  var maxT = Math.max(HR_CHAT_MARGIN, vh - rect.height - HR_CHAT_MARGIN);
+
+  var maxL = vw - rect.width  - HR_CHAT_MARGIN;
+  var maxT = vh - rect.height - HR_CHAT_MARGIN;
+
+  // 如果元素比視窗還大，仍固定在左上安全距離
+  if (maxL < HR_CHAT_MARGIN) maxL = HR_CHAT_MARGIN;
+  if (maxT < HR_CHAT_MARGIN) maxT = HR_CHAT_MARGIN;
+
   left = Math.min(Math.max(left, HR_CHAT_MARGIN), maxL);
   top  = Math.min(Math.max(top,  HR_CHAT_MARGIN), maxT);
+
   el.style.position = 'fixed';
   el.style.left     = left + 'px';
   el.style.top      = top  + 'px';
@@ -499,119 +508,143 @@ function clampEl(el) {
 window.clampHrChatWidget = function() {
   var win = hrGetWin();
   var btn = hrGetBtn();
+
   if (win && hrChatOpen) clampEl(win);
   if (btn) clampEl(btn);
 };
 
-function hrOnPointerDown(e) {
-  if (e.button !== undefined && e.button !== 0) return;
-  if (hrIsInteractiveEl(e.target)) return;
+function hrBindChatDrag(btn, win) {
+  if (btn) {
+    btn.addEventListener('pointerdown', function(e) {
+      hrOnPointerDown(e, btn);
+    });
+  }
 
-  var target = e.currentTarget;
+  if (win) {
+    // 在聊天視窗本體綁拖曳，但排除輸入、按鈕、訊息捲動區等互動區域
+    win.addEventListener('pointerdown', function(e) {
+      if (hrIsInteractiveEl(e.target)) return;
+      hrOnPointerDown(e, win);
+    });
+
+    var header = win.querySelector('.chat-header');
+    if (header) header.style.cursor = 'grab';
+  }
+}
+
+function hrOnPointerDown(e, target) {
+  if (!target) return;
+  if (e.button !== undefined && e.button !== 0) return;
+
   hrDragActive = true;
+  hrDragMoved  = false;
+  hrDragTarget = target;
+  hrDragLinkedWin = null;
+
+  // 讓點擊貓頭鷹仍可正常開關；只有真的拖動超過門檻時才視為拖曳
+  if (target.id === 'hr-owl-btn') hrChatDragging = false;
+
   hrSetFixedPos(target);
 
-  var rect     = target.getBoundingClientRect();
+  // 若拖曳貓頭鷹且聊天視窗開啟，聊天視窗跟著一起移動，保留原本使用習慣
+  var win = hrGetWin();
+  if (target.id === 'hr-owl-btn' && win && hrChatOpen) {
+    hrSetFixedPos(win);
+    hrDragLinkedWin = win;
+    var wrect = win.getBoundingClientRect();
+    hrDragLinkedStartL = wrect.left;
+    hrDragLinkedStartT = wrect.top;
+    win.classList.add('is-dragging');
+  }
+
+  var rect = target.getBoundingClientRect();
   hrDragStartX = e.clientX;
   hrDragStartY = e.clientY;
   hrDragStartL = rect.left;
   hrDragStartT = rect.top;
 
   target.classList.add('is-dragging');
-  if (e.target.setPointerCapture) e.target.setPointerCapture(e.pointerId);
-  e.preventDefault();
+
+  if (target.setPointerCapture) {
+    try { target.setPointerCapture(e.pointerId); } catch(err) {}
+  }
+
+  // 聊天視窗拖曳時避免選字；貓頭鷹不阻止 click，才可維持點擊開關
+  if (target.id !== 'hr-owl-btn') e.preventDefault();
 }
 
 function hrOnPointerMove(e) {
-  if (!hrDragActive) return;
-  // 找目前拖曳的元素
-  var win = hrGetWin();
-  var btn = hrGetBtn();
-  var el  = (win && win.classList.contains('is-dragging')) ? win : btn;
-  if (!el) return;
+  if (!hrDragActive || !hrDragTarget) return;
 
   var dx = e.clientX - hrDragStartX;
   var dy = e.clientY - hrDragStartY;
-  el.style.left   = (hrDragStartL + dx) + 'px';
-  el.style.top    = (hrDragStartT + dy) + 'px';
-  el.style.right  = 'auto';
-  el.style.bottom = 'auto';
+
+  if (!hrDragMoved && (Math.abs(dx) > HR_CHAT_DRAG_THRESHOLD || Math.abs(dy) > HR_CHAT_DRAG_THRESHOLD)) {
+    hrDragMoved = true;
+    if (hrDragTarget.id === 'hr-owl-btn') hrChatDragging = true;
+  }
+
+  if (!hrDragMoved) return;
+
+  hrDragTarget.style.left   = (hrDragStartL + dx) + 'px';
+  hrDragTarget.style.top    = (hrDragStartT + dy) + 'px';
+  hrDragTarget.style.right  = 'auto';
+  hrDragTarget.style.bottom = 'auto';
+  clampEl(hrDragTarget);
+
+  if (hrDragLinkedWin) {
+    hrDragLinkedWin.style.left   = (hrDragLinkedStartL + dx) + 'px';
+    hrDragLinkedWin.style.top    = (hrDragLinkedStartT + dy) + 'px';
+    hrDragLinkedWin.style.right  = 'auto';
+    hrDragLinkedWin.style.bottom = 'auto';
+    clampEl(hrDragLinkedWin);
+  }
+
+  e.preventDefault();
 }
 
-function hrOnPointerUp(e) {
+function hrOnPointerUp() {
   if (!hrDragActive) return;
+
+  if (hrDragTarget) {
+    hrDragTarget.classList.remove('is-dragging');
+    clampEl(hrDragTarget);
+  }
+
+  if (hrDragLinkedWin) {
+    hrDragLinkedWin.classList.remove('is-dragging');
+    clampEl(hrDragLinkedWin);
+  }
+
+  var wasDraggingBtn = hrDragTarget && hrDragTarget.id === 'hr-owl-btn' && hrDragMoved;
+
   hrDragActive = false;
-  var win = hrGetWin();
-  var btn = hrGetBtn();
-  if (win) win.classList.remove('is-dragging');
-  if (btn) btn.classList.remove('is-dragging');
+  hrDragMoved  = false;
+  hrDragTarget = null;
+  hrDragLinkedWin = null;
+
   window.clampHrChatWidget();
+
+  // 若是拖曳貓頭鷹，短時間保留 flag，避免 mouse click 又觸發開關
+  if (wasDraggingBtn) {
+    hrChatDragging = true;
+    setTimeout(function() { hrChatDragging = false; }, 120);
+  } else {
+    hrChatDragging = false;
+  }
 }
 
 document.addEventListener('pointermove', hrOnPointerMove);
 document.addEventListener('pointerup',   hrOnPointerUp);
-window.addEventListener('resize', function() { window.clampHrChatWidget(); });
-window.addEventListener('orientationchange', function() {
-  setTimeout(function() { window.clampHrChatWidget(); }, 300);
+document.addEventListener('pointercancel', hrOnPointerUp);
+
+window.addEventListener('resize', function() {
+  if (window.clampHrChatWidget) window.clampHrChatWidget();
 });
-
-function hrInitDrag(btn) {
-  var startX, startY, startLeft, startBottom;
-  btn.addEventListener('mousedown', function(e) {
-    hrChatDragging = false;
-    startX = e.clientX; startY = e.clientY;
-    var rect = btn.getBoundingClientRect();
-    startLeft   = rect.left;
-    startBottom = window.innerHeight - rect.bottom;
-    btn.style.cursor = 'grabbing';
-
-    function onMove(e) {
-      var dx = e.clientX - startX;
-      var dy = e.clientY - startY;
-      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) hrChatDragging = true;
-      var newLeft   = Math.max(0, Math.min(window.innerWidth - 64,  startLeft   + dx));
-      var newBottom = Math.max(0, Math.min(window.innerHeight - 64, startBottom - dy));
-      btn.style.left   = newLeft + 'px';
-      btn.style.right  = 'auto';
-      btn.style.bottom = newBottom + 'px';
-      var chatWin = document.getElementById('hr-chat-window');
-      if (chatWin) {
-        chatWin.style.right  = 'auto';
-        chatWin.style.left   = Math.max(0, Math.min(window.innerWidth - 360, newLeft - 360 + 64)) + 'px';
-        chatWin.style.bottom = (newBottom + 72) + 'px';
-      }
-    }
-    function onUp() {
-      btn.style.cursor = 'grab';
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
-      setTimeout(function() { hrChatDragging = false; }, 100);
-    }
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onUp);
-  });
-
-  btn.addEventListener('touchstart', function(e) {
-    hrChatDragging = false;
-    var t = e.touches[0];
-    startX = t.clientX; startY = t.clientY;
-    var rect = btn.getBoundingClientRect();
-    startLeft   = rect.left;
-    startBottom = window.innerHeight - rect.bottom;
-  }, { passive: true });
-
-  btn.addEventListener('touchmove', function(e) {
-    var t = e.touches[0];
-    var dx = t.clientX - startX;
-    var dy = t.clientY - startY;
-    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) hrChatDragging = true;
-    var newLeft   = Math.max(0, Math.min(window.innerWidth - 64,  startLeft   + dx));
-    var newBottom = Math.max(0, Math.min(window.innerHeight - 64, startBottom - dy));
-    btn.style.left   = newLeft + 'px';
-    btn.style.right  = 'auto';
-    btn.style.bottom = newBottom + 'px';
-    e.preventDefault();
-  }, { passive: false });
-}
+window.addEventListener('orientationchange', function() {
+  setTimeout(function() {
+    if (window.clampHrChatWidget) window.clampHrChatWidget();
+  }, 300);
+});
 
 window.addEventListener('DOMContentLoaded', hrInitChat);

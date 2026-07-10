@@ -397,22 +397,22 @@ border-bottom: 1px solid var(--border);
   z-index: 8887;
   overflow: hidden;
   transition: height .25s, width .25s;
-  resize: vertical;
+  resize: none;
 }
-/* 電腦版才允許拖曳 resize */
+/* 聊天視窗外層固定由 JS 拖曳，內容捲動交給 .chat-messages */
 @media (min-width: 561px) {
   #hr-chat-window {
-    overflow: auto;
-    resize: vertical;
+    overflow: hidden;
+    resize: none;
   }
   #hr-chat-window .chat-messages {
     overflow-y: auto;
   }
 }
-/* 手機版不顯示 resize */
 @media (max-width: 560px) {
   #hr-chat-window {
     resize: none;
+    overflow: hidden;
   }
 }
 #hr-chat-window.open { display: flex; }
@@ -445,6 +445,7 @@ border-bottom: 1px solid var(--border);
 
 .chat-messages {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: 16px;
   display: flex;
@@ -558,8 +559,21 @@ border-bottom: 1px solid var(--border);
 }
 
 @media (max-width: 560px) {
-  #hr-chat-window { right: 8px; bottom: 90px; width: calc(100vw - 16px); }
-  #hr-owl-btn { bottom: 16px; right: 16px; width: 56px; height: 56px; background: transparent; box-shadow: none; }
+  #hr-chat-window {
+    right: 8px;
+    bottom: 90px;
+    width: calc(100vw - 16px);
+    max-width: calc(100vw - 16px) !important;
+    max-height: calc(100vh - 24px) !important;
+  }
+  #hr-owl-btn {
+    bottom: 16px;
+    right: 16px;
+    width: 56px;
+    height: 56px;
+    background: transparent;
+    box-shadow: none;
+  }
 }
 
 /* ── 拖曳狀態 ── */
@@ -571,14 +585,14 @@ border-bottom: 1px solid var(--border);
 #hr-chat-window.is-dragging * {
   cursor: grabbing !important;
   user-select: none;
-  pointer-events: none;
 }
-#hr-chat-window.is-dragging input,
-#hr-chat-window.is-dragging textarea,
-#hr-chat-window.is-dragging button {
-  pointer-events: auto;
+.chat-header {
+  cursor: grab;
+  touch-action: none;
 }
-.chat-header { cursor: grab; }
+#hr-owl-btn {
+  touch-action: none;
+}
 
 /* ── 視窗邊界安全 ── */
 #hr-chat-window {
