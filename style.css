@@ -343,19 +343,19 @@ border-bottom: 1px solid var(--border);
 
 /* ── HR 小幫手貓頭鷹聊天機器人 ── */
 /*
-   v3 重點：#hr-chat-widget 是唯一固定定位外層。
-   #hr-chat-window 與 #hr-owl-btn 都放在 widget 裡，永遠維持固定間距。
-   JS 會同步 widget 寬度並做螢幕邊界修正。
+   v4 重點：#hr-chat-widget 是唯一固定定位外層。
+   #hr-chat-window 與 #hr-owl-btn 使用 absolute 固定相對位置，
+   不再依賴 flex 排列，避免展開/收合後貓頭鷹跑位。
 */
 #hr-chat-widget {
+  --hr-owl-size: 64px;
+  --hr-chat-gap: 12px;
   position: fixed;
   right: 24px;
   bottom: 24px;
   z-index: 8888;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 12px;
+  width: var(--hr-owl-size);
+  height: var(--hr-owl-size);
   max-width: calc(100vw - 24px);
   max-height: calc(100vh - 24px);
   pointer-events: none;
@@ -367,9 +367,11 @@ border-bottom: 1px solid var(--border);
 
 #hr-owl-btn {
   touch-action: none;
-  position: relative;
-  width: 64px;
-  height: 64px;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: var(--hr-owl-size);
+  height: var(--hr-owl-size);
   border-radius: 50%;
   background: transparent;
   border: none;
@@ -380,7 +382,6 @@ border-bottom: 1px solid var(--border);
   overflow: visible;
   transition: transform .2s;
   user-select: none;
-  flex: 0 0 auto;
 }
 #hr-owl-btn:hover { transform: scale(1.12); }
 #hr-owl-btn img {
@@ -404,7 +405,9 @@ border-bottom: 1px solid var(--border);
 
 /* 對話視窗 */
 #hr-chat-window {
-  position: relative;
+  position: absolute;
+  right: 0;
+  bottom: calc(var(--hr-owl-size) + var(--hr-chat-gap));
   width: min(360px, calc(100vw - 24px));
   max-width: calc(100vw - 24px);
   height: 520px;
@@ -579,8 +582,9 @@ border-bottom: 1px solid var(--border);
 
 @media (max-width: 560px) {
   #hr-chat-widget {
+    --hr-owl-size: 56px;
+    --hr-chat-gap: 10px;
     /* 不在手機版重設 right/bottom，避免覆蓋拖曳後的 left/top */
-    gap: 10px;
     max-width: calc(100vw - 16px);
     max-height: calc(100vh - 16px);
   }
@@ -591,8 +595,8 @@ border-bottom: 1px solid var(--border);
     max-height: calc(100vh - 100px);
   }
   #hr-owl-btn {
-    width: 56px;
-    height: 56px;
+    width: var(--hr-owl-size);
+    height: var(--hr-owl-size);
     background: transparent;
     box-shadow: none;
   }
