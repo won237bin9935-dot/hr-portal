@@ -384,7 +384,7 @@ border-bottom: 1px solid var(--border);
   position: fixed;
   bottom: 100px;
   right: 24px;
-  width: 360px;
+  width: min(360px, calc(100vw - 48px));
   max-width: calc(100vw - 32px);
   height: 520px;
   max-height: calc(100vh - 120px);

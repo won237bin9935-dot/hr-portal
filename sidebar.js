@@ -315,8 +315,17 @@ function hrOpenChat() {
     var input = document.getElementById('chat-input');
     if (input) input.focus();
   }, 200);
-  // 展開後確保視窗在螢幕內
+  // 展開後把定位從 right 改成 left，再執行邊界修正
   setTimeout(function() {
+    var win = document.getElementById('hr-chat-window');
+    if (win) {
+      var rect = win.getBoundingClientRect();
+      win.style.right  = 'auto';
+      win.style.bottom = 'auto';
+      win.style.left   = rect.left + 'px';
+      win.style.top    = rect.top  + 'px';
+      win.style.position = 'fixed';
+    }
     if (window.clampHrChatWidget) window.clampHrChatWidget();
   }, 50);
 }
