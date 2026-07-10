@@ -290,12 +290,7 @@ function hrInitChat() {
   // 統一拖曳：拖貓頭鷹或拖視窗，都是移動外層 widget
   hrBindChatDrag(widget, btn, win);
 
-  // 視窗寬高有 transition，展開/收合動畫結束後再校正一次，避免動畫中讀到半成品尺寸
-  win.addEventListener('transitionend', function(e) {
-    if (e.propertyName === 'width' || e.propertyName === 'height') {
-      hrScheduleClamp();
-    }
-  });
+  // v5：展開/收合改用目標尺寸模型，不再依賴 width/height transition。
 
   // 初始化後先校正位置
   hrScheduleClamp();
@@ -306,6 +301,7 @@ function hrToggleChat() {
 }
 
 function hrOpenChat() {
+  var owlAnchor = hrGetOwlAnchor();
   hrChatOpen = true;
   var widget = hrGetWidget();
   var win = hrGetWin();
@@ -320,8 +316,8 @@ function hrOpenChat() {
     hrGreetingShown = true;
   }
 
-  // 開啟後內容尺寸會改變，必須以整組 widget 做邊界修正
-  hrScheduleClamp();
+  // 開啟後以貓頭鷹原位置為錨點，讓視窗從貓頭鷹上方展開。
+  hrScheduleClamp(owlAnchor);
 
   setTimeout(function() {
     var input = document.getElementById('chat-input');
@@ -332,6 +328,7 @@ function hrOpenChat() {
 // ── 展開/收合對話視窗
 var hrChatExpanded = false;
 function hrToggleExpand() {
+  var owlAnchor = hrGetOwlAnchor();
   var win = hrGetWin();
   var btn = document.getElementById('chat-expand-btn');
   var widget = hrGetWidget();
@@ -348,13 +345,13 @@ function hrToggleExpand() {
     btn.title = hrChatExpanded ? '收合' : '展開';
   }
 
-  // 展開/收合後，先依目前螢幕尺寸套用寬高，再多次校正位置。
-  // 這可避免寬度 transition 尚未完成時，視窗仍超出畫面。
+  // 展開/收合後以貓頭鷹原位置為錨點，避免貓頭鷹因 widget 尺寸改變而跑位。
   hrApplyChatSize();
-  hrScheduleClamp();
+  hrScheduleClamp(owlAnchor);
 }
 
 function hrCloseChat() {
+  var owlAnchor = hrGetOwlAnchor();
   hrChatOpen = false;
   var widget = hrGetWidget();
   var win = hrGetWin();
@@ -362,8 +359,8 @@ function hrCloseChat() {
   if (win) win.classList.remove('open');
   if (widget) widget.classList.remove('chat-open');
 
-  // 收合後整組只剩貓頭鷹，再校正一次位置
-  hrScheduleClamp();
+  // 關閉後只剩貓頭鷹，維持貓頭鷹原本位置。
+  hrScheduleClamp(owlAnchor);
 }
 
 function hrEscapeHtml(text) {
@@ -466,7 +463,7 @@ async function hrSendMessage() {
 
 
 // ── 聊天視窗拖曳與邊界控制
-// v4：只移動 #hr-chat-widget；視窗與貓頭鷹用 absolute 固定相對位置。
+// v5：只移動 #hr-chat-widget；使用目標尺寸模型，避免展開/收合時讀取動畫中尺寸。
 var HR_CHAT_MARGIN = 12;
 var HR_CHAT_DRAG_THRESHOLD = 5;
 var HR_CHAT_DESKTOP_WIDTH = 360;
@@ -492,6 +489,16 @@ function hrGetWin() {
 
 function hrGetBtn() {
   return document.getElementById('hr-owl-btn');
+}
+
+function hrGetOwlAnchor() {
+  var btn = hrGetBtn();
+  if (!btn) return null;
+  var rect = btn.getBoundingClientRect();
+  return {
+    right: rect.right,
+    bottom: rect.bottom
+  };
 }
 
 function hrIsInteractiveEl(el) {
@@ -525,104 +532,117 @@ function hrSetFixedWidgetByCurrentRect() {
   widget.style.bottom   = 'auto';
 }
 
-function hrApplyChatSize() {
-  var widget = hrGetWidget();
-  var win = hrGetWin();
-  var btn = hrGetBtn();
-  if (!widget || !win) return;
+function hrClampNumber(value, min, max) {
+  if (max < min) return max;
+  return Math.min(Math.max(value, min), max);
+}
 
-  var vw = window.innerWidth || document.documentElement.clientWidth;
-  var vh = window.innerHeight || document.documentElement.clientHeight;
+function hrComputeChatLayout() {
+  var vw = window.innerWidth || document.documentElement.clientWidth || 360;
+  var vh = window.innerHeight || document.documentElement.clientHeight || 640;
   var isMobile = vw <= 560;
   var margin = HR_CHAT_MARGIN;
   var gap = hrGetChatGap();
   var owlSize = hrGetOwlSize();
 
-  widget.style.setProperty('--hr-owl-size', owlSize + 'px');
-  widget.style.setProperty('--hr-chat-gap', gap + 'px');
+  var availableW = Math.max(220, vw - margin * 2);
+  var availableHForWindow = Math.max(220, vh - margin * 2 - owlSize - gap);
 
-  if (btn) {
-    btn.style.width = owlSize + 'px';
-    btn.style.height = owlSize + 'px';
-  }
-
-  var availableW = Math.max(280, vw - margin * 2);
-  var availableHForWindow = Math.max(
-    HR_CHAT_MIN_HEIGHT,
-    vh - margin * 2 - owlSize - gap
-  );
-
-  win.style.maxWidth = availableW + 'px';
-  win.style.maxHeight = availableHForWindow + 'px';
-  win.style.overflow = 'hidden';
+  var winW;
+  var winH;
 
   if (hrChatOpen && hrChatExpanded) {
-    var expandedW = isMobile ? availableW : Math.min(HR_CHAT_EXPANDED_WIDTH, availableW);
-    var desiredH = isMobile ? Math.max(360, vh - 110) : Math.floor(vh * 0.80);
-    var expandedH = Math.min(desiredH, availableHForWindow);
+    winW = isMobile ? availableW : Math.min(HR_CHAT_EXPANDED_WIDTH, availableW);
 
-    win.style.width = expandedW + 'px';
-    win.style.height = expandedH + 'px';
-  } else if (hrChatOpen) {
-    var normalW = isMobile ? availableW : Math.min(HR_CHAT_DESKTOP_WIDTH, availableW);
-    var normalH = Math.min(HR_CHAT_DESKTOP_HEIGHT, availableHForWindow);
-
-    win.style.width = normalW + 'px';
-    win.style.height = normalH + 'px';
+    var desiredH = isMobile ? (vh - 110) : Math.floor(vh * 0.80);
+    winH = Math.min(Math.max(HR_CHAT_MIN_HEIGHT, desiredH), availableHForWindow);
+    if (availableHForWindow < HR_CHAT_MIN_HEIGHT) winH = availableHForWindow;
   } else {
-    // 關閉時只顯示貓頭鷹；保留視窗尺寸供下次開啟，但 widget 尺寸只看貓頭鷹。
-    var closedW = isMobile ? availableW : Math.min(HR_CHAT_DESKTOP_WIDTH, availableW);
-    var closedH = Math.min(HR_CHAT_DESKTOP_HEIGHT, availableHForWindow);
-    win.style.width = closedW + 'px';
-    win.style.height = closedH + 'px';
+    winW = isMobile ? availableW : Math.min(HR_CHAT_DESKTOP_WIDTH, availableW);
+    winH = Math.min(HR_CHAT_DESKTOP_HEIGHT, availableHForWindow);
+    if (availableHForWindow >= HR_CHAT_MIN_HEIGHT) {
+      winH = Math.max(HR_CHAT_MIN_HEIGHT, winH);
+    }
   }
+
+  winW = Math.floor(winW);
+  winH = Math.floor(winH);
+
+  var widgetW = hrChatOpen ? Math.max(winW, owlSize) : owlSize;
+  var widgetH = hrChatOpen ? (winH + gap + owlSize) : owlSize;
+
+  return {
+    vw: vw,
+    vh: vh,
+    margin: margin,
+    gap: gap,
+    owlSize: owlSize,
+    windowW: winW,
+    windowH: winH,
+    widgetW: Math.ceil(widgetW),
+    widgetH: Math.ceil(widgetH)
+  };
 }
 
-function hrSyncWidgetSize() {
+function hrApplyChatSize() {
   var widget = hrGetWidget();
   var win = hrGetWin();
-  if (!widget) return;
+  var btn = hrGetBtn();
+  if (!widget || !win) return null;
 
-  var gap = hrGetChatGap();
-  var owlSize = hrGetOwlSize();
+  var layout = hrComputeChatLayout();
 
-  if (hrChatOpen && win && win.classList.contains('open')) {
-    var winW = win.offsetWidth || parseFloat(win.style.width) || 0;
-    var winH = win.offsetHeight || parseFloat(win.style.height) || 0;
+  widget.style.setProperty('--hr-owl-size', layout.owlSize + 'px');
+  widget.style.setProperty('--hr-chat-gap', layout.gap + 'px');
+  widget.style.setProperty('--hr-window-width', layout.windowW + 'px');
+  widget.style.setProperty('--hr-window-height', layout.windowH + 'px');
+  widget.style.setProperty('--hr-widget-width', layout.widgetW + 'px');
+  widget.style.setProperty('--hr-widget-height', layout.widgetH + 'px');
 
-    // absolute children 不會撐開外層，因此這裡明確設定整組外框。
-    widget.style.width = Math.ceil(Math.max(winW, owlSize)) + 'px';
-    widget.style.height = Math.ceil(winH + gap + owlSize) + 'px';
-  } else {
-    widget.style.width = owlSize + 'px';
-    widget.style.height = owlSize + 'px';
+  // 避免舊版 inline 樣式殘留造成 v5 目標尺寸模型失準。
+  win.style.width = '';
+  win.style.height = '';
+  win.style.maxWidth = '';
+  win.style.maxHeight = '';
+  win.style.overflow = '';
+
+  if (btn) {
+    btn.style.width = '';
+    btn.style.height = '';
   }
+
+  return layout;
 }
 
-function hrClampWidget() {
+function hrClampWidget(owlAnchor) {
   var widget = hrGetWidget();
   if (!widget) return;
 
-  hrApplyChatSize();
-  hrSyncWidgetSize();
-
-  var vw = window.innerWidth || document.documentElement.clientWidth;
-  var vh = window.innerHeight || document.documentElement.clientHeight;
+  var layout = hrApplyChatSize() || hrComputeChatLayout();
   var rect = widget.getBoundingClientRect();
 
-  var left = rect.left;
-  var top  = rect.top;
-  var width = rect.width || widget.offsetWidth || 0;
-  var height = rect.height || widget.offsetHeight || 0;
+  var left;
+  var top;
 
-  var maxL = vw - width  - HR_CHAT_MARGIN;
-  var maxT = vh - height - HR_CHAT_MARGIN;
+  if (owlAnchor && typeof owlAnchor.right === 'number' && typeof owlAnchor.bottom === 'number') {
+    left = owlAnchor.right - layout.widgetW;
+    top  = owlAnchor.bottom - layout.widgetH;
+  } else {
+    left = rect.left;
+    top  = rect.top;
+  }
 
-  if (maxL < HR_CHAT_MARGIN) maxL = HR_CHAT_MARGIN;
-  if (maxT < HR_CHAT_MARGIN) maxT = HR_CHAT_MARGIN;
+  var width = layout.widgetW;
+  var height = layout.widgetH;
 
-  left = Math.min(Math.max(left, HR_CHAT_MARGIN), maxL);
-  top  = Math.min(Math.max(top,  HR_CHAT_MARGIN), maxT);
+  var maxL = layout.vw - width  - layout.margin;
+  var maxT = layout.vh - height - layout.margin;
+
+  if (maxL < layout.margin) maxL = layout.margin;
+  if (maxT < layout.margin) maxT = layout.margin;
+
+  left = hrClampNumber(left, layout.margin, maxL);
+  top  = hrClampNumber(top,  layout.margin, maxT);
 
   widget.style.position = 'fixed';
   widget.style.left     = left + 'px';
@@ -633,12 +653,19 @@ function hrClampWidget() {
 
 window.clampHrChatWidget = hrClampWidget;
 
-function hrScheduleClamp() {
-  // 立即修正 + 動畫過程中補修正，避免展開/收合 transition 中讀到錯誤尺寸。
-  if (window.clampHrChatWidget) window.clampHrChatWidget();
-  setTimeout(function() { if (window.clampHrChatWidget) window.clampHrChatWidget(); }, 80);
-  setTimeout(function() { if (window.clampHrChatWidget) window.clampHrChatWidget(); }, 180);
-  setTimeout(function() { if (window.clampHrChatWidget) window.clampHrChatWidget(); }, 360);
+function hrScheduleClamp(owlAnchor) {
+  // v5：先用貓頭鷹位置當錨點修正一次，再於下一個畫面更新週期做最終邊界校正。
+  hrClampWidget(owlAnchor || null);
+
+  if (typeof requestAnimationFrame === 'function') {
+    requestAnimationFrame(function() {
+      hrClampWidget();
+    });
+  } else {
+    setTimeout(function() {
+      hrClampWidget();
+    }, 16);
+  }
 }
 
 function hrBindChatDrag(widget, btn, win) {
@@ -675,7 +702,6 @@ function hrOnPointerDown(e, sourceEl) {
   }
 
   hrApplyChatSize();
-  hrSyncWidgetSize();
   hrSetFixedWidgetByCurrentRect();
 
   var rect = widget.getBoundingClientRect();
@@ -741,13 +767,11 @@ document.addEventListener('pointerup',   hrOnPointerUp);
 document.addEventListener('pointercancel', hrOnPointerUp);
 
 window.addEventListener('resize', function() {
-  hrApplyChatSize();
-  hrScheduleClamp();
+  hrScheduleClamp(hrGetOwlAnchor());
 });
 window.addEventListener('orientationchange', function() {
   setTimeout(function() {
-    hrApplyChatSize();
-    hrScheduleClamp();
+    hrScheduleClamp(hrGetOwlAnchor());
   }, 300);
 });
 

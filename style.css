@@ -343,19 +343,23 @@ border-bottom: 1px solid var(--border);
 
 /* ── HR 小幫手貓頭鷹聊天機器人 ── */
 /*
-   v4 重點：#hr-chat-widget 是唯一固定定位外層。
-   #hr-chat-window 與 #hr-owl-btn 使用 absolute 固定相對位置，
-   不再依賴 flex 排列，避免展開/收合後貓頭鷹跑位。
+   v5 重點：#hr-chat-widget 是唯一固定定位外層。
+   JS 會先計算目標尺寸，再寫入 CSS 變數，
+   不再用動畫中的 offsetWidth/offsetHeight 反推尺寸。
 */
 #hr-chat-widget {
   --hr-owl-size: 64px;
   --hr-chat-gap: 12px;
+  --hr-window-width: 360px;
+  --hr-window-height: 520px;
+  --hr-widget-width: var(--hr-owl-size);
+  --hr-widget-height: var(--hr-owl-size);
   position: fixed;
   right: 24px;
   bottom: 24px;
   z-index: 8888;
-  width: var(--hr-owl-size);
-  height: var(--hr-owl-size);
+  width: var(--hr-widget-width);
+  height: var(--hr-widget-height);
   max-width: calc(100vw - 24px);
   max-height: calc(100vh - 24px);
   pointer-events: none;
@@ -408,11 +412,11 @@ border-bottom: 1px solid var(--border);
   position: absolute;
   right: 0;
   bottom: calc(var(--hr-owl-size) + var(--hr-chat-gap));
-  width: min(360px, calc(100vw - 24px));
+  width: var(--hr-window-width);
   max-width: calc(100vw - 24px);
-  height: 520px;
+  height: var(--hr-window-height);
   max-height: calc(100vh - 112px);
-  min-height: 300px;
+  min-height: 0;
   background: #fff;
   border-radius: 20px;
   box-shadow: 0 8px 40px rgba(0,0,0,.18);
@@ -420,7 +424,7 @@ border-bottom: 1px solid var(--border);
   flex-direction: column;
   z-index: 1;
   overflow: hidden;
-  transition: height .25s, width .25s;
+  transition: none;
   resize: none;
 }
 #hr-chat-window.open { display: flex; }
@@ -589,9 +593,9 @@ border-bottom: 1px solid var(--border);
     max-height: calc(100vh - 16px);
   }
   #hr-chat-window {
-    width: calc(100vw - 24px);
+    width: var(--hr-window-width);
     max-width: calc(100vw - 24px);
-    height: 500px;
+    height: var(--hr-window-height);
     max-height: calc(100vh - 100px);
   }
   #hr-owl-btn {
