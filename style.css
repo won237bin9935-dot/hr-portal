@@ -558,6 +558,30 @@ border-bottom: 1px solid var(--border);
 }
 
 @media (max-width: 560px) {
-  #hr-chat-window { right: 8px; bottom: 0; width: calc(100vw - 16px); max-height: 60vh; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+  #hr-chat-window { right: 8px; bottom: 90px; width: calc(100vw - 16px); }
   #hr-owl-btn { bottom: 16px; right: 16px; width: 56px; height: 56px; background: transparent; box-shadow: none; }
+}
+
+/* ── 拖曳狀態 ── */
+#hr-chat-window.is-dragging,
+#hr-owl-btn.is-dragging {
+  cursor: grabbing !important;
+  user-select: none;
+}
+#hr-chat-window.is-dragging * {
+  cursor: grabbing !important;
+  user-select: none;
+  pointer-events: none;
+}
+#hr-chat-window.is-dragging input,
+#hr-chat-window.is-dragging textarea,
+#hr-chat-window.is-dragging button {
+  pointer-events: auto;
+}
+.chat-header { cursor: grab; }
+
+/* ── 視窗邊界安全 ── */
+#hr-chat-window {
+  max-width: calc(100vw - 24px) !important;
+  max-height: calc(100vh - 24px) !important;
 }

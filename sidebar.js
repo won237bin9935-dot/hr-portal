@@ -275,8 +275,30 @@ function hrInitChat() {
     }
   }, 100);
 
-  // 拖曳
+  // 機器人圖示拖曳
   hrInitDrag(btn);
+
+  // 聊天視窗標題列也可以拖曳
+  setTimeout(function() {
+    var chatHeader = document.querySelector('#hr-chat-window .chat-header');
+    if (chatHeader) {
+      chatHeader.style.cursor = 'grab';
+      chatHeader.addEventListener('pointerdown', function(e) {
+        var win = document.getElementById('hr-chat-window');
+        if (!win) return;
+        hrDragActive = true;
+        hrSetFixedPos(win);
+        var rect     = win.getBoundingClientRect();
+        hrDragStartX = e.clientX;
+        hrDragStartY = e.clientY;
+        hrDragStartL = rect.left;
+        hrDragStartT = rect.top;
+        win.classList.add('is-dragging');
+        if (e.target.setPointerCapture) e.target.setPointerCapture(e.pointerId);
+        e.preventDefault();
+      });
+    }
+  }, 100);
 }
 
 function hrToggleChat() {
@@ -293,6 +315,10 @@ function hrOpenChat() {
     var input = document.getElementById('chat-input');
     if (input) input.focus();
   }, 200);
+  // 展開後確保視窗在螢幕內
+  setTimeout(function() {
+    if (window.clampHrChatWidget) window.clampHrChatWidget();
+  }, 50);
 }
 
 
@@ -412,6 +438,113 @@ async function hrSendMessage() {
     if (owlBtn) owlBtn.classList.add('has-msg');
   }
 }
+
+
+// ── 聊天視窗拖曳與邊界控制
+var HR_CHAT_MARGIN = 12;
+var hrDragActive   = false;
+var hrDragStartX   = 0;
+var hrDragStartY   = 0;
+var hrDragStartL   = 0;
+var hrDragStartT   = 0;
+
+function hrIsInteractiveEl(el) {
+  return !!el.closest('input, textarea, button, a, select, .chat-send-btn, .quick-reply');
+}
+
+function hrGetWin() {
+  return document.getElementById('hr-chat-window');
+}
+
+function hrGetBtn() {
+  return document.getElementById('hr-owl-btn');
+}
+
+function hrSetFixedPos(el) {
+  var rect = el.getBoundingClientRect();
+  el.style.position = 'fixed';
+  el.style.left     = rect.left + 'px';
+  el.style.top      = rect.top  + 'px';
+  el.style.right    = 'auto';
+  el.style.bottom   = 'auto';
+}
+
+function clampEl(el) {
+  if (!el) return;
+  var vw   = window.innerWidth;
+  var vh   = window.innerHeight;
+  var rect = el.getBoundingClientRect();
+  var left = rect.left;
+  var top  = rect.top;
+  var maxL = Math.max(HR_CHAT_MARGIN, vw - rect.width  - HR_CHAT_MARGIN);
+  var maxT = Math.max(HR_CHAT_MARGIN, vh - rect.height - HR_CHAT_MARGIN);
+  left = Math.min(Math.max(left, HR_CHAT_MARGIN), maxL);
+  top  = Math.min(Math.max(top,  HR_CHAT_MARGIN), maxT);
+  el.style.position = 'fixed';
+  el.style.left     = left + 'px';
+  el.style.top      = top  + 'px';
+  el.style.right    = 'auto';
+  el.style.bottom   = 'auto';
+}
+
+window.clampHrChatWidget = function() {
+  var win = hrGetWin();
+  var btn = hrGetBtn();
+  if (win && hrChatOpen) clampEl(win);
+  if (btn) clampEl(btn);
+};
+
+function hrOnPointerDown(e) {
+  if (e.button !== undefined && e.button !== 0) return;
+  if (hrIsInteractiveEl(e.target)) return;
+
+  var target = e.currentTarget;
+  hrDragActive = true;
+  hrSetFixedPos(target);
+
+  var rect     = target.getBoundingClientRect();
+  hrDragStartX = e.clientX;
+  hrDragStartY = e.clientY;
+  hrDragStartL = rect.left;
+  hrDragStartT = rect.top;
+
+  target.classList.add('is-dragging');
+  if (e.target.setPointerCapture) e.target.setPointerCapture(e.pointerId);
+  e.preventDefault();
+}
+
+function hrOnPointerMove(e) {
+  if (!hrDragActive) return;
+  // 找目前拖曳的元素
+  var win = hrGetWin();
+  var btn = hrGetBtn();
+  var el  = (win && win.classList.contains('is-dragging')) ? win : btn;
+  if (!el) return;
+
+  var dx = e.clientX - hrDragStartX;
+  var dy = e.clientY - hrDragStartY;
+  el.style.left   = (hrDragStartL + dx) + 'px';
+  el.style.top    = (hrDragStartT + dy) + 'px';
+  el.style.right  = 'auto';
+  el.style.bottom = 'auto';
+}
+
+function hrOnPointerUp(e) {
+  if (!hrDragActive) return;
+  hrDragActive = false;
+  var win = hrGetWin();
+  var btn = hrGetBtn();
+  if (win) win.classList.remove('is-dragging');
+  if (btn) btn.classList.remove('is-dragging');
+  window.clampHrChatWidget();
+}
+
+document.addEventListener('pointermove', hrOnPointerMove);
+document.addEventListener('pointerup',   hrOnPointerUp);
+window.addEventListener('resize', function() { window.clampHrChatWidget(); });
+window.addEventListener('orientationchange', function() {
+  setTimeout(function() { window.clampHrChatWidget(); }, 300);
+});
 
 function hrInitDrag(btn) {
   var startX, startY, startLeft, startBottom;
