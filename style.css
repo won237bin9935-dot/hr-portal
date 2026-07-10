@@ -343,8 +343,9 @@ border-bottom: 1px solid var(--border);
 
 /* ── HR 小幫手貓頭鷹聊天機器人 ── */
 /*
-   v2 重點：#hr-chat-widget 是唯一固定定位外層。
+   v3 重點：#hr-chat-widget 是唯一固定定位外層。
    #hr-chat-window 與 #hr-owl-btn 都放在 widget 裡，永遠維持固定間距。
+   JS 會同步 widget 寬度並做螢幕邊界修正。
 */
 #hr-chat-widget {
   position: fixed;
@@ -358,12 +359,14 @@ border-bottom: 1px solid var(--border);
   max-width: calc(100vw - 24px);
   max-height: calc(100vh - 24px);
   pointer-events: none;
+  touch-action: none;
 }
 #hr-chat-widget > * {
   pointer-events: auto;
 }
 
 #hr-owl-btn {
+  touch-action: none;
   position: relative;
   width: 64px;
   height: 64px;
@@ -405,7 +408,7 @@ border-bottom: 1px solid var(--border);
   width: min(360px, calc(100vw - 24px));
   max-width: calc(100vw - 24px);
   height: 520px;
-  max-height: calc(100vh - 100px);
+  max-height: calc(100vh - 112px);
   min-height: 300px;
   background: #fff;
   border-radius: 20px;
@@ -420,6 +423,7 @@ border-bottom: 1px solid var(--border);
 #hr-chat-window.open { display: flex; }
 
 .chat-header {
+  touch-action: none;
   background: linear-gradient(135deg, #f56a6a, #e05555);
   padding: 14px 16px;
   display: flex;
@@ -575,17 +579,16 @@ border-bottom: 1px solid var(--border);
 
 @media (max-width: 560px) {
   #hr-chat-widget {
-    right: 16px;
-    bottom: 16px;
+    /* 不在手機版重設 right/bottom，避免覆蓋拖曳後的 left/top */
     gap: 10px;
     max-width: calc(100vw - 16px);
     max-height: calc(100vh - 16px);
   }
   #hr-chat-window {
-    width: calc(100vw - 16px);
-    max-width: calc(100vw - 16px);
+    width: calc(100vw - 24px);
+    max-width: calc(100vw - 24px);
     height: 500px;
-    max-height: calc(100vh - 90px);
+    max-height: calc(100vh - 100px);
   }
   #hr-owl-btn {
     width: 56px;
