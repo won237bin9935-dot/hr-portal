@@ -605,3 +605,39 @@ border-bottom: 1px solid var(--border);
     box-shadow: none;
   }
 }
+
+/* =====================================================
+   HR Chat v6 - category option buttons
+   ===================================================== */
+.hr-chat-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.hr-chat-option-btn {
+  border: 1px solid rgba(245, 106, 106, 0.35);
+  background: #fff7f7;
+  color: #b84545;
+  border-radius: 999px;
+  padding: 7px 12px;
+  font-size: 13px;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+  max-width: 100%;
+  white-space: normal;
+  text-align: left;
+}
+
+.hr-chat-option-btn:hover {
+  background: #ffecec;
+  box-shadow: 0 2px 8px rgba(245, 106, 106, 0.18);
+  transform: translateY(-1px);
+}
+
+.hr-chat-option-btn:active {
+  transform: translateY(0);
+  box-shadow: none;
+}

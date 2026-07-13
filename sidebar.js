@@ -776,3 +776,152 @@ window.addEventListener('orientationchange', function() {
 });
 
 window.addEventListener('DOMContentLoaded', hrInitChat);
+
+// =====================================================
+// HR Chat Widget v6 Override - category option buttons
+// 2026-07-13
+// Purpose:
+// - 支援 Apps Script v3.6 回傳 options。
+// - 每個按鈕直接送 directTarget(targetType + targetId)，不靠後端記住上一題。
+// - 純文字輸入 1 不解析，由後端回覆不支援編號。
+// =====================================================
+
+function hrAddBotMsg(text, options) {
+  var msgs = document.getElementById('chat-messages');
+  if (!msgs) return;
+
+  var div = document.createElement('div');
+  div.className = 'chat-msg bot';
+
+  var avatar = document.createElement('div');
+  avatar.className = 'chat-msg-avatar';
+  avatar.innerHTML = '<img src="' + HR_OWL_IMG + '" alt="HR">';
+
+  var bubble = document.createElement('div');
+  bubble.className = 'chat-bubble';
+  bubble.innerHTML = hrEscapeHtml(text);
+
+  if (Array.isArray(options) && options.length > 0) {
+    var opts = document.createElement('div');
+    opts.className = 'hr-chat-options';
+
+    options.forEach(function(opt) {
+      if (!opt || !opt.label || !opt.targetType || !opt.targetId) return;
+
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'hr-chat-option-btn';
+      btn.textContent = opt.label;
+      btn.setAttribute('data-target-type', opt.targetType);
+      btn.setAttribute('data-target-id', opt.targetId);
+
+      btn.addEventListener('click', function() {
+        hrSendDirectTarget(opt.label, opt.targetType, opt.targetId);
+      });
+
+      opts.appendChild(btn);
+    });
+
+    if (opts.children.length > 0) {
+      bubble.appendChild(opts);
+    }
+  }
+
+  div.appendChild(avatar);
+  div.appendChild(bubble);
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+async function hrSendDirectTarget(label, targetType, targetId) {
+  var sendBtn = document.querySelector('.chat-send-btn');
+
+  if (!targetType || !targetId) return;
+  if (sendBtn) sendBtn.disabled = true;
+
+  hrAddUserMsg(label || '查詢項目');
+  hrChatHistory.push({ role: 'user', parts: [{ text: label || '查詢項目' }] });
+  hrAddTyping();
+
+  try {
+    var res = await fetch(HR_CHAT_URL, {
+      method  : 'POST',
+      redirect: 'follow',
+      headers : { 'Content-Type': 'text/plain' },
+      body    : JSON.stringify({
+        action      : 'hrChat',
+        question    : label || '',
+        directTarget: {
+          targetType: targetType,
+          targetId  : targetId,
+          label     : label || ''
+        },
+        history     : hrChatHistory.slice(-6),
+      }),
+    });
+
+    var result = await res.json();
+    hrRemoveTyping();
+
+    if (result.success && result.reply) {
+      hrChatHistory.push({ role: 'model', parts: [{ text: result.reply }] });
+      hrAddBotMsg(result.reply, result.options || []);
+    } else {
+      hrAddBotMsg('抱歉，目前無法回答。\n錯誤：' + (result.error || '未知錯誤'));
+    }
+  } catch(e) {
+    hrRemoveTyping();
+    hrAddBotMsg('連線發生錯誤，請稍後再試。');
+  }
+
+  if (sendBtn) sendBtn.disabled = false;
+}
+
+async function hrSendMessage() {
+  var input = document.getElementById('chat-input');
+  var sendBtn = document.querySelector('.chat-send-btn');
+  if (!input) return;
+
+  var text = input.value.trim();
+  if (!text) return;
+
+  input.value = '';
+  input.style.height = 'auto';
+  if (sendBtn) sendBtn.disabled = true;
+
+  hrAddUserMsg(text);
+  hrChatHistory.push({ role: 'user', parts: [{ text: text }] });
+  hrAddTyping();
+
+  try {
+    var res = await fetch(HR_CHAT_URL, {
+      method  : 'POST',
+      redirect: 'follow',
+      headers : { 'Content-Type': 'text/plain' },
+      body    : JSON.stringify({
+        action  : 'hrChat',
+        question: text,
+        history : hrChatHistory.slice(-6),
+      }),
+    });
+
+    var result = await res.json();
+    hrRemoveTyping();
+
+    if (result.success && result.reply) {
+      hrChatHistory.push({ role: 'model', parts: [{ text: result.reply }] });
+      hrAddBotMsg(result.reply, result.options || []);
+    } else {
+      hrAddBotMsg('抱歉，目前無法回答。\n錯誤：' + (result.error || '未知錯誤'));
+    }
+  } catch(e) {
+    hrRemoveTyping();
+    hrAddBotMsg('連線發生錯誤，請稍後再試。');
+  }
+
+  if (sendBtn) sendBtn.disabled = false;
+  if (!hrChatOpen) {
+    var owlBtn = hrGetBtn();
+    if (owlBtn) owlBtn.classList.add('has-msg');
+  }
+}
