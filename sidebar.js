@@ -225,6 +225,9 @@ var hrChatOpen     = false;
 var hrChatDragging = false;
 var hrChatHistory  = [];
 var hrGreetingShown = false;
+var hrChatSending = false;
+var HR_CHAT_LOADING_TEXT = 'HR 小幫手查詢中，請稍候...';
+var HR_CHAT_NETWORK_ERROR_TEXT = '目前系統連線異常，請稍後再試。\n若持續發生，請聯絡人資單位協助確認。';
 
 function hrInitChat() {
   if (location.pathname.includes('admin.html')) return;
@@ -400,12 +403,16 @@ function hrAddUserMsg(text) {
 function hrAddTyping() {
   var msgs = document.getElementById('chat-messages');
   if (!msgs) return;
+
+  // 避免連續送出時重複產生多個查詢中提示。
+  hrRemoveTyping();
+
   var div = document.createElement('div');
   div.className = 'chat-msg bot';
   div.id = 'chat-typing';
   div.innerHTML =
     '<div class="chat-msg-avatar"><img src="' + HR_OWL_IMG + '" alt="HR"></div>' +
-    '<div class="chat-typing"><span></span><span></span><span></span></div>';
+    '<div class="chat-bubble">' + hrEscapeHtml(HR_CHAT_LOADING_TEXT) + '</div>';
   msgs.appendChild(div);
   msgs.scrollTop = msgs.scrollHeight;
 }
@@ -778,12 +785,13 @@ window.addEventListener('orientationchange', function() {
 window.addEventListener('DOMContentLoaded', hrInitChat);
 
 // =====================================================
-// HR Chat Widget v6 Override - category option buttons
+// HR Chat Widget v7 Override - category option buttons + loading/error messages
 // 2026-07-13
 // Purpose:
 // - 支援 Apps Script v3.6 回傳 options。
 // - 每個按鈕直接送 directTarget(targetType + targetId)，不靠後端記住上一題。
 // - 純文字輸入 1 不解析，由後端回覆不支援編號。
+// - 送出問題後顯示查詢中；收到回覆後移除；fetch 失敗時顯示友善錯誤訊息。
 // =====================================================
 
 function hrAddBotMsg(text, options) {
@@ -837,6 +845,9 @@ async function hrSendDirectTarget(label, targetType, targetId) {
   var sendBtn = document.querySelector('.chat-send-btn');
 
   if (!targetType || !targetId) return;
+  if (hrChatSending) return;
+
+  hrChatSending = true;
   if (sendBtn) sendBtn.disabled = true;
 
   hrAddUserMsg(label || '查詢項目');
@@ -860,6 +871,8 @@ async function hrSendDirectTarget(label, targetType, targetId) {
       }),
     });
 
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
     var result = await res.json();
     hrRemoveTyping();
 
@@ -867,26 +880,29 @@ async function hrSendDirectTarget(label, targetType, targetId) {
       hrChatHistory.push({ role: 'model', parts: [{ text: result.reply }] });
       hrAddBotMsg(result.reply, result.options || []);
     } else {
-      hrAddBotMsg('抱歉，目前無法回答。\n錯誤：' + (result.error || '未知錯誤'));
+      hrAddBotMsg(HR_CHAT_NETWORK_ERROR_TEXT);
     }
   } catch(e) {
     hrRemoveTyping();
-    hrAddBotMsg('連線發生錯誤，請稍後再試。');
+    hrAddBotMsg(HR_CHAT_NETWORK_ERROR_TEXT);
+  } finally {
+    hrChatSending = false;
+    if (sendBtn) sendBtn.disabled = false;
   }
-
-  if (sendBtn) sendBtn.disabled = false;
 }
 
 async function hrSendMessage() {
   var input = document.getElementById('chat-input');
   var sendBtn = document.querySelector('.chat-send-btn');
   if (!input) return;
+  if (hrChatSending) return;
 
   var text = input.value.trim();
   if (!text) return;
 
   input.value = '';
   input.style.height = 'auto';
+  hrChatSending = true;
   if (sendBtn) sendBtn.disabled = true;
 
   hrAddUserMsg(text);
@@ -905,6 +921,8 @@ async function hrSendMessage() {
       }),
     });
 
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
     var result = await res.json();
     hrRemoveTyping();
 
@@ -912,14 +930,16 @@ async function hrSendMessage() {
       hrChatHistory.push({ role: 'model', parts: [{ text: result.reply }] });
       hrAddBotMsg(result.reply, result.options || []);
     } else {
-      hrAddBotMsg('抱歉，目前無法回答。\n錯誤：' + (result.error || '未知錯誤'));
+      hrAddBotMsg(HR_CHAT_NETWORK_ERROR_TEXT);
     }
   } catch(e) {
     hrRemoveTyping();
-    hrAddBotMsg('連線發生錯誤，請稍後再試。');
+    hrAddBotMsg(HR_CHAT_NETWORK_ERROR_TEXT);
+  } finally {
+    hrChatSending = false;
+    if (sendBtn) sendBtn.disabled = false;
   }
 
-  if (sendBtn) sendBtn.disabled = false;
   if (!hrChatOpen) {
     var owlBtn = hrGetBtn();
     if (owlBtn) owlBtn.classList.add('has-msg');
