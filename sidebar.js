@@ -226,7 +226,7 @@ var hrChatDragging = false;
 var hrChatHistory  = [];
 var hrGreetingShown = false;
 var hrChatSending = false;
-var HR_CHAT_LOADING_TEXT = 'HR 小幫手查詢中，請稍候...';
+var HR_CHAT_LOADING_TEXT = '歐莉(OWLly)小幫手查詢中，請稍候...';
 var HR_CHAT_NETWORK_ERROR_TEXT = '目前系統連線異常，請稍後再試。\n若持續發生，請聯絡人資單位協助確認。';
 
 function hrInitChat() {
@@ -245,7 +245,7 @@ function hrInitChat() {
       '<img src="' + HR_OWL_IMG + '" alt="HR小幫手">' +
       '<div class="chat-header-info">' +
         '<div class="chat-header-title">HR 小幫手</div>' +
-        '<div class="chat-header-sub">人資制度問答小助理</div>' +
+        '<div class="chat-header-sub">人資制度問答小助理-歐莉(OWLly)</div>' +
       '</div>' +
       '<div class="chat-header-actions">' +
         '<button class="chat-header-btn" id="chat-expand-btn" onclick="hrToggleExpand()" title="展開">⤢</button>' +
@@ -315,7 +315,7 @@ function hrOpenChat() {
   if (btn) btn.classList.remove('has-msg');
 
   if (!hrGreetingShown) {
-    hrAddBotMsg('你好！我是 HR 小幫手-歐莉(OWLly) 🦉\n有任何人資制度相關問題，都可以問我喔！');
+    hrAddBotMsg('你好！我是 HR 小幫手-歐莉(OWLly)🦉\n有任何人資制度相關問題，都可以問我喔！');
     hrGreetingShown = true;
   }
 
