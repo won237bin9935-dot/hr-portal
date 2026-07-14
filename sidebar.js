@@ -253,7 +253,7 @@ function hrInitChat() {
       '</div>' +
     '</div>' +
     '<div class="chat-messages" id="chat-messages"></div>' +
-    '<div class="chat-hint">💡 小提醒：我每次都會獨立回答問題，無法記住前後問答紀錄。請直接輸入想查詢的關鍵字，例如：病假、公傷、離職、加班餐費，這樣會比較容易找到相關回覆喔~😊</div>' +
+    '<div class="chat-hint">💡小提醒：我每次都會獨立回答問題，無法記住前後問答紀錄。請直接輸入想查詢的關鍵字，例如：病假、公傷、離職、加班餐費，這樣比較容易找到相關回覆喔~😊</div>' +
     '<div class="chat-input-area">' +
       '<textarea class="chat-input" id="chat-input" placeholder="輸入問題…" rows="1"></textarea>' +
       '<button class="chat-send-btn" onclick="hrSendMessage()">➤</button>' +
