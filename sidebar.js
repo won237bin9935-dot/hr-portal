@@ -315,7 +315,7 @@ function hrOpenChat() {
   if (btn) btn.classList.remove('has-msg');
 
   if (!hrGreetingShown) {
-    hrAddBotMsg('你好！我是 HR 小幫手 🦉\n有任何人資制度相關問題，都可以問我喔！');
+    hrAddBotMsg('你好！我是 HR 小幫手-歐莉(OWLly) 🦉\n有任何人資制度相關問題，都可以問我喔！');
     hrGreetingShown = true;
   }
 
